@@ -44,7 +44,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-6 d-none d-md-block p-5">
-                    <img src="{{asset('/img/etereaselfie.svg')}}" alt="{{__('Make more money')}}"/>
+                    <img class="svgLogo src="{{asset('/img/etereaselfie.svg')}}" alt="{{__('Make more money')}}"/>
                 </div>
             </div>
         </div>
