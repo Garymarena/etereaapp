@@ -44,7 +44,7 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-6 d-none d-md-block p-5">
-                    <img src="{{asset('/img/home-header.png')}}" alt="{{__('Make more money')}}"/>
+                    <img src="{{asset('/img/etereaselfie.svg')}}" alt="{{__('Make more money')}}"/>
                 </div>
             </div>
         </div>
@@ -60,11 +60,11 @@
             </div>
             <div class="d-flex align-items-center justify-content-center">
                 <div class="d-flex justify-content-center align-items-center row col">
-                    <img src="{{asset('/img/logos/oxxo.svg')}}" class="mx-3 mb-2 grayscale" title="{{ucfirst(__("oxxo"))}}" alt="{{__("oxxo")}}"/>
+<img src="{{asset('/img/logos/oxxo.svg')}}" class="mx-3 mb-2 grayscale" title="{{ucfirst(__("laravel"))}}" alt="{{__("laravel")}}"/>
                     <img src="{{asset('/img/logos/stripe.svg')}}" class="mx-3 mb-2 grayscale" title="{{ucfirst(__("stripe"))}}" alt="{{__("stripe")}}"/>
                     <img src="{{asset('/img/logos/paypal.svg')}}" class="mx-3 mb-2 grayscale" title="{{ucfirst(__("paypal"))}}" alt="{{__("paypal")}}"/>
                     <img src="{{asset('/img/logos/coinbase.svg')}}" class="mx-3 mb-2 grayscale coinbasae-logo" title="{{ucfirst(__("coinbase"))}}" alt="{{__("coinbase")}}"/>
-                    <img src="{{asset('/img/logos/mercadopago.svg')}}" class="mx-3 mb-2 grayscale" title="{{ucfirst(__("mercadoPago"))}}" alt="{{__("mercadoPago")}}"/>
+                    <img src="{{asset('/img/logos/mercadopago.svg')}}" class="mx-3 mb-2 grayscale" title="{{ucfirst(__("wasabi"))}}" alt="{{__("wasabi")}}"/>
                 </div>
             </div>
         </div>
