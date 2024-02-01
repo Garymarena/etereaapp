@@ -50,6 +50,14 @@
         </div>
     </div>
 
+    <div class="col-12 col-md-4 mb-5 btn-grow text-left px-4 py-3 rounded my-2 w-100">
+        <div class="flex-row">
+             @include('elements.icon',['icon'=>'language-outline','variant'=>'large','centered'=>false,'classes'=>''])
+        </div>
+            <h5 class="text-bold">{{__("RTL & Locales")}}</h5>
+            <p class="mb-0">{{__("Fully localize your site with languages & RTL.")}}</p>
+    </div>
+
 
 
     <div class="my-5 py-2">
