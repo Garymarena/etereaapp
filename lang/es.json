@@ -140,7 +140,7 @@
   "Contact us": "Contáctanos",
   "Don't hesitate to contact us for any matter. We will get back to you asap.": "No dudes en contactarnos por cualquier asunto. Nos pondremos en contacto contigo lo antes posible."
 
-    "Message sent.": "Message sent",
+    "Message sent." "Message sent",
     "Email address": "Email address",
     "Subject": "Subject",
     "Message": "Message",
@@ -270,7 +270,7 @@
   "Failed to remove the attachment.": "No se pudo eliminar el adjunto."
 
 
-  "You need to login first": "Debes iniciar sesión primero",
+  "You need to login first" "Debes iniciar sesión primero",
   "Your active subscriptions": "Tus suscripciones activas",
   "Subscribe to": "Suscríbete a :username por :currency:amount por cada :subscription_interval",
   "Subscribe to rightAligned": "Suscríbete a :username por :amount:currency por cada :subscription_interval",
@@ -307,7 +307,7 @@
   "with your content": "con tu contenido",
   "DMs unavailable without subscription": "El chat está disponible solo para suscriptores/seguidores"
 
-  "Success": "Éxito",
+  "Success" "Éxito",
   "Error": "Error",
 
   "You have been credited :currencySymbol:amount Happy spending!": "Pago realizado. Se te ha acreditado :currencySymbol:amount ¡Feliz gasto!",
@@ -321,7 +321,7 @@
   "List renamed": "Lista renombrada"
 
 
-  "New comment received": "Nuevo comentario recibido",
+  "New comment received" "Nuevo comentario recibido",
   "Upcoming renewals": "Renovaciones próximas",
   "Received a tip": "Recibiste una propina",
   "Unlock post for": "Desbloquear publicación por",
@@ -342,11 +342,11 @@
   "one-time fee": "tarifa única",
   "Chat locked. Unlock the stream to see the messages.": "Chat bloqueado. Desbloquea la transmisión para ver los mensajes."
 
-  "Cancel subscription": "Cancelar suscripción",
+  "Cancel subscription" "Cancelar suscripción",
   "Are you sure you want to cancel this subscription?": "¿Estás seguro de que quieres cancelar esta suscripción?",
   "Confirm": "Confirmar"
 
-  "Due": "A pagar",
+  "Due" "A pagar",
   "Number": "Número",
   "Date": "Fecha",
   "Invoiced To": "Facturado a",
@@ -374,7 +374,7 @@
   "refunded": "reembolsado",
   "initiated": "iniciado"
 
-  "tip": "Propina",
+  "tip" "Propina",
   "deposit": "Depósito",
   "one-month-subscription": "Suscripción mensual",
   "stream-access": "Desbloqueo de transmisión",
@@ -411,7 +411,7 @@
   "Email subscription updated": "Tu suscripción para el perfil :name :message",
   "Back": "Atrás"
 
-  "Please add your withdrawal notes: EG: Paypal or Bank account.": "Por favor, agrega notas a tu retiro: Ejemplo: Paypal o cuenta bancaria.",
+  "Please add your withdrawal notes: EG: Paypal or Bank account." "Por favor, agrega notas a tu retiro: Ejemplo: Paypal o cuenta bancaria.",
   "Your withdrawal request has been denied.": "Tu solicitud de retiro ha sido denegada.",
   "Your withdrawal request has been approved.": "Tu solicitud de retiro ha sido aprobada.",
   "Try again": "Inténtalo de nuevo",
@@ -436,7 +436,7 @@
   "Email new message title": "¡Tienes un nuevo mensaje en :siteName!",
   "View your messages": "Ver tus mensajes"
 
-  "Upcoming renewal": "Próxima renovación",
+  "Upcoming renewal" "Próxima renovación",
   "Thanks": "Gracias",
 
   "Platform statistics": "Estadísticas de la plataforma",
@@ -472,7 +472,7 @@
   "Changelog": "Registro de cambios",
   "Visit the official product changelog": "Visitar el registro de cambios oficial del producto"
 
-  "Complete your verification": "Completa tu verificación",
+  "Complete your verification" "Completa tu verificación",
   "Please attach clear photos of your ID card back and front side.": "Adjunta fotos claras del anverso y reverso de tu tarjeta de identificación.",
   "Your info looks good, you're all set to post new content!": "Tu información luce bien, ¡estás listo para publicar nuevo contenido!",
 
@@ -516,7 +516,7 @@
   "Your lists": "Tus listas",
   "Post": "Publicación"
 
-  "Please select an user first": "Por favor, selecciona un usuario primero",
+  "Please select an user first" "Por favor, selecciona un usuario primero",
   "Please enter your message": "Por favor, ingresa tu mensaje",
   "These credentials do not match our records.": "Estas credenciales no coinciden con nuestros registros.",
 
@@ -556,7 +556,7 @@
   "this link": "este enlace",
   "to resend the confirmation email": "para reenviar el correo de confirmación"
 
-  "Add attachments": "Añadir adjuntos",
+  "Add attachments" "Añadir adjuntos",
 
   "Top": "Top",
   "Latest": "Último",
@@ -613,7 +613,7 @@
 
   "streams": "transmisión|transmisiones"
 
-  "User": "Usuario",
+  "User" "Usuario",
   "Stream": "Transmisión",
 
   "Streams": "Transmisiones",
@@ -760,7 +760,7 @@
   "If the account is private, the content will only be available for registered users.": "Si la cuenta es privada, el contenido solo estará disponible para los usuarios registrados.",
   "Paid posts will still be locked for open profiles.": "Las publicaciones de pago seguirán estando bloqueadas para los perfiles abiertos."
 
-  "A :feeAmount% fee will be applied.": "Se aplicará una tarifa del :feeAmount%.",
+  "A :feeAmount% fee will be applied." "Se aplicará una tarifa del :feeAmount%.",
   "Cannot subscribe to yourself.": "No puedes suscribirte a ti mismo.",
   "Cannot pay to yourself.": "No puedes pagarte a ti mismo.",
 
@@ -890,7 +890,7 @@
   "View your feed": "Ver tu feed",
   "Email address is undeliverable": "La dirección de correo electrónico no se puede entregar"
 
-  "Write me a short profile bio description": "Escríbeme una breve descripción de perfil biográfico",
+  "Write me a short profile bio description""Escríbeme una breve descripción de perfil biográfico",
   "Write me a short post description to post on my profile": "Escríbeme una breve descripción de publicación para publicar en mi perfil",
   "Suggest a description": "Sugerir una descripción",
   "Use AI to generate your description.": "Usar la IA para generar tu descripción.",
@@ -945,7 +945,7 @@
   "Max size": "Tamaño máximo",
   "Select all": "Seleccionar todo"
 
-  "Pin this post": "Fijar esta publicación",
+  "Pin this post" "Fijar esta publicación",
   "Un-pin post": "Desfijar publicación",
   "Pin added.": "Publicación fijada.",
   "Pin removed.": "Publicación desfijada.",
