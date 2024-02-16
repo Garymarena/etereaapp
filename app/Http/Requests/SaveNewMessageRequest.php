@@ -4,8 +4,9 @@ namespace App\Http\Requests;
 
 use App\Rules\PPVMinMax;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\Sluggable;
 
-class SavePostRequest extends FormRequest
+class SaveNewMessageRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,17 +25,8 @@ class SavePostRequest extends FormRequest
      */
     public function rules()
     {
-
-        $rules = [];
-        if((int)getSetting('feed.min_post_description') > 0){
-            $rules['text'] = 'required|min:'.getSetting('feed.min_post_description');
-        }
-        else{
-            $rules['attachments'] = 'required';
-        }
-
-        $rules['price'] = [New PPVMinMax('post')];
-
-        return $rules;
+        return [
+            'price' => [new PPVMinMax('message')]
+        ];
     }
 }

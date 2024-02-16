@@ -11,6 +11,7 @@ use App\Providers\InstallerServiceProvider;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Cookie;
@@ -207,6 +208,11 @@ class GenericController extends Controller
         } catch (\Exception $exception) {
             return response()->json(['success' => false, 'error' => 'Error: "'.$exception->getMessage().'"'],500);
         }
+    }
+
+    public function clearAppCache(Request $request){
+        Artisan::call('cache:clear');
+        return response()->json(['success' => true, 'message' => __("Application cache cleared successfully")], 200);
     }
 
 }

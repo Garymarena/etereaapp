@@ -18,6 +18,7 @@ use App\Providers\GenericHelperServiceProvider;
 use App\Providers\ListsHelperServiceProvider;
 use App\Providers\NotificationServiceProvider;
 use App\Providers\PostsHelperServiceProvider;
+use App\User;
 use Carbon\Carbon;
 use Cookie;
 use Illuminate\Http\Request;
@@ -244,6 +245,26 @@ class PostsController extends Controller
                             );
                             App::setLocale(Auth::user()->settings['locale']);
                         }
+                    }
+                }
+
+                // Sending approval admin email if needed
+                if(getSetting('admin.send_notifications_on_pending_posts') && $postStatus === 0){
+                    // Sending out admin email
+                    $adminEmails = User::where('role_id', 1)->select(['email', 'name'])->get();
+                    foreach ($adminEmails as $user) {
+                        EmailsServiceProvider::sendGenericEmail(
+                            [
+                                'email' => $user->email,
+                                'subject' => __('Action required | New post pending approval'),
+                                'title' => __('Hello, :name,', ['name' => $user->name]),
+                                'content' => __('There is a new post pending your approval on :siteName.', ['siteName' => getSetting('site.name')]),
+                                'button' => [
+                                    'text' => __('Go to admin'),
+                                    'url' => route('voyager.dashboard').'/user-posts?key=status&filter=equals&s=0',
+                                ],
+                            ]
+                        );
                     }
                 }
 

@@ -209,6 +209,10 @@ body {
     height: 48px;
 }
 
+.post-box .post-content-data p{
+    margin-bottom: 0px;
+}
+
 .post-details .dropdown .dropdown-toggle:after,.post-details .dropdown .dropdown-toggle:before{
     display: none;
 }

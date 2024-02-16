@@ -104,7 +104,26 @@ return [
             'path' => storage_path('logs/cronjobs.log'),
             'driver' => 'single',
             'level' => 'info'
-        ]
+        ],
+
+        'ffmpeg' => [
+            'path' => storage_path('logs/ffmpeg.log'),
+            'driver' => 'single',
+            'level' => 'debug'
+        ],
+
+        'payments' => [
+            'path' => storage_path('logs/payments.log'),
+            'driver' => 'single',
+            'level' => 'debug'
+        ],
+
+        'emails' => [
+            'path' => storage_path('logs/emails.log'),
+            'driver' => 'single',
+            'level' => 'debug'
+        ],
+
     ],
 
 ];

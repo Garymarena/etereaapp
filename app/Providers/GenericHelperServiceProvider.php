@@ -201,6 +201,10 @@ class GenericHelperServiceProvider extends ServiceProvider
         return $bio;
     }
 
+    public static function parseSafeHTML($text){
+        return  Purifier::clean((str_replace("\n", "<br>",strip_tags($text))));
+    }
+
     /**
      * Fetches list of all public pages to be show in footer
      * @return mixed
@@ -215,7 +219,12 @@ class GenericHelperServiceProvider extends ServiceProvider
      * @return mixed
      */
     public static function getPrivacyPage(){
-        return PublicPage::where('is_privacy', 1)->first();
+        try{
+            return PublicPage::where('is_privacy', 1)->first();
+        }
+        catch (\Exception $e){
+            return PublicPage::first();
+        }
 
     }
 
@@ -224,7 +233,12 @@ class GenericHelperServiceProvider extends ServiceProvider
      * @return mixed
      */
     public static function getTOSPage(){
-        return PublicPage::where('is_tos', 1)->first();
+        try{
+            return PublicPage::where('is_tos', 1)->first();
+        }
+        catch (\Exception $e){
+            return PublicPage::first();
+        }
     }
 
     /**
@@ -257,7 +271,7 @@ class GenericHelperServiceProvider extends ServiceProvider
         }
         // If user has locale setting, use that one
         if (isset(Auth::user()->settings['locale'])) {
-           return Auth::user()->settings['locale'];
+            return Auth::user()->settings['locale'];
         }
         return getSetting('site.default_site_language');
     }

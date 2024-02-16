@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Model\ReferralCodeUsage;
 use App\Model\UserCode;
 use App\Model\UserDevice;
 use App\User;
@@ -10,7 +9,6 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 
 class AuthServiceProvider extends ServiceProvider
@@ -106,40 +104,7 @@ class AuthServiceProvider extends ServiceProvider
         } catch (\Exception $exception){
         }
 
-
         $user = User::create($userData);
-
-        if ($user != null) {
-            GenericHelperServiceProvider::createUserWallet($user);
-            ListsHelperServiceProvider::createUserDefaultLists($user->id);
-            if(getSetting('security.default_2fa_on_register')) {
-                self::addNewUserDevice($user->id, true);
-            }
-            if(getSetting('profiles.default_users_to_follow')){
-                $usersToFollow = explode(',',getSetting('profiles.default_users_to_follow'));
-                if(count($usersToFollow)){
-                    foreach($usersToFollow as $userID){
-                        ListsHelperServiceProvider::managePredefinedUserMemberList($user->id,$userID,'follow');
-                    }
-                }
-            }
-            if(getSetting('referrals.enabled')) {
-                // Saving the referral even if the case
-                if(Cookie::has('referral')){
-                    $referralID = User::where('referral_code', Cookie::get('referral'))->first();
-                    if($referralID){
-                        $existing = ReferralCodeUsage::where(['used_by' => $user->id, 'referral_code' => $referralID->referral_code])->first();
-                        if(!$existing) {
-                            ReferralCodeUsage::create(['used_by' => $user->id, 'referral_code' => $referralID->referral_code]);
-                            Cookie::queue(Cookie::forget('referral'));
-                            if(getSetting('referrals.auto_follow_the_user')){
-                                ListsHelperServiceProvider::managePredefinedUserMemberList($user->id,$referralID->id,'follow');
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         if (isset($data['auth_provider']) && isset($data['auth_provider_id'])){
             $user->sendEmailVerificationNotification();

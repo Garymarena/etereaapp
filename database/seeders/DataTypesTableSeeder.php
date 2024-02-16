@@ -28,14 +28,14 @@ class DataTypesTableSeeder extends Seeder
                 'display_name_plural' => 'Users',
                 'icon' => 'voyager-person',
                 'model_name' => 'App\\User',
-                'policy_name' => 'TCG\\Voyager\\Policies\\UserPolicy',
+                'policy_name' => 'App\\Policies\\VoyagerUserPolicy',
                 'controller' => 'TCG\\Voyager\\Http\\Controllers\\VoyagerUserController',
                 'description' => NULL,
                 'generate_permissions' => 1,
                 'server_side' => 1,
                 'details' => '{"order_column":null,"order_display_column":null,"order_direction":"desc","default_search_key":null,"scope":null}',
                 'created_at' => '2021-08-07 18:52:09',
-                'updated_at' => '2023-06-22 19:28:30',
+                'updated_at' => '2024-01-28 22:39:43',
             ),
             1 => 
             array (
@@ -89,7 +89,7 @@ class DataTypesTableSeeder extends Seeder
                 'server_side' => 1,
                 'details' => '{"order_column":null,"order_display_column":null,"order_direction":"asc","default_search_key":null,"scope":null}',
                 'created_at' => '2021-08-07 19:37:16',
-                'updated_at' => '2023-08-08 23:18:04',
+                'updated_at' => '2024-01-22 21:54:36',
             ),
             4 => 
             array (
@@ -377,7 +377,7 @@ class DataTypesTableSeeder extends Seeder
                 'server_side' => 1,
                 'details' => '{"order_column":null,"order_display_column":null,"order_direction":"asc","default_search_key":null,"scope":null}',
                 'created_at' => '2021-10-20 16:11:44',
-                'updated_at' => '2021-10-23 20:47:29',
+                'updated_at' => '2024-01-22 21:56:12',
             ),
             20 => 
             array (

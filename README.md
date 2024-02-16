@@ -147,4 +147,3 @@ Send us a message over http://qdev.tech .
 <hr>
 
 Qdev Techs SRL - All rights reserved.
-# etereaapp

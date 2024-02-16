@@ -161,17 +161,10 @@ class SettingsServiceProvider extends ServiceProvider
         // PWA overrides
         config(['laravelpwa.manifest.icons.192x192.path' => asset(config('laravelpwa.manifest.icons.192x192.path'))]);
         config(['laravelpwa.manifest.icons.512x512.path' => asset(config('laravelpwa.manifest.icons.512x512.path'))]);
-
-        config(['laravelpwa.manifest.splash.640x1136' => asset(config('laravelpwa.manifest.splash.640x1136'))]);
-        config(['laravelpwa.manifest.splash.750x1334' => asset(config('laravelpwa.manifest.splash.750x1334'))]);
-        config(['laravelpwa.manifest.splash.828x1792' => asset(config('laravelpwa.manifest.splash.828x1792'))]);
-        config(['laravelpwa.manifest.splash.1125x2436' => asset(config('laravelpwa.manifest.splash.1125x2436'))]);
-        config(['laravelpwa.manifest.splash.1242x2208' => asset(config('laravelpwa.manifest.splash.1242x2208'))]);
-        config(['laravelpwa.manifest.splash.1242x2688' => asset(config('laravelpwa.manifest.splash.1242x2688'))]);
-        config(['laravelpwa.manifest.splash.1536x2048' => asset(config('laravelpwa.manifest.splash.1536x2048'))]);
-        config(['laravelpwa.manifest.splash.1668x2224' => asset(config('laravelpwa.manifest.splash.1668x2224'))]);
-        config(['laravelpwa.manifest.splash.1668x2388' => asset(config('laravelpwa.manifest.splash.1668x2388'))]);
-        config(['laravelpwa.manifest.splash.2048x2732' => asset(config('laravelpwa.manifest.splash.2048x2732'))]);
+        config(['laravelpwa.manifest.theme_color' => "#".getSetting('colors.theme_color_code')]);
+        foreach(config('laravelpwa.manifest.splash') as $key => $entry){
+            config(["laravelpwa.manifest.splash.$key" => asset(config("laravelpwa.manifest.splash.$key"))]);
+        }
 
         // Social logins overrides
         if (getSetting('social-login.facebook_client_id')) {

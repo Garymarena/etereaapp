@@ -15,7 +15,7 @@
                     </div>
                     <input id="post-price" type="number" class="form-control" name="text" required  placeholder="{{__('Post price')}}" value="{{$postPrice}}">
                     <span class="invalid-feedback" role="alert">
-                        <strong class="post-price-error min-error d-none">{{__('The price must be between :min and :max.',['min' => getSetting('payments.min_ppv_content_price') ?? 1, 'max' => getSetting('payments.max_ppv_content_price') ?? 500])}}</strong>
+                        <strong class="post-price-error min-error d-none">{{__('The price must be between :min and :max.',['min' => getSetting('payments.min_ppv_post_price') ?? 1, 'max' => getSetting('payments.max_ppv_post_price') ?? 500])}}</strong>
                         <strong class="post-price-error ppv-error d-none">{{__('Posts having an expire date can not be price locked.')}}</strong>
                     </span>
                 </div>

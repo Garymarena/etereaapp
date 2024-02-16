@@ -4,10 +4,10 @@
         <div class="card-body m-0 pb-0">
         </div>
         <h5 class="card-title pl-3 mb-0">{{__('Recent')}}</h5>
-        <div class="card-body {{$recentMedia ?? 'text-center'}}">
+        <div class="card-body {{$recentMedia ? 'text-center' : ''}}">
             @if($recentMedia && count($recentMedia) && Auth::check())
                 @foreach($recentMedia as $media)
-                    <a href="{{$media->path}}" rel="mswp" title="">
+                    <a href="{{$media->path}}" rel="mswp" class="mr-1">
                         <img src="{{AttachmentHelper::getThumbnailPathForAttachmentByResolution($media, 150, 150)}}" class="rounded mb-2 mb-md-2 mb-lg-2 mb-xl-0 img-fluid">
                     </a>
                 @endforeach

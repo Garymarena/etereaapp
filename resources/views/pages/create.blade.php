@@ -56,19 +56,26 @@
                         </span>
 
                         <div class="d-flex justify-content-between w-100 mb-3 mt-3">
-                            @include('elements.post-create-actions')
-                            <div class="d-flex align-items-center justify-content-center">
-                                @if(Route::currentRouteName() == 'posts.create')
-                                    <div class="">
-                                        <a href="#" class="draft-clear-button mr-3 mr-md-3">{{__('Clear draft')}}</a>
-                                    </div>
-                                @endif
-                                @if(!GenericHelper::isUserVerified() && getSetting('site.enforce_user_identity_checks'))
-                                    <button class="btn btn-outline-primary disabled mb-0">{{__('Save')}}</button>
-                                @else
-                                    <button class="btn btn-outline-primary post-create-button mb-0">{{__('Save')}}</button>
-                                @endif
+                            <div class="flex-md-grow-1">
+                                <div>
+                                    @include('elements.post-create-actions')
+                                </div>
                             </div>
+                            <div class="">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    @if(Route::currentRouteName() == 'posts.create')
+                                        <div class="">
+                                            <a href="#" class="draft-clear-button mr-3 mr-md-3">{{__('Clear draft')}}</a>
+                                        </div>
+                                    @endif
+                                    @if(!GenericHelper::isUserVerified() && getSetting('site.enforce_user_identity_checks'))
+                                        <button class="btn btn-outline-primary disabled mb-0">{{__('Save')}}</button>
+                                    @else
+                                        <button class="btn btn-outline-primary post-create-button mb-0">{{__('Save')}}</button>
+                                    @endif
+                                </div>
+                            </div>
+
                         </div>
 
 

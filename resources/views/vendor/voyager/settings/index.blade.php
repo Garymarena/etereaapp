@@ -366,7 +366,7 @@
                                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                                                 <div class="info-label"><div class="icon voyager-info-circled"></div> In order to use CCBill as payment provider you'll need the following endpoints:
                                                     <ul>
-                                                        <li>Webook URL: <code>{{route('ccBill.payment.update')}}</code></li>
+                                                        <li>Webhook URL: <code>{{route('ccBill.payment.update')}}</code></li>
                                                         <li>Approval & Denial URL: <code>{{route('payment.checkCCBillPaymentStatus')}}</code></li>
                                                     </ul>
                                                 </div>
@@ -376,7 +376,7 @@
                                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                                                 <div class="info-label"><div class="icon voyager-info-circled"></div> In order to use Paystack as payment provider you'll need the following endpoints:</div>
                                                 <ul>
-                                                    <li>Webook URL: <code>{{route('paystack.payment.update')}}</code></li>
+                                                    <li>Webhook URL: <code>{{route('paystack.payment.update')}}</code></li>
                                                     <li>Callback URL: <code>{{route('payment.checkPaystackPaymentStatus')}}</code></li>
                                                 </ul>
                                             </div>
@@ -385,9 +385,17 @@
                                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                                                 <div class="info-label"><div class="icon voyager-info-circled"></div> In order to use Mercado as payment provider you'll need the following endpoint:</div>
                                                 <ul>
-                                                    <li>Webook URL: <code>{{route('mercado.payment.update')}}</code></li>
+                                                    <li>Webhook URL: <code>{{route('mercado.payment.update')}}</code></li>
                                                 </ul>
                                             </div>
+
+                                                <div class="alert alert-info alert-dismissible mb-1 payments-info-nowpayments d-none">
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                    <div class="info-label"><div class="icon voyager-info-circled"></div> In order to use NowPayments as payment provider you'll need the following endpoint:</div>
+                                                    <ul>
+                                                        <li>IPN Callback URL: <code>{{route('nowPayments.payment.update')}}</code></li>
+                                                    </ul>
+                                                </div>
 
                                         </div>
 

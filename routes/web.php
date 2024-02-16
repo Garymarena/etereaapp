@@ -26,6 +26,8 @@ Route::group(['prefix' => 'admin', 'middleware' => 'jsVars'], function () {
 
     Route::get('/users/{id}/impersonate', 'UserController@impersonate')->name('admin.impersonate');
     Route::get('/leave-impersonation', 'UserController@leaveImpersonation')->name('admin.leaveImpersonation');
+    Route::get('/clear-app-cache', 'GenericController@clearAppCache')->name('admin.clear.cache');
+
 });
 
 // Home & contact page

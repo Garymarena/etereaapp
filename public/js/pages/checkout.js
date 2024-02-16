@@ -105,6 +105,7 @@ $(function () {
                 }
             }
 
+            checkout.togglePaymentProviders(false, checkout.oneTimePaymentProcessorClasses);
             checkout.togglePaymentProvider(showCCBillProvider, '.ccbill-payment-method');
             checkout.togglePaymentProvider(showStripeProvider, '.stripe-payment-method');
             checkout.togglePaymentProvider(showPaypalProvider, '.paypal-payment-method');

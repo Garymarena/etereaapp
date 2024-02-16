@@ -220,12 +220,12 @@ class PaymentsController extends Controller
                         $transaction->save();
                     }
                 } catch (\Exception $exception) {
-                    Log::error("Failed generating invoice for transaction: ".$transaction->id." error: ".$exception->getMessage());
+                    Log::channel('payments')->error("Failed generating invoice for transaction: ".$transaction->id." error: ".$exception->getMessage());
                 }
             }
         } catch (\Exception $exception) {
-            Log::error("Payment failed -> error message: " . $exception->getMessage());
-            Log::error("Payment failed", [$exception->getTraceAsString()]);
+            Log::channel('payments')->error("Payment failed -> error message: " . $exception->getMessage());
+            Log::channel('payments')->error("Payment failed", [$exception->getTraceAsString()]);
 
             return Redirect::route('feed')
                 ->with('error', __('Payment failed.'));
@@ -315,8 +315,8 @@ class PaymentsController extends Controller
             http_response_code(400);
             exit();
         }
-        Log::info('Stripe payload received. Proceeding with completing the payment & fulfill the order.');
-        Log::debug($event);
+        Log::channel('payments')->info('Stripe payload received. Proceeding with completing the payment & fulfill the order.');
+        Log::channel('payments')->debug($event);
 
         try {
             if ($event->type === 'checkout.session.completed') {
@@ -384,7 +384,7 @@ class PaymentsController extends Controller
                 $this->paymentHandler->updateTransactionByStripeSessionId($event->data->object->id);
             }
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
+            Log::channel('payments')->error($exception->getMessage());
         }
 
         http_response_code(200);
@@ -441,7 +441,7 @@ class PaymentsController extends Controller
 
         // Validate the webhook signature
         if (hash_equals($computedSignature, $request->server('HTTP_X_CC_WEBHOOK_SIGNATURE'))) {
-            Log::info("coinbase payload: ", [$payload]);
+            Log::channel('payments')->info("coinbase payload: ", [$payload]);
             if(isset($payload['event']) && isset($payload['event']['type']) && isset($payload['event']['data']) && isset($payload['event']['data']['id'])){
                 if($payload['event']['type'] === 'charge:failed' || $payload['event']['type'] === 'charge:confirmed'){
                     $transaction = Transaction::query()->where('coinbase_charge_id', $payload['event']['data']['id'])->first();
@@ -460,7 +460,7 @@ class PaymentsController extends Controller
                 }
             }
         } else {
-            Log::info('Coinbase signature validation failed.');
+            Log::channel('payments')->info('Coinbase signature validation failed.');
 
             return response()->json([
                 'status' => 400
@@ -485,8 +485,8 @@ class PaymentsController extends Controller
             $cancelStatuses = ['partially_refunded', 'refunded', 'denied'];
             $resourceContent = $webhookContent['resource'];
 
-            Log::info('Paypal payload received. Proceeding with completing the payment & fulfill the order.');
-            Log::debug($webhookContent);
+            Log::channel('payments')->info('Paypal payload received. Proceeding with completing the payment & fulfill the order.');
+            Log::channel('payments')->debug($webhookContent);
 
             switch ($eventType) {
                 case 'PAYMENT.SALE.COMPLETED':
@@ -554,7 +554,7 @@ class PaymentsController extends Controller
                     break;
             }
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
+            Log::channel('payments')->error($exception->getMessage());
         }
 
         http_response_code(200);
@@ -644,7 +644,7 @@ class PaymentsController extends Controller
      */
     public function nowPaymentsHook(Request $request){
         if(!getSetting('payments.nowpayments_ipn_secret_key')){
-            Log::info("NowPayments hook error: missing IPN secret key");
+            Log::channel('payments')->info("NowPayments hook error: missing IPN secret key");
             return response()->json([
                 'status' => 400
             ], 400);
@@ -655,13 +655,13 @@ class PaymentsController extends Controller
                 $received_hmac = $_SERVER['HTTP_X_NOWPAYMENTS_SIG'];
                 $request_json = $request->getContent();
                 $payload = json_decode($request_json, true);
-                Log::info("NowPayments hook received: ", [$payload]);
+                Log::channel('payments')->info("NowPayments hook received: ", [$payload]);
                 ksort($payload);
                 $sorted_request_json = json_encode($payload, JSON_UNESCAPED_SLASHES);
                 if ($request_json !== false && !empty($request_json)) {
                     $hmac = hash_hmac("sha512", $sorted_request_json, trim(getSetting('payments.nowpayments_ipn_secret_key')));
                     if ($hmac == $received_hmac) {
-                        Log::info("NowPayments hook payload: ", [$payload]);
+                        Log::channel('payments')->info("NowPayments hook payload: ", [$payload]);
                         if(isset($payload['order_id']) && isset($payload['payment_status']) && isset($payload['payment_id'])) {
                             $transaction = Transaction::query()->where('nowpayments_order_id', $payload['order_id'])->with('receiver')->first();
                             if($transaction){
@@ -699,16 +699,16 @@ class PaymentsController extends Controller
                             'status' => 200
                         ], 200);
                     } else {
-                        Log::info('NowPayments HMAC signature does not match');
+                        Log::channel('payments')->info('NowPayments HMAC signature does not match');
                     }
                 } else {
-                    Log::info('NowPayments Error reading POST data');
+                    Log::channel('payments')->info('NowPayments Error reading POST data');
                 }
             } else {
-                Log::info('NowPayments No HMAC signature sent.');
+                Log::channel('payments')->info('NowPayments No HMAC signature sent.');
             }
         } catch (\Exception $exception){
-            Log::info("NowPayments hook error: ", [$exception->getMessage()]);
+            Log::channel('payments')->info("NowPayments hook error: ", [$exception->getMessage()]);
         }
 
         return response()->json([
@@ -751,8 +751,8 @@ class PaymentsController extends Controller
                 // handles possible UTF8 incorrectly encoded characters coming from CCBill
                 $utfEncodedContent = mb_convert_encoding($content, 'UTF-8', 'UTF-8');
                 $eventBody = json_decode($utfEncodedContent, true, 512, JSON_THROW_ON_ERROR);
-                Log::debug('CCBill hook received eventType: ' . $eventType);
-                Log::debug('CCBill hook received: ', [$eventBody]);
+                Log::channel('payments')->debug('CCBill hook received eventType: ' . $eventType);
+                Log::channel('payments')->debug('CCBill hook received: ', [$eventBody]);
 
                 // handle payment success or failure
                 if (isset($eventBody['X-token']) && in_array($eventType, ['NewSaleSuccess', 'NewSaleFailure'])) {
@@ -834,7 +834,7 @@ class PaymentsController extends Controller
                 }
             }
         } catch (\Exception $exception) {
-            Log::debug('CCBill hook error:', [$exception->getMessage()]);
+            Log::channel('payments')->debug('CCBill hook error:', [$exception->getMessage()]);
         }
     }
 
@@ -867,7 +867,7 @@ class PaymentsController extends Controller
         if(!$owner){
             return;
         }
-        Log::debug('Paystack hook received: ', [$event]);
+        Log::channel('payments')->debug('Paystack hook received: ', [$event]);
 
         switch($event->obj->event){
             // charge.success
@@ -911,7 +911,7 @@ class PaymentsController extends Controller
      */
     public function mercadoHook(Request $request) {
         $content = json_decode($request->getContent(), true);
-        Log::debug("MercadoPago hook received: ", [$content]);
+        Log::channel('payments')->debug("MercadoPago hook received: ", [$content]);
 
         if(isset($content['data']) && isset($content['data']['id']) && isset($content['action'])) {
             switch ($content['action']) {
