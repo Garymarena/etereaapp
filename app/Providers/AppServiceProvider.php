@@ -22,25 +22,41 @@ use App\Observers\UsersObserver;
 use App\Observers\UserVerifyObserver;
 use App\Observers\WithdrawalsObserver;
 use App\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Database\Events\MigrationsEnded;
+use Illuminate\Database\Events\MigrationsStarted;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
-     *
+     * TODO: Delete this once on L10
      * @return void
      */
     public function register()
     {
         //
+        // code in `register` method
+        Event::listen(MigrationsStarted::class, function (){
+            if (env('ALLOW_DISABLED_PK')) {
+                DB::statement('SET SESSION sql_require_primary_key=0');
+            }
+        });
+
+        Event::listen(MigrationsEnded::class, function (){
+            if (env('ALLOW_DISABLED_PK')) {
+                DB::statement('SET SESSION sql_require_primary_key=1');
+            }
+        });
     }
 
     /**
      * Bootstrap any application services.
-     *
+     * TODO: Delete this once on L10
      * @return void
      */
     public function boot()

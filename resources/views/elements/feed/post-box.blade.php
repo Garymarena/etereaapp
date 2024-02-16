@@ -85,13 +85,15 @@
         </div>
     </div>
 
-    <div class="post-content mt-3  pl-3 pr-3">
-        <p class="text-break post-content-data {{getSetting('feed.enable_post_description_excerpts') && (strlen($post->text) >= 85 || substr_count($post->text,"\r\n") > 1) ? 'line-clamp-1 pb-0 mb-0' : ''}}">{{$post->text}}</p>
+    <div class="post-content mt-3 {{count($post->attachments) ? "mb-3" : ""}} pl-3 pr-3">
+        <div class="text-break post-content-data {{getSetting('feed.enable_post_description_excerpts') && (strlen($post->text) >= 85 || substr_count($post->text,"\r\n") > 1) ? 'line-clamp-3 /*pb-0 mb-0*/' : ''}}">
+            {!!   GenericHelper::parseSafeHTML($post->text) !!}
+        </div>
         @if(getSetting('feed.enable_post_description_excerpts') && (strlen($post->text) >= 85 || substr_count($post->text,"\r\n") > 1))
-            <span class="text-primary pointer-cursor" onclick="Post.toggleFullDescription({{$post->id}})">
-                <span class="label-more">{{__('More info')}}</span>
+            <div class="text-primary pointer-cursor {{count($post->attachments) ? "mb-3" : ""}}" onclick="Post.toggleFullDescription({{$post->id}})">
+                <span class="label-more">{{__('Show more')}}</span>
                 <span class="label-less d-none">{{__('Show less')}}</span>
-            </span>
+            </div>
         @endif
     </div>
 

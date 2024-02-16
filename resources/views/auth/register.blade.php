@@ -1,6 +1,13 @@
 @extends('layouts.no-nav')
 @section('page_title', __('Register'))
 
+@section('page_description', getSetting('site.description'))
+@section('share_url', route('home'))
+@section('share_title', getSetting('site.name') . ' - ' .  __('Register'))
+@section('share_description', getSetting('site.description'))
+@section('share_type', 'article')
+@section('share_img', GenericHelper::getOGMetaImage())
+
 @if(getSetting('security.recaptcha_enabled') && !Auth::check())
     @section('meta')
         {!! NoCaptcha::renderJs() !!}

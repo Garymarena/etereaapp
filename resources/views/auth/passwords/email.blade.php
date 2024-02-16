@@ -1,4 +1,7 @@
 @extends('layouts.no-nav')
+@section('meta')
+    <meta name="robots" content="noindex">
+@stop
 
 @section('content')
 <div class="container-fluid">

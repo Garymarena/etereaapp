@@ -306,35 +306,35 @@ var Admin = {
     paymentsSettingsSwitch: function(type){
         Admin.settingsHide('payments');
         switch (type) {
-            case 'stripe':
-                Admin.togglePaymentsSubCategory('stripe');
-                break;
-            case 'paypal':
-                Admin.togglePaymentsSubCategory('paypal');
-                break;
-            case 'coinbase':
-                Admin.togglePaymentsSubCategory('coinbase');
-                break;
-            case 'nowpayments':
-                Admin.togglePaymentsSubCategory('nowpayments');
-                break;
-            case 'ccbill':
-                Admin.togglePaymentsSubCategory('ccbill');
-                break;
-            case 'offline':
-                Admin.togglePaymentsSubCategoryInfo('all');
-                $('.setting-row').each(function(key,element) {
-                    if($(element).attr('class').indexOf('payments.allow_manual_payments') >= 0 || $(element).attr('class').indexOf('payments.offline_payments') >= 0){
-                        $(element).show();
-                    }
-                });
-                break;
-            case 'paystack':
-                Admin.togglePaymentsSubCategory('paystack');
-                break;
-            case 'mercado':
-                Admin.togglePaymentsSubCategory('mercado');
-                break;
+        case 'stripe':
+            Admin.togglePaymentsSubCategory('stripe');
+            break;
+        case 'paypal':
+            Admin.togglePaymentsSubCategory('paypal');
+            break;
+        case 'coinbase':
+            Admin.togglePaymentsSubCategory('coinbase');
+            break;
+        case 'nowpayments':
+            Admin.togglePaymentsSubCategory('nowpayments');
+            break;
+        case 'ccbill':
+            Admin.togglePaymentsSubCategory('ccbill');
+            break;
+        case 'offline':
+            Admin.togglePaymentsSubCategoryInfo('all');
+            $('.setting-row').each(function(key,element) {
+                if($(element).attr('class').indexOf('payments.allow_manual_payments') >= 0 || $(element).attr('class').indexOf('payments.offline_payments') >= 0){
+                    $(element).show();
+                }
+            });
+            break;
+        case 'paystack':
+            Admin.togglePaymentsSubCategory('paystack');
+            break;
+        case 'mercado':
+            Admin.togglePaymentsSubCategory('mercado');
+            break;
         }
         $('#payments.driver').val(type);
     },
@@ -369,6 +369,7 @@ var Admin = {
             'payments-info-ccbill',
             'payments-info-paystack',
             'payments-info-mercado',
+            'payments-info-nowpayments',
         ];
         for(let i = 0; i < tabs.length; i++){
             $('.'+tabs[i]).addClass('d-none');
@@ -441,31 +442,31 @@ var Admin = {
             if($(element).attr('class').indexOf(prefix+'.') >= 0){
                 let settingName = $(element).data('settingkey');
                 switch (prefix) {
-                    case 'emails':
-                        if(settingName !== 'emails.driver' && settingName !== 'emails.from_name' && settingName !== 'emails.from_address'){
+                case 'emails':
+                    if(settingName !== 'emails.driver' && settingName !== 'emails.from_name' && settingName !== 'emails.from_address'){
+                        $(element).hide();
+                    }
+                    break;
+                case 'storage':
+                    if(settingName !== 'storage.driver'){
+                        $(element).hide();
+                    }
+                    break;
+                case 'sockets':
+                    if(settingName !== 'websockets.driver'){
+                        $(element).hide();
+                    }
+                    break;
+                case 'payments':
+                    if(hideAll){
+                        $(element).hide();
+                    }
+                    else{
+                        if(!['payments.driver','payments.currency_code','payments.currency_symbol','payments.default_subscription_price','payments.min_tip_value','payments.max_tip_value','payments.maximum_subscription_price','payments.minimum_subscription_price', 'payments.disable_local_wallet_for_subscriptions'].includes(settingName)){
                             $(element).hide();
                         }
-                        break;
-                    case 'storage':
-                        if(settingName !== 'storage.driver'){
-                            $(element).hide();
-                        }
-                        break;
-                    case 'sockets':
-                        if(settingName !== 'websockets.driver'){
-                            $(element).hide();
-                        }
-                        break;
-                    case 'payments':
-                        if(hideAll){
-                            $(element).hide();
-                        }
-                        else{
-                            if(!['payments.driver','payments.currency_code','payments.currency_symbol','payments.default_subscription_price','payments.min_tip_value','payments.max_tip_value','payments.maximum_subscription_price','payments.minimum_subscription_price', 'payments.disable_local_wallet_for_subscriptions'].includes(settingName)){
-                                $(element).hide();
-                            }
-                        }
-                        break;
+                    }
+                    break;
                 }
             }
         });
@@ -482,45 +483,49 @@ var Admin = {
             if($(element).attr('class').indexOf('payments'+'.') >= 0){
                 let settingName = $(element).data('settingkey');
                 switch (prefix) {
-                    case 'general':
-                        Admin.togglePaymentsSubCategoryInfo('all');
-                        if([
-                            'payments.deposit_min_amount',
-                            'payments.deposit_max_amount',
-                            'payments.currency_code',
-                            'payments.currency_symbol',
-                            'payments.currency_position',
-                            'payments.default_subscription_price',
-                            'payments.min_tip_value',
-                            'payments.max_tip_value',
-                            'payments.maximum_subscription_price',
-                            'payments.minimum_subscription_price',
-                            'payments.min_posts_until_creator',
-                            'payments.min_ppv_content_price',
-                            'payments.max_ppv_content_price',
-                            'payments.disable_local_wallet_for_subscriptions'
-                        ].includes(settingName)){
-                            $(element).show();
-                        }
-                        break;
-                    case 'processors':
-                        Admin.paymentsSettingsSwitch('stripe');
-                        if(['payments.driver'].includes(settingName)){
-                            $(element).show();
-                        }
-                        break;
-                    case 'invoices':
-                        Admin.togglePaymentsSubCategoryInfo('all');
-                        if(settingName.indexOf('payments.invoices_') >= 0){
-                            $(element).show();
-                        }
-                        break;
-                    case 'withdrawals':
-                        Admin.togglePaymentsSubCategoryInfo('all');
-                        if(settingName.indexOf('payments.withdrawal_') >= 0){
-                            $(element).show();
-                        }
-                        break;
+                case 'general':
+                    Admin.togglePaymentsSubCategoryInfo('all');
+                    if([
+                        'payments.deposit_min_amount',
+                        'payments.deposit_max_amount',
+                        'payments.currency_code',
+                        'payments.currency_symbol',
+                        'payments.currency_position',
+                        'payments.default_subscription_price',
+                        'payments.min_tip_value',
+                        'payments.max_tip_value',
+                        'payments.maximum_subscription_price',
+                        'payments.minimum_subscription_price',
+                        'payments.min_posts_until_creator',
+                        'payments.min_ppv_post_price',
+                        'payments.max_ppv_post_price',
+                        'payments.min_ppv_message_price',
+                        'payments.max_ppv_message_price',
+                        'payments.min_ppv_stream_price',
+                        'payments.max_ppv_stream_price',
+                        'payments.disable_local_wallet_for_subscriptions'
+                    ].includes(settingName)){
+                        $(element).show();
+                    }
+                    break;
+                case 'processors':
+                    Admin.paymentsSettingsSwitch('stripe');
+                    if(['payments.driver'].includes(settingName)){
+                        $(element).show();
+                    }
+                    break;
+                case 'invoices':
+                    Admin.togglePaymentsSubCategoryInfo('all');
+                    if(settingName.indexOf('payments.invoices_') >= 0){
+                        $(element).show();
+                    }
+                    break;
+                case 'withdrawals':
+                    Admin.togglePaymentsSubCategoryInfo('all');
+                    if(settingName.indexOf('payments.withdrawal_') >= 0){
+                        $(element).show();
+                    }
+                    break;
                 }
             }
         });

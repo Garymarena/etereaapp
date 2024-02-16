@@ -41,11 +41,11 @@ class LocaleSetter
         }
 
         if (env('APP_ENV') == 'production') {
-            Cache::rememberForever('translations', function () use ($langPath) {
+            Cache::remember('translations', 30, function () use ($langPath) {
                 return file_get_contents($langPath.'.json');
             });
         } else {
-            Cache::remember('translations', 5, function () use ($langPath) {
+            Cache::remember('translations', 30, function () use ($langPath) {
                 return file_get_contents($langPath.'.json');
             });
         }

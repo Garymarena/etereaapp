@@ -49,7 +49,7 @@ var PostCreate = {
     savePostPrice: function(){
         PostCreate.postPrice = $('#post-price').val();
         let hasError = false;
-        if(!passesMinMaxPPVContentCreationLimits(PostCreate.postPrice)){
+        if(!passesMinMaxPPPostLimits(PostCreate.postPrice)){
             hasError = 'min';
         }
         if(PostCreate.postExpireDate !== null){

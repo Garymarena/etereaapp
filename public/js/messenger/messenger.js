@@ -687,7 +687,7 @@ var messenger = {
     saveMessagePrice: function(){
         messenger.state.isPaidMessage = true;
         messenger.state.messagePrice = $('#message-price').val();
-        if(!passesMinMaxPPVContentCreationLimits(messenger.state.messagePrice)){
+        if(!passesMinMaxPPVMessageLimits(messenger.state.messagePrice)){
             $('#message-price').addClass('is-invalid');
             return false;
         }

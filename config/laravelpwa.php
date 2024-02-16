@@ -29,6 +29,11 @@ return [
             '1125x2436' => '/img/pwa/apple-splash-1125-2436.jpg',
             '1242x2208' => '/img/pwa/apple-splash-1242-2208.jpg',
             '1242x2688' => '/img/pwa/apple-splash-1242-2688.jpg',
+            '1170x2532' => '/img/pwa/apple-splash-1170x2532.jpg',
+            '1284x2778' => '/img/pwa/apple-splash-1284x2778.jpg',
+            '1179x2556' => '/img/pwa/apple-splash-1179x2556.jpg',
+            '1290x2796' => '/img/pwa/apple-splash-1290x2796.jpg',
+            // Ipads
             '1536x2048' => '/img/pwa/apple-splash-1536-2048.jpg',
             '1668x2224' => '/img/pwa/apple-splash-2224-1668.jpg',
             '1668x2388' => '/img/pwa/apple-splash-2388-1668.jpg',

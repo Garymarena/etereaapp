@@ -81,7 +81,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 0,
                 'details' => '{}',
-                'order' => 6,
+                'order' => 5,
             ),
             4 => 
             array (
@@ -113,7 +113,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 0,
                 'delete' => 0,
                 'details' => '{}',
-                'order' => 37,
+                'order' => 38,
             ),
             6 => 
             array (
@@ -129,7 +129,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 0,
                 'delete' => 0,
                 'details' => '{}',
-                'order' => 33,
+                'order' => 34,
             ),
             7 => 
             array (
@@ -142,7 +142,7 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 1,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
                 'order' => 2,
@@ -161,7 +161,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 0,
                 'details' => '{"model":"TCG\\\\Voyager\\\\Models\\\\Role","table":"roles","type":"belongsTo","column":"role_id","key":"id","label":"display_name","pivot_table":"roles","pivot":"0","taggable":"0"}',
-                'order' => 15,
+                'order' => 17,
             ),
             9 => 
             array (
@@ -177,7 +177,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 0,
                 'delete' => 0,
                 'details' => '{"model":"TCG\\\\Voyager\\\\Models\\\\Role","table":"roles","type":"belongsToMany","column":"id","key":"id","label":"display_name","pivot_table":"user_roles","pivot":"1","taggable":"0"}',
-                'order' => 16,
+                'order' => 18,
             ),
             10 => 
             array (
@@ -193,7 +193,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 0,
                 'delete' => 0,
                 'details' => '{}',
-                'order' => 17,
+                'order' => 19,
             ),
             11 => 
             array (
@@ -353,7 +353,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 14,
+                'order' => 6,
             ),
             21 => 
             array (
@@ -385,7 +385,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 3,
+                'order' => 2,
             ),
             23 => 
             array (
@@ -401,7 +401,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 4,
+                'order' => 5,
             ),
             24 => 
             array (
@@ -417,7 +417,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 7,
+                'order' => 6,
             ),
             25 => 
             array (
@@ -433,7 +433,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 0,
                 'delete' => 0,
                 'details' => '{}',
-                'order' => 8,
+                'order' => 7,
             ),
             26 => 
             array (
@@ -2270,7 +2270,7 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
                 'order' => 11,
@@ -2286,7 +2286,7 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
                 'order' => 12,
@@ -2302,7 +2302,7 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
                 'order' => 13,
@@ -2318,7 +2318,7 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
                 'order' => 7,
@@ -2337,14 +2337,14 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 34,
+                'order' => 35,
             ),
             145 => 
             array (
                 'id' => 150,
                 'data_type_id' => 1,
                 'field' => 'public_profile',
-                'type' => 'text',
+                'type' => 'checkbox',
                 'display_name' => 'Public Profile',
                 'required' => 1,
                 'browse' => 0,
@@ -2352,8 +2352,8 @@ class DataRowsTableSeeder extends Seeder
                 'edit' => 1,
                 'add' => 1,
                 'delete' => 1,
-                'details' => '{}',
-                'order' => 19,
+                'details' => '{"on":"On","off":"Off","checked":"true"}',
+                'order' => 20,
             ),
             146 => 
             array (
@@ -2366,10 +2366,10 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 1,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 22,
+                'order' => 23,
             ),
             147 => 
             array (
@@ -2382,10 +2382,10 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 23,
+                'order' => 27,
             ),
             148 => 
             array (
@@ -2398,10 +2398,10 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 24,
+                'order' => 28,
             ),
             149 => 
             array (
@@ -2414,10 +2414,10 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 26,
+                'order' => 29,
             ),
             150 => 
             array (
@@ -2430,10 +2430,10 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 28,
+                'order' => 30,
             ),
             151 => 
             array (
@@ -2446,10 +2446,10 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 30,
+                'order' => 31,
             ),
             152 => 
             array (
@@ -2462,10 +2462,10 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 31,
+                'order' => 32,
             ),
             153 => 
             array (
@@ -2478,10 +2478,10 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 32,
+                'order' => 33,
             ),
             154 => 
             array (
@@ -2625,7 +2625,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 3,
+                'order' => 2,
             ),
             163 => 
             array (
@@ -2641,7 +2641,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 0,
                 'delete' => 0,
                 'details' => '{}',
-                'order' => 4,
+                'order' => 5,
             ),
             164 => 
             array (
@@ -2657,7 +2657,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 5,
+                'order' => 6,
             ),
             165 => 
             array (
@@ -2673,7 +2673,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 7,
+                'order' => 8,
             ),
             166 => 
             array (
@@ -2689,7 +2689,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 0,
                 'delete' => 0,
                 'details' => '{}',
-                'order' => 8,
+                'order' => 9,
             ),
             167 => 
             array (
@@ -2721,7 +2721,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{"default":"pending","options":{"pending":"Pending","rejected":"Rejected","verified":"Verified"}}',
-                'order' => 6,
+                'order' => 7,
             ),
             169 => 
             array (
@@ -2753,7 +2753,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{"model":"App\\\\User","table":"users","type":"hasOne","column":"id","key":"user_id","label":"username","pivot_table":"attachments","pivot":"0","taggable":"0"}',
-                'order' => 2,
+                'order' => 4,
             ),
             171 => 
             array (
@@ -2769,7 +2769,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{"model":"App\\\\User","table":"users","type":"hasOne","column":"id","key":"user_id","label":"username","pivot_table":"attachments","pivot":"0","taggable":"0"}',
-                'order' => 2,
+                'order' => 4,
             ),
             172 => 
             array (
@@ -3025,7 +3025,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 35,
+                'order' => 36,
             ),
             188 => 
             array (
@@ -3041,7 +3041,7 @@ class DataRowsTableSeeder extends Seeder
                 'add' => 1,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 36,
+                'order' => 37,
             ),
             189 => 
             array (
@@ -3740,12 +3740,12 @@ class DataRowsTableSeeder extends Seeder
                 'display_name' => 'Gender Id',
                 'required' => 0,
                 'browse' => 0,
-                'read' => 1,
-                'edit' => 1,
-                'add' => 1,
-                'delete' => 1,
+                'read' => 0,
+                'edit' => 0,
+                'add' => 0,
+                'delete' => 0,
                 'details' => '{}',
-                'order' => 5,
+                'order' => 15,
             ),
             233 => 
             array (
@@ -3758,17 +3758,17 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 18,
+                'order' => 16,
             ),
             234 => 
             array (
                 'id' => 251,
                 'data_type_id' => 1,
                 'field' => 'paid_profile',
-                'type' => 'text',
+                'type' => 'checkbox',
                 'display_name' => 'Paid Profile',
                 'required' => 1,
                 'browse' => 1,
@@ -3776,8 +3776,8 @@ class DataRowsTableSeeder extends Seeder
                 'edit' => 1,
                 'add' => 1,
                 'delete' => 1,
-                'details' => '{}',
-                'order' => 21,
+                'details' => '{"on":"On","off":"Off","checked":"true"}',
+                'order' => 22,
             ),
             235 => 
             array (
@@ -3785,12 +3785,12 @@ class DataRowsTableSeeder extends Seeder
                 'data_type_id' => 1,
                 'field' => 'profile_access_price_6_months',
                 'type' => 'text',
-                'display_name' => 'Profile Access Price 6 Months',
+                'display_name' => 'Profile for Price 6 Months',
                 'required' => 0,
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
                 'order' => 25,
@@ -3801,15 +3801,15 @@ class DataRowsTableSeeder extends Seeder
                 'data_type_id' => 1,
                 'field' => 'profile_access_price_3_months',
                 'type' => 'text',
-                'display_name' => 'Profile Access Price 3 Months',
+                'display_name' => 'Profile for Price 3 Months',
                 'required' => 0,
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 27,
+                'order' => 24,
             ),
             237 => 
             array (
@@ -3817,15 +3817,15 @@ class DataRowsTableSeeder extends Seeder
                 'data_type_id' => 1,
                 'field' => 'profile_access_price_12_months',
                 'type' => 'text',
-                'display_name' => 'Profile Access Price 12 Months',
+                'display_name' => 'Profile for Price 12 Months',
                 'required' => 0,
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 29,
+                'order' => 26,
             ),
             238 => 
             array (
@@ -3837,11 +3837,11 @@ class DataRowsTableSeeder extends Seeder
                 'required' => 0,
                 'browse' => 0,
                 'read' => 1,
-                'edit' => 1,
-                'add' => 1,
+                'edit' => 0,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 38,
+                'order' => 39,
             ),
             239 => 
             array (
@@ -3853,50 +3853,50 @@ class DataRowsTableSeeder extends Seeder
                 'required' => 0,
                 'browse' => 0,
                 'read' => 1,
-                'edit' => 1,
-                'add' => 1,
+                'edit' => 0,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
-                'order' => 39,
+                'order' => 40,
             ),
             240 => 
             array (
                 'id' => 257,
                 'data_type_id' => 1,
                 'field' => 'enable_2fa',
-                'type' => 'text',
+                'type' => 'checkbox',
                 'display_name' => 'Enable 2fa',
                 'required' => 0,
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
-                'details' => '{}',
-                'order' => 40,
+                'details' => '{"on":"On","off":"Off","checked":"false"}',
+                'order' => 41,
             ),
             241 => 
             array (
                 'id' => 258,
                 'data_type_id' => 1,
                 'field' => 'enable_geoblocking',
-                'type' => 'text',
+                'type' => 'checkbox',
                 'display_name' => 'Enable Geoblocking',
                 'required' => 0,
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
-                'details' => '{}',
-                'order' => 41,
+                'details' => '{"on":"On","off":"Off","checked":"false"}',
+                'order' => 42,
             ),
             242 => 
             array (
                 'id' => 259,
                 'data_type_id' => 1,
                 'field' => 'open_profile',
-                'type' => 'text',
+                'type' => 'checkbox',
                 'display_name' => 'Open Profile',
                 'required' => 0,
                 'browse' => 1,
@@ -3904,8 +3904,8 @@ class DataRowsTableSeeder extends Seeder
                 'edit' => 1,
                 'add' => 1,
                 'delete' => 1,
-                'details' => '{}',
-                'order' => 20,
+                'details' => '{"on":"On","off":"Off","checked":"false"}',
+                'order' => 21,
             ),
             243 => 
             array (
@@ -4158,7 +4158,7 @@ class DataRowsTableSeeder extends Seeder
                 'browse' => 0,
                 'read' => 1,
                 'edit' => 1,
-                'add' => 1,
+                'add' => 0,
                 'delete' => 1,
                 'details' => '{}',
                 'order' => 9,
@@ -4850,6 +4850,54 @@ class DataRowsTableSeeder extends Seeder
                 'delete' => 1,
                 'details' => '{"description":"If provided, it will be used in places where a shorter version of the page name is needed."}',
                 'order' => 4,
+            ),
+            302 => 
+            array (
+                'id' => 341,
+                'data_type_id' => 1,
+                'field' => 'user_belongsto_user_gender_relationship',
+                'type' => 'relationship',
+                'display_name' => 'Gender',
+                'required' => 0,
+                'browse' => 1,
+                'read' => 1,
+                'edit' => 1,
+                'add' => 0,
+                'delete' => 1,
+                'details' => '{"model":"App\\\\Model\\\\UserGender","table":"user_genders","type":"belongsTo","column":"gender_id","key":"id","label":"gender_name","pivot_table":"attachments","pivot":"0","taggable":"0"}',
+                'order' => 14,
+            ),
+            303 => 
+            array (
+                'id' => 342,
+                'data_type_id' => 4,
+                'field' => 'wallet_hasone_user_relationship_1',
+                'type' => 'relationship',
+                'display_name' => 'Name',
+                'required' => 0,
+                'browse' => 1,
+                'read' => 1,
+                'edit' => 1,
+                'add' => 1,
+                'delete' => 1,
+                'details' => '{"model":"App\\\\User","table":"users","type":"hasOne","column":"id","key":"user_id","label":"name","pivot_table":"attachments","pivot":"0","taggable":"0"}',
+                'order' => 3,
+            ),
+            304 => 
+            array (
+                'id' => 343,
+                'data_type_id' => 28,
+                'field' => 'user_verify_hasone_user_relationship_1',
+                'type' => 'relationship',
+                'display_name' => 'Name',
+                'required' => 0,
+                'browse' => 1,
+                'read' => 1,
+                'edit' => 1,
+                'add' => 1,
+                'delete' => 1,
+                'details' => '{"model":"App\\\\User","table":"users","type":"hasOne","column":"id","key":"user_id","label":"name","pivot_table":"attachments","pivot":"0","taggable":"0"}',
+                'order' => 3,
             ),
         ));
         

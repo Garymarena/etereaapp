@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewUserMessage;
+use App\Http\Requests\SaveNewMessageRequest;
 use App\Model\Attachment;
 use App\Model\Notification;
 use App\Model\Subscription;
@@ -418,7 +419,7 @@ class MessengerController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function sendMessage(Request $request)
+    public function sendMessage(SaveNewMessageRequest $request)
     {
         $receiverIDs = $request->get('receiverIDs');
         $return = [];

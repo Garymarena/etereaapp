@@ -435,17 +435,17 @@ var Post = {
     },
 
     /**
-     * Toggles profile's description
+     * Toggles post's full/short description
      */
     toggleFullDescription:function (postID) {
         let postElement = $('*[data-postID="'+postID+'"]');
         $('*[data-postID="'+postID+'"] .label-less, *[data-postID="'+postID+'"] .label-more').addClass('d-none');
-        if(postElement.find('.post-content-data').hasClass('line-clamp-1')){
-            postElement.find('.post-content-data').removeClass('line-clamp-1');
+        if(postElement.find('.post-content-data').hasClass('line-clamp-3')){
+            postElement.find('.post-content-data').removeClass('line-clamp-3');
             postElement.find('.label-less').removeClass('d-none');
         }
         else{
-            postElement.find('.post-content-data').addClass('line-clamp-1');
+            postElement.find('.post-content-data').addClass('line-clamp-3');
             postElement.find('.label-more').removeClass('d-none');
         }
         PostsPaginator.scrollToLastPost(postID);

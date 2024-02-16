@@ -15,7 +15,7 @@
                     </div>
                     <input id="message-price" type="number" class="form-control" name="text" required  placeholder="{{__('Post price')}}" value="5" min="1" max="100">
                     <span class="invalid-feedback" role="alert">
-                        <strong>{{__('The price must be between :min and :max.',['min' => getSetting('payments.min_ppv_content_price') ?? 1, 'max' => getSetting('payments.max_ppv_content_price') ?? 500])}}</strong>
+                        <strong>{{__('The price must be between :min and :max.',['min' => getSetting('payments.min_ppv_message_price') ?? 1, 'max' => getSetting('payments.max_ppv_message_price') ?? 500])}}</strong>
                     </span>
                 </div>
             </div>

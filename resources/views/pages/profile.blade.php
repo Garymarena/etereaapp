@@ -178,7 +178,7 @@
                 </div>
 
                 <div class="pt-2 pb-2 pl-4 pr-4 profile-description-holder">
-                    <div class="description-content {{$user->bio && (strlen(trim(strip_tags(GenericHelper::parseProfileMarkdownBio($user->bio)))) >= 85 || substr_count($user->bio,"\r\n") > 1) &&  !getSetting('profiles.disable_profile_bio_excerpt') ? 'line-clamp-1' : ''}}">
+                    <div class="description-content {{$user->bio && (strlen(trim(strip_tags(GenericHelper::parseProfileMarkdownBio($user->bio)))) >= 85 || substr_count($user->bio,"\r\n") > 1) &&  !getSetting('profiles.disable_profile_bio_excerpt') ? 'line-clamp-3' : ''}}">
                         @if($user->bio)
                             @if(getSetting('profiles.allow_profile_bio_markdown'))
                                 {!!  GenericHelper::parseProfileMarkdownBio($user->bio) !!}

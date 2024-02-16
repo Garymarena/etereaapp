@@ -404,7 +404,7 @@ class PaymentHelper
 
             return $createProfileResponse->id;
         } catch (\Exception $ex) {
-            Log::error('Payments webprofile failure: '.$ex->getMessage());
+            Log::channel('payments')->error('Payments webprofile failure: '.$ex->getMessage());
         }
     }
 
@@ -500,7 +500,7 @@ class PaymentHelper
                 $this->creditReceiverForTransaction($transaction);
             }
         } catch (\Exception $ex) {
-            Log::error('Failed executing one time paypal payment: '.$ex->getMessage());
+            Log::channel('payments')->error('Failed executing one time paypal payment: '.$ex->getMessage());
         }
     }
 
@@ -588,7 +588,7 @@ class PaymentHelper
                     $transaction->update();
                 }
             } catch (\Exception $exception) {
-                Log::error($exception->getMessage());
+                Log::channel('payments')->error($exception->getMessage());
             }
         }
 
@@ -663,7 +663,7 @@ class PaymentHelper
                 $transaction->save();
             }
         } catch (\Exception $exception) {
-            Log::error("Failed generating invoice for transaction: ".$transaction->id." error: ".$exception->getMessage());
+            Log::channel('payments')->error("Failed generating invoice for transaction: ".$transaction->id." error: ".$exception->getMessage());
         }
 
         return $transaction;
@@ -760,7 +760,7 @@ class PaymentHelper
             $subscription = $this->createSubscriptionFromTransaction($transaction);
         }
         $subscription['amount'] = $transaction['amount'];
-        $subscription['expires_at'] = new \DateTime('+'.PaymentsServiceProvider::getSubscriptionMonthlyIntervalByTransactionType($transaction->type).' '. __('month'), new \DateTimeZone('UTC'));
+        $subscription['expires_at'] = new \DateTime('+'.PaymentsServiceProvider::getSubscriptionMonthlyIntervalByTransactionType($transaction->type).' '. 'month', new \DateTimeZone('UTC'));
         $subscription['status'] = Subscription::ACTIVE_STATUS;
         $transaction['status'] = Transaction::APPROVED_STATUS;
 
@@ -852,7 +852,7 @@ class PaymentHelper
             $transaction['stripe_session_id'] = $session->id;
             $redirectLink = $session->url;
         } catch (\Exception $e) {
-            Log::error('Failed generating stripe session for transaction: '.$transaction->id.' error: '.$e->getMessage());
+            Log::channel('payments')->error('Failed generating stripe session for transaction: '.$transaction->id.' error: '.$e->getMessage());
         }
 
         return $redirectLink;
@@ -1542,7 +1542,7 @@ class PaymentHelper
                         NotificationServiceProvider::createPPVNotificationByTransaction($transaction);
                     }
                 } catch(ApiException $e){
-                    Log::error("Failed verifying paystack transaction: ".$e->getMessage());
+                    Log::channel('payments')->error("Failed verifying paystack transaction: ".$e->getMessage());
                 }
             }
         }
@@ -1708,7 +1708,7 @@ class PaymentHelper
                 }
             }
         } catch (\Exception $exception) {
-            Log::error("Failed verifying Mercado transaction: " . $exception->getMessage());
+            Log::channel('payments')->error("Failed verifying Mercado transaction: " . $exception->getMessage());
         }
 
         return $transaction;

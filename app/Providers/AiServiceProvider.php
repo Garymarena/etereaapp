@@ -8,9 +8,9 @@ use Illuminate\Support\ServiceProvider;
 
 class AiServiceProvider extends ServiceProvider
 {
-    private const OPEN_AI_COMPLETION_MODEL = 'text-davinci-003';
-    private const OPEN_AI_BASE_URL = 'https://api.openai.com/v1';
-    private const OPEN_AI_COMPLETION_PATH = '/completions';
+    const OPEN_AI_COMPLETION_MODEL = 'gpt-3.5-turbo-instruct';
+    const OPEN_AI_BASE_URL = 'https://api.openai.com/v1';
+    const OPEN_AI_COMPLETION_PATH = '/completions';
 
     /**
      * Register any application services.

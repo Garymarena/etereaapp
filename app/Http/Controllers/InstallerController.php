@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\InstallerSaveAdminInfoRequest;
 use App\Http\Requests\InstallerSaveDBInfoRequest;
 use App\Providers\AuthServiceProvider;
+use App\Providers\GenericHelperServiceProvider;
 use App\Providers\InstallerServiceProvider;
+use App\Providers\ListsHelperServiceProvider;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -148,19 +150,21 @@ class InstallerController extends Controller
         }
 
 
-        // 2. Sitet settings
+        // 2. Site settings
         DB::statement("UPDATE settings SET `value` = :title WHERE `key` = 'site.name'", ['title'=>$site_title]);
         DB::statement("UPDATE settings SET `value` = :url WHERE `key` = 'site.app_url'", ['url'=>$app_url]);
         DB::statement("UPDATE settings SET `value` = :val WHERE `key` = 'license.product_license_key'", ['val'=> session()->get('licenseCode')]);
 
         // 3. Add user & make it admin
-        AuthServiceProvider::createUser([
+        $user = AuthServiceProvider::createUser([
             'name' => 'Admin',
             'email' => $email,
             'password' => $password,
             'email_verified_at' => Carbon::now(),
         ]);
         User::where('email', $email)->update(['role_id' => 1]);
+        GenericHelperServiceProvider::createUserWallet($user);
+        ListsHelperServiceProvider::createUserDefaultLists($user->id);
 
         // 4. Create an installed file over public dir
         Storage::disk('local')->put('installed', session()->get('license'));

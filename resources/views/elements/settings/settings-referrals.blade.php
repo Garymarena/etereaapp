@@ -5,16 +5,16 @@
             <input type="text" class="form-control text-center"
                    @switch(getSetting('referrals.referrals_default_link_page'))
                        @case('profile')
-                           value="{{route('profile',['ref'=>Auth::user()->referral_code, 'username'=>\Illuminate\Support\Facades\Auth::user()->username])}}"
+                           value="{{route('profile',['ref'=> Auth::user()->referral_code, 'username'=> Auth::user()->username])}}"
                        @break
                        @case('home')
-                            value="{{route('home',['ref'=>Auth::user()->referral_code])}}"
+                            value="{{route('home',['ref'=> Auth::user()->referral_code])}}"
                        @break
                        @case('register')
-                            value="{{route('register',['ref'=>Auth::user()->referral_code])}}"
+                            value="{{route('register',['ref'=> Auth::user()->referral_code])}}"
                        @break
                    @endswitch
-                   placeholder="{{route('profile',['ref'=>Auth::user()->referral_code, 'username'=>\Illuminate\Support\Facades\Auth::user()->username])}}"
+                   placeholder="{{route('profile',['ref'=> Auth::user()->referral_code, 'username'=> Auth::user()->username])}}"
                    id="copy-input"
             >
             <div class="input-group-append">

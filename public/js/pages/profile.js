@@ -65,12 +65,12 @@ var Profile = {
      */
     toggleFullDescription:function () {
         $('.profile-description-holder .label-less, .profile-description-holder .label-more').addClass('d-none');
-        if($('.description-content').hasClass('line-clamp-1')){
-            $('.description-content').removeClass('line-clamp-1');
+        if($('.description-content').hasClass('line-clamp-3')){
+            $('.description-content').removeClass('line-clamp-3');
             $('.profile-description-holder .label-less').removeClass('d-none');
         }
         else{
-            $('.description-content').addClass('line-clamp-1');
+            $('.description-content').addClass('line-clamp-3');
             $('.profile-description-holder .label-more').removeClass('d-none');
         }
     },

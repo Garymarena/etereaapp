@@ -3,7 +3,12 @@
 namespace App\Observers;
 
 use App\Helpers\PaymentHelper;
+use App\Model\ReferralCodeUsage;
+use App\Providers\AuthServiceProvider;
+use App\Providers\GenericHelperServiceProvider;
+use App\Providers\ListsHelperServiceProvider;
 use App\User;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 
 class UsersObserver
@@ -36,7 +41,37 @@ class UsersObserver
      * @return void
      */
     public function created(User $user) {
-        //
+        if ($user != null) {
+            GenericHelperServiceProvider::createUserWallet($user);
+            ListsHelperServiceProvider::createUserDefaultLists($user->id);
+            if(getSetting('security.default_2fa_on_register')) {
+                AuthServiceProvider::addNewUserDevice($user->id, true);
+            }
+            if(getSetting('profiles.default_users_to_follow')){
+                $usersToFollow = explode(',',getSetting('profiles.default_users_to_follow'));
+                if(count($usersToFollow)){
+                    foreach($usersToFollow as $userID){
+                        ListsHelperServiceProvider::managePredefinedUserMemberList($user->id,$userID,'follow');
+                    }
+                }
+            }
+            if(getSetting('referrals.enabled')) {
+                // Saving the referral even if the case
+                if(Cookie::has('referral')){
+                    $referralID = User::where('referral_code', Cookie::get('referral'))->first();
+                    if($referralID){
+                        $existing = ReferralCodeUsage::where(['used_by' => $user->id, 'referral_code' => $referralID->referral_code])->first();
+                        if(!$existing) {
+                            ReferralCodeUsage::create(['used_by' => $user->id, 'referral_code' => $referralID->referral_code]);
+                            Cookie::queue(Cookie::forget('referral'));
+                            if(getSetting('referrals.auto_follow_the_user')){
+                                ListsHelperServiceProvider::managePredefinedUserMemberList($user->id,$referralID->id,'follow');
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

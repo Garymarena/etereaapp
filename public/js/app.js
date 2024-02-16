@@ -35,6 +35,7 @@ $(function () {
                 message: trans( `🍪 ${trans('This website uses cookies to improve your experience.')}`),
                 dismiss: trans(`Got it!`),
                 link: trans('Learn more'),
+                href: "http://cookies.insites.com/about-cookies"
             },
         };
         if(br.name === 'xs'){
@@ -555,14 +556,14 @@ function incrementNotificationsCount(selector, value = 1) {
 }
 
 /**
- * Checks if creator can post a PPV content within the limits
+ * Checks if creator can post a PPV post within the limits
  */
-function passesMinMaxPPVContentCreationLimits(price) {
+function passesMinMaxPPPostLimits(price) {
     let hasError = false;
-    if(parseInt(price) < app.min_ppv_content_price){
+    if(parseInt(price) < parseInt(app.min_ppv_post_price)){
         hasError = true;
     }
-    if(parseInt(price) > app.max_ppv_content_price){
+    if(parseInt(price) > parseInt(app.max_ppv_post_price)){
         hasError = true;
     }
     if(price.length <= 0){
@@ -570,6 +571,26 @@ function passesMinMaxPPVContentCreationLimits(price) {
     }
     return !hasError;
 }
+
+/**
+ * Checks if creator can post a PPV message within the limits
+ * @param price
+ * @returns {boolean}
+ */
+function passesMinMaxPPVMessageLimits(price) {
+    let hasError = false;
+    if(parseInt(price) < parseInt(app.min_ppv_message_price)){
+        hasError = true;
+    }
+    if(parseInt(price) > parseInt(app.max_ppv_message_price)){
+        hasError = true;
+    }
+    if(price.length <= 0){
+        hasError = true;
+    }
+    return !hasError;
+}
+
 
 function showDialog(dialogID){
     $('#' + dialogID).modal('show');

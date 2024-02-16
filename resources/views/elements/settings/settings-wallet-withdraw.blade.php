@@ -16,6 +16,13 @@
         </span>
     </div>
 </div>
+
+@if(getSetting('payments.withdrawal_custom_message_box'))
+    <div class="alert alert-primary text-white font-weight-bold mt-3" role="alert">
+        {!! getSetting('payments.withdrawal_custom_message_box') !!}
+    </div>
+@endif
+
 <div class="input-group mb-3 mt-3">
     <div class="input-group-prepend">
         <span class="input-group-text" id="amount-label">@include('elements.icon',['icon'=>'cash-outline','variant'=>'medium'])</span>
@@ -36,7 +43,7 @@
                 <label for="paymentMethod">{{__('Payment method')}}</label>
                 <select class="form-control" id="payment-methods" name="payment-methods">
                     @foreach(\App\Providers\PaymentsServiceProvider::getWithdrawalsAllowedPaymentMethods() as $paymentMethod)
-                        <option value="{{$paymentMethod}}">{{$paymentMethod}}</option>
+                        <option value="{{$paymentMethod}}">{{__($paymentMethod)}}</option>
                     @endforeach
                 </select>
             </div>

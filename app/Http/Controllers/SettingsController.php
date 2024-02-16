@@ -176,6 +176,10 @@ class SettingsController extends Controller
                 break;
             case 'referrals':
                 if(getSetting('referrals.enabled')) {
+                    if(empty($user->referral_code)){
+                        $user->referral_code = AuthServiceProvider::generateReferralCode(8);
+                        $user->save();
+                    }
                     $data['referrals'] = ReferralCodeUsage::with(['usedBy'])->where('referral_code', $user->referral_code)->orderBy('id', 'desc')->paginate(6);
                 }
                 break;
