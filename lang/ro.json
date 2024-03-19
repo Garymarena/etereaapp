@@ -934,5 +934,8 @@
     "Terms and conditions": "Termeni si conditii",
     "Change language": "Schimba limba",
     "Select the language you want to use.": "Alege limba pe care vrei sa o folosesti.",
-    "Show comments" : "Arata comentarii"
+    "Show comments" : "Arata comentarii",
+
+    "A video is currently being converted.": "Un video este in proces de conversie.",
+    "Are you sure you want to continue without it?": "Esti sigur ca vrei sa continui fara el?"
 }

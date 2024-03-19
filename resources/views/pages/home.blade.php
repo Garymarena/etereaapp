@@ -120,7 +120,6 @@
     <div class="mt-5 pb-3 pt-5 home-bg-section">
         <div class="container">
             <div class="text-center mb-5">
-                
                 <h2 class="font-weight-bold">{{__('Main features')}}</h2>
                 <p>{{__("Here's a glimpse at the main features our script offers")}}</p>
             </div>

@@ -112,6 +112,12 @@ return [
             'level' => 'debug'
         ],
 
+        'coconut' => [
+            'path' => storage_path('logs/coconut.log'),
+            'driver' => 'single',
+            'level' => 'debug'
+        ],
+
         'payments' => [
             'path' => storage_path('logs/payments.log'),
             'driver' => 'single',

@@ -129,7 +129,7 @@ class GenericHelperServiceProvider extends ServiceProvider
                 return rtrim(getSetting('storage.minio_endpoint'), '/').'/'.getSetting('storage.minio_bucket_name').'/'.$value;
             }
             elseif(getSetting('storage.driver') == 'pushr'){
-                return rtrim(getSetting('storage.pushr_cdn_hostname'), '/').'/'.$value;
+                return 'https://'.rtrim(getSetting('storage.pushr_cdn_hostname'), '/').'/'.$value;
             }
             else{
                 return Storage::disk('public')->url($value);
@@ -210,7 +210,10 @@ class GenericHelperServiceProvider extends ServiceProvider
      * @return mixed
      */
     public static function getFooterPublicPages(){
-        $pages = PublicPage::where('shown_in_footer', 1)->orderBy('page_order')->get();
+        $pages = [];
+        if (InstallerServiceProvider::checkIfInstalled()) {
+            $pages = PublicPage::where('shown_in_footer', 1)->orderBy('page_order')->get();
+        }
         return $pages;
     }
 
@@ -258,6 +261,7 @@ class GenericHelperServiceProvider extends ServiceProvider
 
     /**
      * Returns the preferred user local
+     * TODO: This is only used in the payments module | Maybe delete it and use LocaleProvider based alternative
      * @return \Illuminate\Config\Repository|mixed|null
      */
     public static function getPreferredLanguage(){

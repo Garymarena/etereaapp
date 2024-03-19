@@ -2,16 +2,12 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\InstallerServiceProvider;
 use App\Providers\LocalesServiceProvider;
 use Carbon\Carbon;
 use Closure;
 use Cookie;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Session;
 
 class LocaleSetter
 {
@@ -24,9 +20,9 @@ class LocaleSetter
      */
     public function handle($request, Closure $next)
     {
+        // Getting the preferred language
         $code = LocalesServiceProvider::getUserPreferredLocale($request);
-        App::setLocale($code);
-        Session::put('locale', $code);
+        LocalesServiceProvider::setLocale($code);
 
 //        Custom Carbon language overrides sample
 //        $carbonTranslations = Carbon::getTranslator();
@@ -38,6 +34,7 @@ class LocaleSetter
         // Avoiding any 500 errors
         if (! file_exists($langPath.'.json')) {
             $langPath = app()->langPath().'/en';
+            LocalesServiceProvider::setLocale('en');
         }
 
         if (env('APP_ENV') == 'production') {

@@ -2,7 +2,7 @@
 * Post create page
  */
 "use strict";
-/* global PostCreate, FileUpload, mediaSettings, isAllowedToPost, AiSuggestions, app */
+/* global PostCreate, FileUpload, mediaSettings, isAllowedToPost, AiSuggestions, app, trans */
 
 $(function () {
     // Initing button save
@@ -27,7 +27,11 @@ $(function () {
 
 
 // Saving draft data before unload
-window.addEventListener('beforeunload', function () {
+window.addEventListener('beforeunload', function (event) {
+    // Forcing a dialog when a file is being uploaded/video transcoded
+    if(FileUpload.isTranscodingVideo === true || FileUpload.isLoading === true){
+        event.returnValue = trans('Are you sure you want to leave?');
+    }
     if(!PostCreate.isSavingRedirect){
         PostCreate.saveDraftData();
     }

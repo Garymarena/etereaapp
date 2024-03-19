@@ -12,7 +12,9 @@
                 <div class="input-group">
                     <select class="form-control" id="language_code" name="language_code" >
                         @foreach(LocalesHelper::getAvailableLanguages() as $languageCode)
-                            <option value="{{$languageCode}}" {{LocalesHelper::getUserPreferredLocale(request()) == $languageCode ? 'selected' : ''}}>{{__(LocalesHelper::getLanguageName($languageCode))}}</option>
+                            @if(LocalesHelper::getLanguageName($languageCode))
+                                <option value="{{$languageCode}}" {{LocalesHelper::getUserPreferredLocale(request()) == $languageCode ? 'selected' : ''}}>{{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}</option>
+                            @endif
                         @endforeach
                     </select>
                 </div>

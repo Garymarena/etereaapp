@@ -4,7 +4,7 @@
  *
  */
 "use strict";
-/* global app, user, pusher, Pusher, PostsPaginator, notifications, filterXSS, soketi, socketsDriver, messenger */
+/* global app, user, pusher, Pusher, PostsPaginator, notifications, filterXSS, soketi, socketsDriver, messenger, FileUpload */
 
 // Init
 $(function () {
@@ -112,7 +112,7 @@ $(function () {
     // Initialize tooltips
     initTooltips();
 
-    if($('#tosAgree').length){
+    if(window.location.href.indexOf('register') >= 0){
         // Forcing TOS checkbox for social auth
         $('.social-login-links a').on('click', function (event) {
             if($('#tosAgree').is(':checked') === false){
@@ -124,6 +124,8 @@ $(function () {
 
     // Initialize user connection to pusher
     try {
+        const location = window.location.href;
+
         // Enable pusher logging - don't include this in production
         Pusher.logToConsole = pusher.logging;
         let params = {
@@ -147,7 +149,6 @@ $(function () {
                 incrementNotificationsCount('.menu-notification-badge.chat-menu-count');
             }
             incrementNotificationsCount('.menu-notification-badge.notifications-menu-count');
-            const location = window.location.href;
 
             if (window.location.href !== null && window.location.href.indexOf('/my/notifications') >= 0) {
                 notifications.updateUserNotificationsList(this.getNotificationsActiveFilter());
@@ -168,9 +169,51 @@ $(function () {
             }
         });
 
+        // Binding global video-processing events
+        if(location.indexOf('posts/create') >= 0 || location.indexOf('posts/edit')){
+            channel.bind('video-processing', function (data) {
+                // Updating our inner attachments state
+                FileUpload.attachaments = FileUpload.attachaments.map((element, key) => {
+                    if (element.attachmentID === data.id) {
+                        const updatedElement = {
+                            "attachmentID": data.id,
+                            "path": data.path,
+                            "thumbnail": data.thumbnail,
+                            "type": 'video'
+                        };
+                        return updatedElement;
+                    }
+                    return element;
+                });
+
+                // Altering the dropzone uploaded files state and preview
+                // Todo: This will throw an error when webhook event is received on a different page
+                FileUpload.myDropzone.files.map((file) => {
+                    if(file.upload.attachmentID === data.id){
+                        if(data.success){
+                            let filePreview = $(file.previewElement);
+                            filePreview.find('.video-preview-item').remove();
+                            filePreview.prepend(videoPreview());
+                            var videoPreviewEl = filePreview.find('video').get(0);
+                            FileUpload.setPreviewSource(videoPreviewEl, file, data);
+                            FileUpload.isTranscodingVideo = false;
+                        }
+                        else{
+                            FileUpload.myDropzone.removeFile(file); // Note: This also clears up FileUpload.attachaments
+                            launchToast('danger',trans('Error'), trans('A video encoding error has occurred. Please contact the administrator if this error persists.'));
+                        }
+                    }
+                });
+
+            });
+        }
+
+
     } catch (e) {
         // eslint-disable-next-line no-console
-        // console.warn(e);
+        console.warn(trans('Pusher initialization failed'));
+        // eslint-disable-next-line no-console
+        console.warn(e);
     }
 });
 
@@ -617,5 +660,14 @@ function getWebsiteFormattedAmount(amount){
     let currency = app.currencySymbol;
 
     return currencyPosition === 'left' ? currency + amount : amount + currency;
+}
+
+// eslint-disable-next-line no-unused-vars
+function getTaxDescription(taxName, taxPercentage, taxType){
+    if(taxType !== 'fixed') {
+        let type = taxType === 'inclusive' ? ' incl.' : '';
+        return taxName + " (" + taxPercentage + "%" + type + ")";
+    }
+    return taxName;
 }
 

@@ -10,6 +10,8 @@ class Tax extends Model
 
     public const EXCLUSIVE_TYPE = 'exclusive';
 
+    public const FIXED_TYPE = 'fixed';
+
     /**
      * The attributes that are mass assignable.
      *

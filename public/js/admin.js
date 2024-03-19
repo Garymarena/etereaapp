@@ -13,9 +13,12 @@ $(function () {
         // eslint-disable-next-line no-undef
         Admin.storageSettingsSwitch(site_settings["storage.driver"]);
         Admin.socketsSettingsSwitch(site_settings["websockets.driver"]);
+        Admin.videosSettingsSwitch(site_settings["transcoding.driver"]);
+        Admin.initActiveTabOnSaveEvents();
 
         Admin.setCustomSettingsTabEvents();
         Admin.paymentsSettingsSubTabSwitch('general');
+        Admin.mediaSettingsSubTabSwitch('general');
 
         // CTRL+S Override
         $(document).keydown(function(e) {
@@ -33,9 +36,7 @@ $(function () {
         });
 
         Admin.initThemeColorPickers();
-        if(site_settings['license.product_license_key']){
-            $(".theme_license_field").val(site_settings['license.product_license_key']);
-        }
+
     }
 
     // master
@@ -95,28 +96,6 @@ $(function () {
         });
     }
 
-    $('.save-settings-form').on('submit',function(evt){
-        // code
-        if(Admin.activeSettingsTab === 'payments-processors' || Admin.activeSettingsTab === 'payments-general' || Admin.activeSettingsTab === 'payments-invoices' || Admin.activeSettingsTab === 'payments-withdrawals') {
-            $('.setting_tab').val('Payments');
-        }
-
-        if(Admin.activeSettingsTab === 'colors'){
-            evt.preventDefault();
-            Admin.generateTheme();
-        }
-
-        if(Admin.activeSettingsTab === 'license'){
-            evt.preventDefault();
-            Admin.saveLicense();
-        }
-
-        if(!Admin.validateSettingFields()){
-            evt.preventDefault();
-            // launch toast
-        }
-    });
-
 
 });
 
@@ -129,6 +108,34 @@ var Admin = {
         theme_gradient_to: '#FF0080'
     },
 
+    initActiveTabOnSaveEvents: function(){
+        $('.save-settings-form').on('submit',function(evt){
+            // code
+            if(Admin.activeSettingsTab === 'payments-processors' || Admin.activeSettingsTab === 'payments-general' || Admin.activeSettingsTab === 'payments-invoices' || Admin.activeSettingsTab === 'payments-withdrawals') {
+                $('.setting_tab').val('Payments');
+            }
+
+            if(Admin.activeSettingsTab === 'media-general' || Admin.activeSettingsTab === 'media-videos') {
+                $('.setting_tab').val('Media');
+            }
+
+            if(Admin.activeSettingsTab === 'colors'){
+                evt.preventDefault();
+                Admin.generateTheme();
+            }
+
+            if(Admin.activeSettingsTab === 'license'){
+                evt.preventDefault();
+                Admin.saveLicense();
+            }
+
+            if(!Admin.validateSettingFields()){
+                evt.preventDefault();
+                // launch toast
+            }
+        });
+    },
+
     /**
      * Theme generator function
      */
@@ -139,7 +146,7 @@ var Admin = {
             'color_code' : Admin.themeColors.theme_color_code.replace('#',''),
             'gradient_from' : Admin.themeColors.theme_gradient_from.replace('#',''),
             'gradient_to' : Admin.themeColors.theme_gradient_to.replace('#',''),
-            'code' : $('*[name="theme_license"]').val(),
+            'code' : $('*[name="license_product_license_key"]').val(),
         };
 
         $('#voyager-loader').fadeIn();
@@ -151,7 +158,7 @@ var Admin = {
                 $('#voyager-loader').fadeOut();
                 toastr.success(result.message);
                 if(result.data.doBrowserRedirect){
-                    window.location="https://themes.qdev.tech/"+result.data.path;
+                    window.location="https://themes-v2.qdev.tech/"+result.data.path;
                 }
             },
             error: function (result) {
@@ -206,6 +213,9 @@ var Admin = {
         });
         $('select[name="payments.driver"]').on('change',function () {
             Admin.paymentsSettingsSwitch($(this).val());
+        });
+        $('select[name="media.transcoding_driver"]').on('change',function () {
+            Admin.videosSettingsSwitch($(this).val());
         });
         Admin.settingsHide();
     },
@@ -345,6 +355,7 @@ var Admin = {
      */
     togglePaymentsSubCategory: function(pattern){
         // Show hide fields in an efficient manner
+        //TODO: Use lets/unset them?
         var rows = $('.setting-row');
         var rowsLength = rows.length;
         for(let i = 0; i < rowsLength; i++){
@@ -354,6 +365,19 @@ var Admin = {
             }
         }
         Admin.togglePaymentsSubCategoryInfo(pattern);
+    },
+
+    toggleMediaSubCategory: function(pattern){
+        // Show hide fields in an efficient manner
+        //TODO: Use lets/unset them?
+        var rows = $('.setting-row');
+        var rowsLength = rows.length;
+        for(let i = 0; i < rowsLength; i++){
+            let element = rows[i];
+            if($(element).attr('class').indexOf('media.'+pattern) >= 0){
+                element.style.display = 'block';
+            }
+        }
     },
 
     /**
@@ -467,6 +491,27 @@ var Admin = {
                         }
                     }
                     break;
+                case 'media':
+                    if(hideAll){
+                        $(element).hide();
+                    }
+                    else{
+                        if(![
+                            'media.allowed_file_extensions',
+                            'media.max_file_upload_size',
+                            'media.use_chunked_uploads',
+                            'media.upload_chunk_size',
+                            'media.apply_watermark',
+                            'media.watermark_image',
+                            'media.use_url_watermark',
+                            'media.users_covers_size',
+                            'media.users_avatars_size',
+                            'media.max_avatar_cover_file_size',
+                        ].includes(settingName)){
+                            $(element).hide();
+                        }
+                    }
+                    break;
                 }
             }
         });
@@ -529,6 +574,67 @@ var Admin = {
                 }
             }
         });
+    },
+
+    mediaSettingsSubTabSwitch: function (prefix) {
+        Admin.settingsHide('media', true);
+        $('.coconut-info').addClass('d-none');
+        $('.setting-row').each(function(key,element) {
+            if($(element).attr('class').indexOf('media.') >= 0){
+                let settingName = $(element).data('settingkey');
+                switch (prefix) {
+                case 'general':
+                    // TODO: Check this
+                    if([
+                        'media.allowed_file_extensions',
+                        'media.max_file_upload_size',
+                        'media.use_chunked_uploads',
+                        'media.upload_chunk_size',
+                        'media.apply_watermark',
+                        'media.watermark_image',
+                        'media.use_url_watermark',
+                        'media.users_covers_size',
+                        'media.users_avatars_size',
+                        'media.max_avatar_cover_file_size',
+                    ].includes(settingName)){
+                        $(element).show();
+                    }
+                    break;
+                case 'videos':
+                    Admin.videosSettingsSwitch($('*[name="media.transcoding_driver"]').val());
+                    break;
+                }
+            }
+        });
+    },
+
+    videosSettingsSwitch: function(type){
+        // Check this
+        Admin.settingsHide('media');
+        $('.coconut-info').addClass('d-none');
+        switch (type) {
+        case 'ffmpeg':
+            Admin.toggleMediaSubCategory('ffmpeg');
+            $('.setting-row').each(function(key,element) {
+                if(
+                    $(element).attr('class').indexOf('media.ffprobe_path') >= 0 ||
+                    $(element).attr('class').indexOf('media.enforce_mp4_conversion') >= 0
+                ){
+                    $(element).show();
+                }
+            });
+            break;
+        case 'coconut':
+            $('.coconut-info').removeClass('d-none');
+            Admin.toggleMediaSubCategory('coconut');
+            break;
+        }
+        $('.setting-row').each(function(key,element) {
+            if($(element).attr('class').indexOf('media.transcoding_driver') >= 0){
+                $(element).show();
+            }
+        });
+        $('#media.driver').val(type);
     },
 
     /**

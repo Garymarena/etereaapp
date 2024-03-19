@@ -59,7 +59,7 @@ class CronEmailExpiringSubs extends Command
                     [
                         'email' => $subToRenew->subscriber->email,
                         'subject' => __('Expiring subscription'),
-                        'title' => __('Hello, :subscriberName,', ['subscriberName' => $subToRenew->subscriber->name]),
+                        'title' => __('Hello, :subscriberName', ['subscriberName' => $subToRenew->subscriber->name]),
                         'content' => __('Your subscription to :creatorName is about to expire in the next 24h hours. Please top up your credit in order to keep your subscription going.', ['creatorName' => $subToRenew->creator->name]),
                         'button' => [
                             'text' => __('Manage your subs'),

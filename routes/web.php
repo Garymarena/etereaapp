@@ -247,6 +247,11 @@ Route::post('payment/mercadoPaymentStatusUpdate', [
     'uses' => 'PaymentsController@mercadoHook',
 ]);
 
+Route::post('transcoding/coconut/update', [
+    'as'   => 'transcoding.coconut.update',
+    'uses' => 'AttachmentController@handleCoconutHook',
+]);
+
 // Install & upgrade routes
 Route::get('/install', ['uses' => 'InstallerController@install', 'as'   => 'installer.install']);
 Route::post('/install/savedbinfo', ['uses' => 'InstallerController@testAndSaveDBInfo', 'as'   => 'installer.savedb']);

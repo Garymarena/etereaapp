@@ -2,12 +2,13 @@
  * Component used for handling checkout dialog actions
  */
 "use strict";
-/* global app, trans, trans_choice, launchToast, getWebsiteFormattedAmount */
+/* global app, trans, trans_choice, launchToast, getWebsiteFormattedAmount, getTaxDescription */
 
 $(function () {
     // Document ready
     // Deposit amount change event listener
     $('#checkout-amount').on('change', function () {
+        $(".credit-payment-provider").css("pointer-events", "auto");
         if (!checkout.checkoutAmountValidation()) {
             return false;
         }
@@ -489,6 +490,7 @@ var checkout = {
         let totalAmount = subtotalAmount;
         let inclusiveTaxesAmount = 0.00;
         let exclusiveTaxesAmount = 0.00;
+        let fixedTaxesAmount = 0.00;
         checkout.paymentData.totalAmount = subtotalAmount;
         let taxes = [];
 
@@ -500,27 +502,36 @@ var checkout = {
             if (countryTaxes !== null) {
                 if (countryTaxes.length > 0) {
                     for (let i = 0; i < countryTaxes.length; i++) {
-                        let countryTaxPercentage = countryTaxes[i].percentage;
-                        if (countryTaxPercentage !== null && countryTaxPercentage > 0) {
-                            let countryTaxAmount = 0.00;
-                            if (countryTaxes[i].type === 'exclusive') {
-                                countryExclusiveTaxesPercentage += parseFloat(countryTaxPercentage);
-                                taxes.push({
-                                    countryTaxName: countryTaxes[i].name,
-                                    type: 'exclusive',
-                                    countryTaxPercentage: parseFloat(countryTaxPercentage),
-                                    hidden: countryTaxes[i].hidden
-                                });
-                            } else {
-                                countryInclusiveTaxesPercentage += parseFloat(countryTaxPercentage);
-                                taxes.push({
-                                    countryTaxAmount: countryTaxAmount,
-                                    countryTaxName: countryTaxes[i].name,
-                                    type: 'inclusive',
-                                    countryTaxPercentage: parseFloat(countryTaxPercentage),
-                                    hidden: countryTaxes[i].hidden
-                                });
-                            }
+                        let countryTaxAmount = 0.00;
+                        if (countryTaxes[i].type === 'exclusive') {
+                            countryExclusiveTaxesPercentage += parseFloat(countryTaxes[i].percentage);
+                            taxes.push({
+                                countryTaxName: countryTaxes[i].name,
+                                type: 'exclusive',
+                                countryTaxPercentage: parseFloat(countryTaxes[i].percentage),
+                                hidden: countryTaxes[i].hidden
+                            });
+                        }
+
+                        if (countryTaxes[i].type === 'inclusive') {
+                            countryInclusiveTaxesPercentage += parseFloat(countryTaxes[i].percentage);
+                            taxes.push({
+                                countryTaxAmount: countryTaxAmount,
+                                countryTaxName: countryTaxes[i].name,
+                                type: 'inclusive',
+                                countryTaxPercentage: parseFloat(countryTaxes[i].percentage),
+                                hidden: countryTaxes[i].hidden
+                            });
+                        }
+
+                        if (countryTaxes[i].type === 'fixed') {
+                            fixedTaxesAmount += parseFloat(countryTaxes[i].percentage);
+                            taxes.push({
+                                countryTaxAmount: countryTaxes[i].percentage,
+                                countryTaxName: countryTaxes[i].name,
+                                type: 'fixed',
+                                hidden: countryTaxes[i].hidden
+                            });
                         }
                     }
                 }
@@ -552,6 +563,10 @@ var checkout = {
                     taxAmount = taxAmount.toFixed(2);
                 }
 
+                if (taxes[j].type === 'fixed') {
+                    taxAmount = taxes[j].countryTaxAmount;
+                }
+
                 formattedTaxes.data.push({
                     taxName: taxes[j].countryTaxName,
                     taxAmount: taxAmount,
@@ -560,9 +575,8 @@ var checkout = {
                 });
 
                 if(!taxes[j].hidden) {
-                    let taxType = taxes[j].type === 'inclusive' ? ' incl.' : '';
                     let item = "<div class=\"row ml-2\">\n" +
-                        "<span class=\"col-sm left\">" + taxes[j].countryTaxName + " (" + taxes[j].countryTaxPercentage + "%" + taxType + ")</span>\n" +
+                        "<span class=\"col-sm left\">" + getTaxDescription(taxes[j].countryTaxName, taxes[j].countryTaxPercentage, taxes[j].type) + "</span>\n" +
                         "<span class=\"country-tax col-sm right text-right\">\n" +
                         "    <b>" + getWebsiteFormattedAmount(taxAmount) + "</b>\n" +
                         "</span>\n" +
@@ -582,6 +596,10 @@ var checkout = {
             if (countryExclusiveTaxesPercentage > 0) {
                 exclusiveTaxesAmount = (countryExclusiveTaxesPercentage.toFixed(2) / 100) * subtotal;
                 totalAmount = totalAmount + exclusiveTaxesAmount;
+            }
+
+            if (fixedTaxesAmount > 0) {
+                totalAmount += fixedTaxesAmount;
             }
 
             if (formattedTaxes.data && formattedTaxes.data.length > 0) {

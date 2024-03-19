@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Storage;
 use Pion\Laravel\ChunkUpload\Exceptions\UploadMissingFileException;
 use Pion\Laravel\ChunkUpload\Handler\HandlerFactory;
 use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
+use Log;
+use Pusher\Pusher;
+
 
 class AttachmentController extends Controller
 {
@@ -83,7 +86,7 @@ class AttachmentController extends Controller
             }
 
         } catch (\Exception $exception) {
-            return response()->json(['success' => false, 'errors' => [$exception->getMessage()]], 500);
+            return response()->json(['success' => false, 'errors' => [$exception->getMessage(), $exception->getTrace()], 'message' => $exception->getMessage()], 500);
         }
 
         return response()->json([
@@ -92,6 +95,8 @@ class AttachmentController extends Controller
             'path' => Storage::url($attachment->filename),
             'type' => AttachmentServiceProvider::getAttachmentType($attachment->type),
             'thumbnail' => AttachmentServiceProvider::getThumbnailPathForAttachmentByResolution($attachment, 150, 150),
+            'coconut_id' => $attachment->coconut_id,
+            'has_thumbnail' => $attachment->has_thumbnail
         ]);
     }
 
@@ -138,4 +143,63 @@ class AttachmentController extends Controller
             return response()->json(['success' => false, 'errors' => [$exception->getMessage()]]);
         }
     }
+
+    /**
+     * Handles coconut webhook
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Pusher\ApiErrorException
+     * @throws \Pusher\PusherException
+     */
+    public static function handleCoconutHook(Request $request){
+
+        Log::channel('coconut')->info(__("New coconut payload available"));
+        Log::channel('coconut')->info(json_encode($request->all()));
+
+        $attachmentID = $request->get('attachmentId');
+        $attachment = Attachment::where('id', $attachmentID)->first();
+        $username = $attachment->user->username;
+
+        if(config('broadcasting.connections.pusher.key')){
+            $options = [
+                'cluster' => config('broadcasting.connections.pusher.options.cluster'),
+                'useTLS' => true,
+            ];
+            $pusher = new Pusher(
+                config('broadcasting.connections.pusher.key'),
+                config('broadcasting.connections.pusher.secret'),
+                config('broadcasting.connections.pusher.app_id'),
+                $options
+            );
+        }
+
+        if($request->get('event') === 'job.completed'){
+            // 2. Delete the temporary attachment that got transcoded
+            $storage = Storage::disk(AttachmentServiceProvider::getStorageProviderName($attachment->driver));
+            $storage->delete($attachment->filename);
+
+            $attachment->filename = "posts/videos/{$attachmentID}.mp4";
+            $attachment->type = "mp4";
+            $attachment->has_thumbnail = 1;
+            $attachment->save();
+
+            // Notify the UI via a websocket call
+            if(config('broadcasting.connections.pusher.key')){
+                unset($attachment->user);
+                $attachment->setAttribute('success', true);
+                $pusher->trigger($username, 'video-processing', $attachment);
+            }
+        }
+        elseif($request->get('event') === 'job.failed' || $request->get('event') === 'output.failed'){
+            // Notify the UI via a websocket call
+            if(config('broadcasting.connections.pusher.key')){
+                $attachment->setAttribute('success', false);
+                $pusher->trigger($username, 'video-processing', $attachment);
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => __("Video updated")], 200);
+
+    }
 }
+
