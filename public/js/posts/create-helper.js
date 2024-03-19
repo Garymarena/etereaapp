@@ -159,7 +159,16 @@ var PostCreate = {
      * @param postID
      */
     save: function (type = 'create', postID = false, forceSave = false) {
-        if(FileUpload.isLoading === true && forceSave === false){
+        // Warning for any file that might still be uploading or a video transcoding
+        if((FileUpload.isLoading === true || FileUpload.isTranscodingVideo === true) && forceSave === false){
+            let dialogMessage = '';
+            if(FileUpload.isLoading === true){
+                dialogMessage = `${trans('Some attachments are still being uploaded.')} ${trans('Are you sure you want to continue?')}`;
+            }
+            if(FileUpload.isTranscodingVideo === true){
+                dialogMessage = `${trans('A video is currently being converted.')} ${trans('Are you sure you want to continue without it?')}`;
+            }
+            $('#confirm-post-save .modal-body p').html(dialogMessage)
             $('.confirm-post-save').unbind('click');
             $('.confirm-post-save').on('click',function () {
                 PostCreate.save(type, postID, true);
@@ -167,6 +176,7 @@ var PostCreate = {
             $('#confirm-post-save').modal('show');
             return false;
         }
+
         updateButtonState('loading',$('.post-create-button'));
         PostCreate.savePostScheduleSettings();
         let route = app.baseUrl + '/posts/save';

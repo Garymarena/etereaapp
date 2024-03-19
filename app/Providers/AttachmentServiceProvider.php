@@ -18,10 +18,11 @@ use Ramsey\Uuid\Uuid;
 class AttachmentServiceProvider extends ServiceProvider
 {
 
+    // Mixed for ffmpeg and coconut
     public static $videoEncodingPresets = [
-        'size' => ['videoBitrate'=> 500, 'audioBitrate' => 128],
-        'balanced' => ['videoBitrate'=> 1000, 'audioBitrate' => 256],
-        'quality' => ['videoBitrate'=> 2000, 'audioBitrate' => 512],
+        'size' => ['videoBitrate'=> 500, 'audioBitrate' => 128, 'quality' => 1],
+        'balanced' => ['videoBitrate'=> 1000, 'audioBitrate' => 256, 'quality' => 3],
+        'quality' => ['videoBitrate'=> 2000, 'audioBitrate' => 512, 'quality' => 5],
     ];
 
     /**
@@ -55,7 +56,7 @@ class AttachmentServiceProvider extends ServiceProvider
         if ($type) {
             switch ($type) {
                 case 'videosFallback':
-                    if (getSetting('media.enable_ffmpeg')) {
+                    if (getSetting('media.transcoding_driver') === 'ffmpeg' || getSetting('media.transcoding_driver') === 'coconut') {
                         return getSetting('media.allowed_file_extensions');
                     } else {
                         $extensions = explode(',', getSetting('media.allowed_file_extensions'));
@@ -179,6 +180,7 @@ class AttachmentServiceProvider extends ServiceProvider
             $fileId = Uuid::uuid4()->getHex();
         } while (Attachment::query()->where('id', $fileId)->first() != null);
 
+        $hasThumbnail = false;
         $fileExtension = $initialFileExtension = $file->guessExtension();
         $fileContent = file_get_contents($file);
         $filePath = $directory.'/'.$fileId.'.'.$fileExtension;
@@ -251,11 +253,12 @@ class AttachmentServiceProvider extends ServiceProvider
             $thumbnailfilePath = $thumbnailDir.'/'.$fileId.'.jpg';
             // Uploading to storage
             $storage->put($thumbnailfilePath, $img, 'public');
+            $hasThumbnail = true;
         }
 
         // Convert videos to mp4s
         if (self::getAttachmentType($fileExtension) === 'video') {
-            if (getSetting('media.enable_ffmpeg')) {
+            if (getSetting('media.transcoding_driver') === 'ffmpeg') {
                 // Move tmp file onto local files path, as ffmpeg can't handle absolute paths
                 $filePath = $fileId.'.'.$fileExtension;
                 Storage::disk('tmp')->put($filePath, $fileContent);
@@ -330,8 +333,7 @@ class AttachmentServiceProvider extends ServiceProvider
                     }
 
                     $videoQualityPreset = self::$videoEncodingPresets[getSetting('media.ffmpeg_video_conversion_quality_preset')];
-                    $video = $video->export()
-                        ->toDisk(config('filesystems.defaultFilesystemDriver'));
+                    $video = $video->export()->toDisk(config('filesystems.defaultFilesystemDriver'));
                     if(getSetting('media.ffmpeg_audio_encoder') == 'aac'){
                         $video->inFormat((new X264('aac', 'libx264'))->setKiloBitrate($videoQualityPreset['videoBitrate'])->setAudioKiloBitrate($videoQualityPreset['audioBitrate']));
                     }
@@ -341,10 +343,20 @@ class AttachmentServiceProvider extends ServiceProvider
                     elseif (getSetting('media.ffmpeg_audio_encoder') == 'libfdk_aac'){
                         $video->inFormat((new X264('libfdk_aac', 'libx264'))->setKiloBitrate($videoQualityPreset['videoBitrate'])->setAudioKiloBitrate($videoQualityPreset['audioBitrate']));
                     }
+
                     $video->addFilter('-preset', 'ultrafast')
                         #->addFilter(['-strict', 2])
                         ->addFilter(['-passlogfile', $ffmpegPassFile])
                         ->save($newfilePath);
+
+                    // Generating thumbnail from converted video
+                    FFMpeg::fromDisk(config('filesystems.defaultFilesystemDriver'))
+                        ->open($newfilePath)
+                        ->getFrameFromSeconds(1)
+                        ->export()
+                        ->toDisk(config('filesystems.defaultFilesystemDriver'))
+                        ->save($directory.'/thumbnails/'.$fileId.'.jpg');
+                    $hasThumbnail = true;
 
                     if(file_exists($ffmpegPassFile.'-0.log')) unlink($ffmpegPassFile.'-0.log');
                     if(file_exists($ffmpegPassFile.'-1.log')) unlink($ffmpegPassFile.'-1.log');
@@ -356,12 +368,85 @@ class AttachmentServiceProvider extends ServiceProvider
                     Storage::disk('tmp')->delete($tmpWatermarkFile);
                 }
                 $filePath = $newfilePath;
-            } else {
+            }
+            elseif (getSetting('media.transcoding_driver') === 'coconut'){
+                if($initialFileExtension == 'mp4' && !getSetting('media.coconut_enforce_mp4_conversion')){
+                    $filePath = $directory.'/'.$fileId.'.'.$fileExtension;
+                    $storage->put($filePath, $fileContent, 'public');
+                }
+                else{
+                    $coconut = new \Coconut\Client(getSetting('media.coconut_api_key'));
+                    // Uploading the original video onto s3
+                    $filePath = $directory.'/tmp/'.$fileId.'.'.$fileExtension;
+                    $storage->put($filePath, $fileContent, 'public');
+                    Storage::url($filePath);
+
+                    // Setting up the coconut notification
+                    $coconut->notification = [
+                        'type' => 'http',
+                        'url' => env('COCONUT_WEBHOOK_URL') ? env('COCONUT_WEBHOOK_URL') : route('transcoding.coconut.update'), // TODO: Maybe test this on live
+                        "params" => [
+                            'attachmentId' => $fileId
+                        ],
+                    ];
+
+                    // Setting up the storage for coconut
+                    if(getSetting('storage.driver') === 'public'){
+                        throw new \Exception("Local storage driver is not supported by Coconut.");
+                    }
+                    $coconut->storage = self::getCoconutStorageSettings(getSetting('storage.driver'));
+
+                    $videoQualityPreset = self::$videoEncodingPresets[str_replace("coconut_","",getSetting('media.coconut_video_conversion_quality_preset'))];
+                    // Sending the transcoding request
+                    $tempFileUrl = Storage::url($filePath);
+                    if(getSetting('storage.driver') === 'pushr'){
+                        $tempFileUrl = "https://{$tempFileUrl}";
+                    }
+                    $jobData = [
+                        'input' => ['url' => $tempFileUrl],
+                        "settings"=> [
+                            "ultrafast"=> true
+                        ],
+                        'outputs' => [
+                            'jpg:480x' => [
+                                'key' => 'jpg:medium',
+                                'path' => '/posts/videos/thumbnails/'.$fileId.'.jpg',
+                                "offsets" => [1],
+                            ],
+                            'mp4' => [
+                                [
+                                    'key' => 'mp4',
+                                    'path' => '/posts/videos/'.$fileId.'.mp4',
+                                    'format' => [
+                                        'quality' => $videoQualityPreset['quality'],
+                                        'video_codec' => 'h264',
+                                        'audio_codec' => getSetting('media.coconut_audio_encoder'),
+                                        'video_bitrate' => $videoQualityPreset['videoBitrate'].'k',
+                                        'audio_bitrate' => $videoQualityPreset['audioBitrate'].'k',
+                                    ],
+                                ]
+                            ],
+                        ]
+                    ];
+
+                    // Watermark
+                    if (getSetting('media.apply_watermark')) {
+                        if (getSetting('media.watermark_image')) {
+                            $jobData['outputs']['mp4'][0]['watermark']  =  [
+                                'url' => self::getWatermarkPath(),
+                                'position' => 'bottomright'
+                            ];
+                        }
+                    }
+
+                    $coconutJob = $coconut->job->create($jobData);
+                }
+            }
+            else {
                 $filePath = $directory.'/'.$fileId.'.'.$fileExtension;
                 $storage->put($filePath, $fileContent, 'public');
             }
 
-            //TODO: Create preview for clip
         }
 
         if (in_array(self::getAttachmentType($fileExtension), ['audio', 'document'])) {
@@ -377,6 +462,8 @@ class AttachmentServiceProvider extends ServiceProvider
             'user_id' => Auth::id(),
             'type' => $fileExtension,
             'driver' => AttachmentServiceProvider::getStorageProviderID($storageDriver),
+            'coconut_id' => (isset($coconutJob) ? $coconutJob->id : null),
+            'has_thumbnail' => $hasThumbnail ? 1 : null,
         ]);
 
         return $attachment;
@@ -405,8 +492,8 @@ class AttachmentServiceProvider extends ServiceProvider
     }
 
     /**
-     * Gets thumbnail path by resolution.
-     *
+     * Gets (full path, based on path virtual attribute) thumbnail path by resolution.
+     * [Used to get final thumbnail URL]
      * @param $attachment
      * @param $width
      * @param $height
@@ -420,7 +507,14 @@ class AttachmentServiceProvider extends ServiceProvider
                 'https://' . getSetting('storage.cdn_domain_name') . '/' . self::getThumbnailFilenameByAttachmentAndResolution($attachment, $width, $height, $basePath)
             );
         } else {
-            return str_replace($basePath, $basePath.$width.'X'.$height.'/', $attachment->path);
+            if(self::getAttachmentType($attachment->type) == 'video'){
+                // Videos
+                return  str_replace($attachment->id .'.'. $attachment->type, 'thumbnails/'.$attachment->id.'.jpg', $attachment->path) ;
+            }
+            else{
+                // Regular posts + messages
+                return str_replace($basePath, $basePath.$width.'X'.$height.'/', $attachment->path);
+            }
         }
     }
 
@@ -433,9 +527,8 @@ class AttachmentServiceProvider extends ServiceProvider
     {
         $storage = Storage::disk(self::getStorageProviderName($attachment->driver));
         $storage->delete($attachment->filename);
-        if (self::getAttachmentType($attachment->type) == 'image') {
+        if (self::getAttachmentType($attachment->type) == 'image' || self::getAttachmentType($attachment->type) == 'video') {
             $thumbnailPath = self::getThumbnailFilenameByAttachmentAndResolution($attachment, $width = 150, $height = 150);
-
             if ($thumbnailPath != null) {
                 $storage->delete($thumbnailPath);
             }
@@ -443,16 +536,22 @@ class AttachmentServiceProvider extends ServiceProvider
     }
 
     /**
-     * Returns file thumbnail path, by resolution.
-     *
+     * Returns file thumbnail relative path, by resolution.
+     * [Used to get storage paths]
      * @param $attachment
      * @param $width
      * @param $height
      * @return string|string[]
      */
-    private static function getThumbnailFilenameByAttachmentAndResolution($attachment, $width, $height, $basePath = 'posts/images/')
+    public static function getThumbnailFilenameByAttachmentAndResolution($attachment, $width, $height, $basePath = 'posts/images/')
     {
-        return str_replace($basePath, $basePath.$width.'X'.$height.'/', $attachment->filename);
+        if(self::getAttachmentType($attachment->type) == 'video'){
+            return 'posts/videos/thumbnails/'.$attachment->id.'.jpg';
+        }
+        else{
+            return str_replace($basePath, $basePath.$width.'X'.$height.'/', $attachment->filename);
+        }
+
     }
 
     /**
@@ -489,7 +588,7 @@ class AttachmentServiceProvider extends ServiceProvider
             $fileUrl = rtrim(getSetting('storage.minio_endpoint'), '/').'/'.getSetting('storage.minio_bucket_name').'/'.$attachment->filename;
         }
         elseif($attachment->driver == Attachment::PUSHR_DRIVER){
-            $fileUrl = rtrim(getSetting('storage.pushr_cdn_hostname'), '/').'/'.$attachment->filename;
+            $fileUrl = 'https://'.rtrim(getSetting('storage.pushr_cdn_hostname'), '/').'/'.$attachment->filename;
         }
         elseif ($attachment->driver == Attachment::PUBLIC_DRIVER) {
             $fileUrl = Storage::disk('public')->url($attachment->filename);
@@ -638,6 +737,72 @@ POLICY;
         $localStorage->put($tmpFile, $remoteFile);
         $storage->put($newFileName, $localStorage->get($tmpFile), 'public');
         $localStorage->delete($tmpFile);
+    }
+
+    /**
+     * Generates coconut storage configuration
+     * @param $storageDriver
+     * @return array|bool
+     */
+    public static function getCoconutStorageSettings($storageDriver){
+        switch ($storageDriver) {
+            case 's3':
+                return [
+                    'service' => 's3',
+                    'bucket' => getSetting('storage.aws_bucket_name'),
+                    'region' => getSetting('storage.aws_region'),
+                    'credentials' => [
+                        'access_key_id' => getSetting('storage.aws_access_key'),
+                        'secret_access_key' => getSetting('storage.aws_secret_key')
+                    ]
+                ];
+            case 'do_spaces':
+                return [
+                    'service' => 'dospaces',
+                    'bucket' => getSetting('storage.do_bucket_name'),
+                    'region' => getSetting('storage.do_region'),
+                    'credentials' => [
+                        'access_key_id' => getSetting('storage.do_access_key'),
+                        'secret_access_key' => getSetting('storage.do_secret_key')
+                    ]
+                ];
+            case 'wasabi':
+                return [
+                    'service' => 'wasabi',
+                    'bucket' => getSetting('storage.was_bucket_name'),
+                    'region' => getSetting('storage.was_region'),
+                    'credentials' => [
+                        'access_key_id' => getSetting('storage.was_access_key'),
+                        'secret_access_key' => getSetting('storage.was_secret_key')
+                    ]
+                ];
+            case 'minio':
+                return [
+                    'service' => 's3other',
+                    'bucket' => getSetting('storage.minio_bucket_name'),
+                    'force_path_style' => true,
+                    'region' => getSetting('storage.minio_region'),
+                    'credentials' => [
+                        'access_key_id' => getSetting('storage.minio_access_key'),
+                        'secret_access_key' => getSetting('storage.minio_secret_key')
+                    ],
+                    'endpoint' => getSetting('storage.minio_endpoint')
+                ];
+            case 'pushr':
+                return [
+                    'service' => 's3other',
+                    'bucket' => getSetting('storage.pushr_bucket_name'),
+                    'force_path_style' => true,
+                    'region' => 'us-east-1',
+                    'credentials' => [
+                        'access_key_id' => getSetting('storage.pushr_access_key'),
+                        'secret_access_key' => getSetting('storage.pushr_secret_key')
+                    ],
+                    'endpoint' => getSetting('storage.pushr_endpoint')
+                ];
+            default:
+                return false;
+        }
     }
 
 }

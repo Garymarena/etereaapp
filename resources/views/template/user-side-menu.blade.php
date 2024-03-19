@@ -92,9 +92,11 @@
                 </a>
                 <ul class="collapse list-unstyled" id="otherSections">
                     @foreach(LocalesHelper::getAvailableLanguages() as $languageCode)
-                        <li>
-                            <a class="scroll-link d-flex align-items-center" href="{{route('language',['locale' => $languageCode])}}">{{__(LocalesHelper::getLanguageName($languageCode))}}</a>
-                        </li>
+                        @if(LocalesHelper::getLanguageName($languageCode))
+                            <li>
+                                <a class="scroll-link d-flex align-items-center" href="{{route('language',['locale' => $languageCode])}}">{{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}</a>
+                            </li>
+                        @endif
                     @endforeach
                 </ul>
             </li>

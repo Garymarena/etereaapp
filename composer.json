@@ -35,7 +35,8 @@
         "symfony/mailgun-mailer": "^6.0",
         "tcg/voyager": "^1.5",
         "yabacon/paystack-php": "^2.2",
-        "zanysoft/laravel-zip": "^2.0"
+        "zanysoft/laravel-zip": "^2.0",
+        "opencoconut/coconut": "3.*"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.5",

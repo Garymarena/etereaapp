@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Session;
@@ -51,6 +52,7 @@ class LocalesServiceProvider extends ServiceProvider
         "en" => "English",
         "eo" => "Esperanto",
         "es" => "Spanish",
+        'es-mx' => 'Spanish (Mexico)',
         "et" => "Estonian",
         "eu" => "Basque",
         "fa" => "Persian",
@@ -242,10 +244,15 @@ class LocalesServiceProvider extends ServiceProvider
 
     public static function getLanguageName($localeCode){
         if(extension_loaded('intl')){
-            return \Locale::getDisplayLanguage($localeCode);
+            return \Locale::getDisplayLanguage($localeCode, Session::get('locale') ? Session::get('locale') : 'en');
         }
         else{
-            return self::$languageCodes[$localeCode];
+            if(isset(self::$languageCodes[$localeCode])){
+                return self::$languageCodes[$localeCode];
+            }
+            else{
+                return false;
+            }
         }
     }
 
@@ -278,13 +285,23 @@ class LocalesServiceProvider extends ServiceProvider
                 if (getSetting('site.use_browser_language_if_available')) {
                     $preferredLang = explode('-', $request->server('HTTP_ACCEPT_LANGUAGE'))[0] ?? null;
                     if ($preferredLang) {
-                        return $preferredLang; // If user has missing locale setting - default on site setting
+                        return $preferredLang; // If user has missing locale setting - we default on site setting on the LocaleSetter
                     } else {
                         return getSetting('site.default_site_language');
                     }
                 }
+                return getSetting('site.default_site_language');
             }
         }
+    }
+
+    /**
+     * Locale setter helper
+     * @param $code
+     */
+    public static function setLocale($code){
+        App::setLocale($code);
+        Session::put('locale', $code);
     }
 
 }

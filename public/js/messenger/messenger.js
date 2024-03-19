@@ -6,7 +6,7 @@
 "use strict";
 /* global app, messengerVars, pusher, FileUpload,
   Lists, Pusher, PusherBatchAuthorizer, updateButtonState,
-  mswpScanPage, trans, bootstrapDetectBreakpoint, incrementNotificationsCount, passesMinMaxPPVContentCreationLimits
+  mswpScanPage, trans, bootstrapDetectBreakpoint, incrementNotificationsCount, passesMinMaxPPVMessageLimits
   EmojiButton, filterXSS, launchToast, initTooltips, soketi, socketsDriver, showDialog, hideDialog, noMessagesLabel,
   contactElement, noContactsLabel, messageElement */
 
@@ -219,16 +219,20 @@ var messenger = {
         }
 
         if(messenger.isSendingMessage){
+            // eslint-disable-next-line no-console
+            console.info(trans('Another message is being sent - please wait'));
             return false;
         }
 
         updateButtonState('loading',$('.send-message'));
-        messenger.isSendingMessage = true;
+
         // Validation
         if($('.messageBoxInput').val().length === 0 && FileUpload.attachaments.length === 0){
             updateButtonState('loaded',$('.send-message'));
             return false;
         }
+
+        messenger.isSendingMessage = true;
 
         $.ajax({
             type: 'POST',
@@ -281,6 +285,7 @@ var messenger = {
             },
             error: function (result) {
                 launchToast('danger',trans('Error'),result.responseJSON.message);
+                updateButtonState('loaded',$('.send-message'));
                 messenger.isSendingMessage = false;
 
             }

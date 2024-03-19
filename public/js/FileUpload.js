@@ -13,7 +13,8 @@ var FileUpload = {
 
     attachaments: [],
     myDropzone : null,
-    isLoading:false,
+    isLoading: false,
+    isTranscodingVideo: false,
     state: {},
 
     /**
@@ -71,6 +72,9 @@ var FileUpload = {
         });
 
         FileUpload.myDropzone.on("success", (file, response) => {
+            if(response.coconut_id !== null){
+                FileUpload.isTranscodingVideo = true;
+            }
             if(response.success){
                 file.upload.attachmentID = response.attachmentID;
                 FileUpload.attachaments.push({attachmentID: response.attachmentID, path: response.path, type:response.type, thumbnail:response.thumbnail});
@@ -88,7 +92,7 @@ var FileUpload = {
                 case 'video/x-ms-wmx':
                 case 'video/x-ms-wvx':
                 case 'video':
-                    FileUpload.updatePreviewElement(file, false,response);
+                    FileUpload.updatePreviewElement(file, false, response);
                     break;
                 }
             }
@@ -108,10 +112,11 @@ var FileUpload = {
 
         FileUpload.myDropzone.on("error", (file, errorMessage) => {
             if(typeof errorMessage.errors !== 'undefined'){
+                launchToast('danger',trans('Error'),errorMessage.message);
                 // launchToast('danger',trans('Error'),errorMessage.errors.file)
-                $.each(errorMessage.errors,function (field,error) {
-                    launchToast('danger',trans('Error'),error);
-                });
+                // $.each(errorMessage.errors,function (field,error) {
+                //     launchToast('danger',trans('Error'),error);
+                // });
             }
             else{
                 if(typeof errorMessage.message !== 'undefined'){
@@ -220,7 +225,14 @@ var FileUpload = {
      * @param attachment
      */
     setPreviewSource: function (element, file, attachment) {
-        $(element).attr('src', attachment.thumbnail);
+        if(attachment.coconut_id !== null && attachment.path.indexOf('videos/tmp/') >= 0){
+            // TODO: Use some different video loop for the transcoding pahse
+            $(element).attr('src', app.baseUrl+'/img/video-loading-spinner.mp4');
+        }
+        else{
+            $(element).attr('src', attachment.path);
+
+        }
     },
 
     /**
@@ -253,7 +265,7 @@ function videoPreview() {
     return `<div class="video-preview-item shadow">
                 <span data-dz-name></span>
                 <span data-dz-size></span>
-            <video class="video-preview" controls autoplay muted></video>
+            <video class="video-preview" controls autoplay muted loop></video>
         </div>`;
 }
 

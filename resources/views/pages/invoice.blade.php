@@ -99,8 +99,11 @@
                                                     @foreach($invoice->data['taxes']['data'] as $tax)
                                                         <tr>
                                                             <th colspan="2" class="text-right">
-                                                                {{$tax['taxName']}} ({{$tax['taxPercentage']}}
-                                                                %{{$tax['taxType'] === 'inclusive' ? ' incl.' : ''}})
+                                                                {{$tax['taxName']}}
+                                                                @if(isset($tax['taxPercentage']))
+                                                                    ({{$tax['taxPercentage']}}
+                                                                    %{{$tax['taxType'] === 'inclusive' ? ' incl.' : ''}})
+                                                                @endif
                                                             </th>
                                                             <th class="text-center">
                                                                 {{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount($tax['taxAmount'])}}

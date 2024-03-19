@@ -200,6 +200,7 @@ class PaymentsServiceProvider extends ServiceProvider
         $taxes = [
             'inclusiveTaxesAmount' => 0.00,
             'exclusiveTaxesAmount' => 0.00,
+            'fixedTaxesAmount' => 0.00,
         ];
 
         $transactionTaxes = json_decode($transaction['taxes'], true);
@@ -211,6 +212,8 @@ class PaymentsServiceProvider extends ServiceProvider
                             $taxes['inclusiveTaxesAmount'] += $tax['taxAmount'];
                         } elseif ($tax['taxType'] === Tax::EXCLUSIVE_TYPE) {
                             $taxes['exclusiveTaxesAmount'] += $tax['taxAmount'];
+                        } elseif ($tax['taxType'] === Tax::FIXED_TYPE) {
+                            $taxes['fixedTaxesAmount'] += $tax['taxAmount'];
                         }
                     }
                 }
@@ -233,6 +236,10 @@ class PaymentsServiceProvider extends ServiceProvider
 
         if($transactionTaxes['exclusiveTaxesAmount'] > 0){
             $amount = $amount - $transactionTaxes['exclusiveTaxesAmount'];
+        }
+
+        if($transactionTaxes['fixedTaxesAmount'] > 0){
+            $amount = $amount - $transactionTaxes['fixedTaxesAmount'];
         }
 
         return $amount;

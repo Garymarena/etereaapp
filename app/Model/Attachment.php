@@ -23,7 +23,7 @@ class Attachment extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'post_id', 'filename', 'type', 'id', 'driver', 'payment_request_id', 'message_id'
+        'user_id', 'post_id', 'filename', 'type', 'id', 'driver', 'payment_request_id', 'message_id', 'coconut_id', 'has_thumbnail'
     ];
 
     protected $appends = ['attachmentType', 'path', 'thumbnail'];
@@ -61,12 +61,13 @@ class Attachment extends Model
 
     public function getThumbnailAttribute()
     {
+        $path = '/posts/images/';
         if ($this->message_id) {
             $path = '/messenger/images/';
-        } else {
-            $path = '/posts/images/';
         }
-
+        if($this->type == 'video'){
+            $path = 'posts/videos'.'/thumbnails/'.$this->id.'.jpg';
+        }
         return AttachmentServiceProvider::getThumbnailPathForAttachmentByResolution($this, 150, 150, $path);
     }
 

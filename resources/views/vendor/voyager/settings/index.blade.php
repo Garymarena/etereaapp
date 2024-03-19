@@ -59,7 +59,7 @@
                             'Websockets',
                             'Emails',
                             'Social login',
-                            'Social media',
+                            'Social links',
                             'Custom Code / Ads',
                             'Admin',
                             'Streams',
@@ -94,196 +94,23 @@
 
                     <div class="tab-content">
 
-                        <div id="license" class="tab-pane fade in @if($group == $active && $active === 'License') active @endif">
+                        @include('vendor.voyager.settings.lcode')
 
-                            <div class="kind-of-a-form-control">
-
-                                <div class="panel-heading setting-row setting-theme_license" data-settingkey="license_product_license_key">
-                                    <h3 class="panel-title">
-                                        Product license code
-                                    </h3>
-                                </div>
-
-                                <div class="panel-body no-padding-left-right setting-row" data-settingkey="license_product_license_key">
-                                    <div class="col-md-12 no-padding-left-right">
-                                        <input type="text" class="form-control license_product_license_key" name="license_product_license_key" placeholder="Your license key" value="{{getSetting('license.product_license_key') ? getSetting('license.product_license_key') : ''}}">
-                                    </div>
-                                </div>
-                                <div class="admin-setting-description">
-                                    <code>
-                                        Your product license key. Can be taken out of your <a href="https://codecanyon.net/downloads">Codecanyon downloads</a> page.
-                                    </code>
-                                </div>
-
-                                <div class="d-none">
-                                    <select class="form-control group_select d-none" name="license_product_license_key_group">
-                                        @foreach($groups as $group)
-                                            <option value="License" selected></option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-
-                            </div>
-
-
-                        </div>
-
-                        <div id="colors" class="tab-pane fade in @if($group == $active && $active === 'Colors') active @endif">
-                            <div class="">
-                                <div class="alert alert-info alert-dismissible">
-                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
-
-                                    <div class="info-label d-flex">
-                                        <div class="icon voyager-info-circled"></div>
-                                        <span class="ml-2">
-                                            Few general notes about generating themes.
-                                        </span>
-                                    </div>
-                                    <ul class="mt-05">
-                                        <li>The themes are generated on a remote server. Timings may vary but it might take between 20-40s for a run.</li>
-                                        <li>Regular license holders can generate 5 themes per day.</li>
-                                        <li>If <code>zip</code> extension is available on the server, the theme will be updated automatically.</li>
-                                        <li>If the extension is not available, you will need to upload the archive you'll be getting onto the following directory : <code>public/css/theme</code>.</li>
-                                        <li>When updating your site, remember to backup your <code>public/css/theme</code> folder and restore it after the update.</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="kind-of-a-form-control">
-
-                                <div class="panel-heading setting-row setting-theme_license" data-settingkey="theme_license">
-                                    <h3 class="panel-title">
-                                        License code
-                                    </h3>
-                                </div>
-
-                                <div class="panel-body no-padding-left-right setting-row setting-theme_license" data-settingkey="theme_license">
-                                    <div class="col-md-12 no-padding-left-right">
-                                        <input type="text" class="form-control theme_license_field" name="theme_license" placeholder="Your license key">
-                                    </div>
-                                </div>
-                                <div class="admin-setting-description">
-                                    <code>
-                                        Your product license key. Can be taken out of your <a href="https://codecanyon.net/downloads">Codecanyon downloads</a> page.
-                                    </code>
-                                </div>
-
-                            </div>
-
-                            <div class="kind-of-a-form-control">
-
-                                <div class="panel-heading setting-row setting-theme_color_code" data-settingkey="theme_color_code">
-                                    <h3 class="panel-title">
-                                        Primary color code
-                                    </h3>
-                                </div>
-
-                                <div class="panel-body no-padding-left-right setting-row setting-theme_color_code" data-settingkey="theme_color_code">
-                                    <div class="col-md-12 no-padding-left-right">
-                                        <input type="text" class="form-control" name="theme_color_code" id="theme_color_code" value="#{{getSetting('colors.theme_color_code') ? getSetting('colors.theme_color_code') : 'cb0c9f'}}">
-                                    </div>
-                                </div>
-                                <div class="admin-setting-description">
-                                    <code>
-                                        Theme primary color hex code. EG: #cb0c9f
-                                    </code>
-                                </div>
-
-                            </div>
-
-                            <div class="row">
-
-                                <div class="kind-of-a-form-control col-lg-6">
-
-                                    <div class="panel-heading setting-row setting-theme_gradient_from" data-settingkey="theme_gradient_from">
-                                        <h3 class="panel-title">
-                                            Gradient color start from
-                                        </h3>
-                                    </div>
-
-                                    <div class="panel-body no-padding-left-right setting-row setting-theme_gradient_from" data-settingkey="theme_gradient_from">
-                                        <div class="col-md-12 no-padding-left-right">
-                                            <input type="text" class="form-control" name="theme_gradient_from" id="theme_gradient_from" value="#{{getSetting('colors.theme_gradient_from') ? getSetting('colors.theme_gradient_from') : 'cb0c9f'}}">
-                                        </div>
-                                    </div>
-                                    <div class="admin-setting-description">
-                                        <code>
-                                            Theme's primary gradient - start from, color hex code. EG: #7928CA
-                                        </code>
-                                    </div>
-
-                                </div>
-
-                                <div class="kind-of-a-form-control col-lg-6">
-
-                                    <div class="panel-heading setting-row setting-theme_gradient_to" data-settingkey="theme_gradient_to">
-                                        <h3 class="panel-title">
-                                            Gradient color ends on
-                                        </h3>
-                                    </div>
-
-                                    <div class="panel-body no-padding-left-right setting-row setting-theme_gradient_to" data-settingkey="theme_gradient_to">
-                                        <div class="col-md-12 no-padding-left-right">
-                                            <input type="text" class="form-control" name="theme_gradient_to" id="theme_gradient_to" value="#{{getSetting('colors.theme_gradient_to') ? getSetting('colors.theme_gradient_to') : 'cb0c9f'}}">
-                                        </div>
-                                    </div>
-                                    <div class="admin-setting-description">
-                                        <code>
-                                            Theme's primary gradient - ends on, color hex code. EG: #FF0080
-                                        </code>
-                                    </div>
-
-                                </div>
-
-
-                                <div class="kind-of-a-form-control col-lg-12">
-
-                                    <div class="panel-heading setting-row setting-theme_skip_rtl" data-settingkey="theme_skip_rtl">
-                                        <h3 class="panel-title">
-                                            Include RTL versions
-                                        </h3>
-                                    </div>
-
-                                    <div class="panel-body no-padding-left-right setting-row setting-theme_skip_rtl" data-settingkey="theme_skip_rtl">
-                                        <div class="col-md-12 no-padding-left-right">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" name="theme_skip_rtl" value="">
-                                                    Generate RTL Versions as well
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="admin-setting-description">
-                                        <code>
-                                            Choose if RTL version of the theme should be generated or not. If enabled, theme generation time will increase.
-                                        </code>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        </div>
+                        @include('vendor.voyager.settings.colors')
 
                         @foreach($settings as $group => $group_settings)
                             <div id="{{ \Illuminate\Support\Str::slug($group) }}" class="tab-pane fade in @if($group == $active) active @endif">
 
                                 <div class="tab-additional-info">
-
                                     @if($group == 'Emails')
-
                                         <div class="emails-info">
                                             <div class="alert alert-info alert-dismissible mb-1">
                                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                                                 <div class="info-label mb-0"><div class="icon voyager-info-circled"></div> You can use any SMTP you have access to or mailgun API. Full info can be found over <a target="_blank" class="text-white" href="https://docs.qdev.tech/justfans/#emails">the documentation</a> .</div>
                                             </div>
                                         </div>
-
                                     @endif
-
                                     @if($group == 'Social login')
-
                                         <div class="social-login-info">
                                             <div class="alert alert-info alert-dismissible mb-1">
                                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -296,14 +123,50 @@
                                             </div>
                                         </div>
                                     @endif
-
                                 </div>
 
-                                @if($group == 'ReCaptcha')
-                                    <div class="recaptcha-info">
-                                        <div class="alert alert-info alert-dismissible mb-1">
-                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                            <div class="info-label mb-0 d-flex"><div class="icon voyager-info-circled"></div> <div class="ml-2"> You can get your API Keys from <a target="_blank" class="text-white" href="https://www.google.com/recaptcha/admin">this link</a>. More info at <a target="_blank" class="text-white" href="https://docs.qdev.tech/justfans/#recaptcha">the documentation</a> .</div></div>
+                                @if($group == 'Media')
+                                    <div class="tab-additional-info">
+                                        <div class="coconut-info d-none">
+
+                                            @if(getSetting('storage.driver') == 'public')
+                                                <div class="alert alert-warning alert-dismissible mb-1">
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                    <div class="info-label mb-0"><div class="icon voyager-info-circled"></div><strong>{{__("Warning!")}}</strong> {{__("Coconut transcoding can only be used with a remote storage option. Local storage is not supported.")}}</div>
+                                                </div>
+                                            @endif
+
+                                            @if(!getSetting('websockets.pusher_app_id') && !getSetting('websockets.soketi_host_address'))
+                                                <div class="alert alert-warning alert-dismissible mb-1">
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                    <div class="info-label mb-0"><div class="icon voyager-info-circled"></div><strong>{{__("Warning!")}}</strong> {{__("Coconut transcoding requires websockets to be enabled. Please check the configure your Websockets area.")}}</div>
+                                                </div>
+                                            @endif
+
+                                        </div>
+                                    </div>
+
+                                    <div class="">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <h4 class="mb-4">Media settings</h4>
+
+                                                <div class="tabbable-panel">
+                                                    <div class="tabbable-line">
+                                                        <ul class="nav nav-tabs ">
+                                                            <li class="active">
+                                                                <a href="#media-general" data-toggle="tab" onclick="Admin.mediaSettingsSubTabSwitch('general')">
+                                                                    General </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="#media-videos" data-toggle="tab" onclick="Admin.mediaSettingsSubTabSwitch('videos')">
+                                                                    Videos </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                            </div>
                                         </div>
                                     </div>
                                 @endif
@@ -311,10 +174,7 @@
                                 @if($group == 'Payments')
 
                                     <div class="tab-additional-info">
-
                                         <div class="payments-info">
-
-
                                             @if(!file_exists(storage_path('logs/cronjobs.log')))
                                                 <div class="alert alert-info alert-dismissible mb-1 payments-info-crons">
                                                     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -389,17 +249,14 @@
                                                 </ul>
                                             </div>
 
-                                                <div class="alert alert-info alert-dismissible mb-1 payments-info-nowpayments d-none">
-                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                                    <div class="info-label"><div class="icon voyager-info-circled"></div> In order to use NowPayments as payment provider you'll need the following endpoint:</div>
-                                                    <ul>
-                                                        <li>IPN Callback URL: <code>{{route('nowPayments.payment.update')}}</code></li>
-                                                    </ul>
-                                                </div>
-
+                                            <div class="alert alert-info alert-dismissible mb-1 payments-info-nowpayments d-none">
+                                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                <div class="info-label"><div class="icon voyager-info-circled"></div> In order to use NowPayments as payment provider you'll need the following endpoint:</div>
+                                                <ul>
+                                                    <li>IPN Callback URL: <code>{{route('nowPayments.payment.update')}}</code></li>
+                                                </ul>
+                                            </div>
                                         </div>
-
-
                                     </div>
 
                                     <div class="">
@@ -412,7 +269,7 @@
                                                         <ul class="nav nav-tabs ">
                                                             <li class="active">
                                                                 <a href="#payments-general" data-toggle="tab" onclick="Admin.paymentsSettingsSubTabSwitch('general')">
-                                                                    General settings </a>
+                                                                    General </a>
                                                             </li>
                                                             <li>
                                                                 <a href="#payments-processors" data-toggle="tab" onclick="Admin.paymentsSettingsSubTabSwitch('processors')">
@@ -644,6 +501,7 @@
             'emails.driver': "{{getSetting('emails.driver')}}",
             'storage.driver': "{{getSetting('storage.driver')}}",
             'websockets.driver': "{{getSetting('websockets.driver')}}",
+            'transcoding.driver': "{{getSetting('media.transcoding_driver')}}",
             'colors.theme_color_code': "{{getSetting('colors.theme_color_code')}}",
             'colors.theme_gradient_from': "{{getSetting('colors.theme_gradient_from')}}",
             'colors.theme_gradient_to': "{{getSetting('colors.theme_gradient_to')}}",

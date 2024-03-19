@@ -92,15 +92,7 @@ class TransactionsObserver
                                 }
 
                                 // calculate transaction fee and add it to the total to make sure we don't send more than the threshold
-                                $amountWithTaxesDeducted = $transaction->amount;
-                                $taxes = PaymentsServiceProvider::calculateTaxesForTransaction($transaction);
-                                if (isset($taxes['inclusiveTaxesAmount'])) {
-                                    $amountWithTaxesDeducted = $amountWithTaxesDeducted - $taxes['inclusiveTaxesAmount'];
-                                }
-
-                                if (isset($taxes['exclusiveTaxesAmount'])) {
-                                    $amountWithTaxesDeducted = $amountWithTaxesDeducted - $taxes['exclusiveTaxesAmount'];
-                                }
+                                $amountWithTaxesDeducted = PaymentsServiceProvider::getTransactionAmountWithTaxesDeducted($transaction);
 
                                 $rewardFee = (floatval(getSetting('referrals.fee_percentage')) / 100) * $amountWithTaxesDeducted;
                                 if($rewardFee + $totalEarnedByUser >= floatval(getSetting('referrals.fee_limit')) || $rewardFee === 0) {

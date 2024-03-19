@@ -513,15 +513,8 @@ class PaymentHelper
                 $userWallet = $user->wallet;
 
                 // Adding available balance
-                $taxes = PaymentsServiceProvider::calculateTaxesForTransaction($transaction);
-                $amountWithTaxesDeducted = $transaction->amount;
-                if (isset($taxes['inclusiveTaxesAmount'])) {
-                    $amountWithTaxesDeducted = $amountWithTaxesDeducted - $taxes['inclusiveTaxesAmount'];
-                }
+                $amountWithTaxesDeducted = PaymentsServiceProvider::getTransactionAmountWithTaxesDeducted($transaction);
 
-                if (isset($taxes['exclusiveTaxesAmount'])) {
-                    $amountWithTaxesDeducted = $amountWithTaxesDeducted - $taxes['exclusiveTaxesAmount'];
-                }
                 $walletData = ['total' => $userWallet->total + $amountWithTaxesDeducted];
 
                 $userWallet->update($walletData);
@@ -1554,11 +1547,15 @@ class PaymentHelper
         $valid = false;
         if($transaction) {
             $exclusiveTaxesAmount = 0;
+            $fixedTaxesAmount = 0;
             $taxes = PaymentsServiceProvider::calculateTaxesForTransaction($transaction);
             if(isset($taxes['exclusiveTaxesAmount'])) {
                 $exclusiveTaxesAmount = $taxes['exclusiveTaxesAmount'];
             }
-            $transactionAmountWithoutTaxes = (string)($transaction['amount'] - $exclusiveTaxesAmount);
+            if(isset($taxes['fixedTaxesAmount'])) {
+                $fixedTaxesAmount = $taxes['fixedTaxesAmount'];
+            }
+            $transactionAmountWithoutTaxes = (string)($transaction['amount'] - $exclusiveTaxesAmount - $fixedTaxesAmount);
 
             // Note*: Doing (string) comparison due to PHP float inaccuracy
             // Note* Doing (string)($number + 0) comparison because some mysql drivers doesn't truncate .00 decimals for floats

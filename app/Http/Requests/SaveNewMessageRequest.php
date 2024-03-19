@@ -25,8 +25,14 @@ class SaveNewMessageRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             'price' => [new PPVMinMax('message')]
         ];
+
+        if(getSetting('websockets.driver') === 'pusher'){
+            $rules['message'] = 'max:800';
+        }
+
+        return $rules;
     }
 }

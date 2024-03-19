@@ -72,13 +72,14 @@ return [
         ],
 
         'wasabi' => [
-            'driver' => 'wasabi',
+            'driver' => 's3',
             'key' => '',
             'secret' => '',
             'region' => '',
             'bucket' => '',
             'root' => '/',
             'visibility' => 'public',
+            'endpoint' => env('WASABI_ENDPOINT', 'https://s3.eu-central-1.wasabisys.com/'),
         ],
 
         'do_spaces' => [

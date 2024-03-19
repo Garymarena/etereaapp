@@ -60,6 +60,10 @@ body {
     padding-right: 36px;
 }
 
+.video-preview-item{
+    border-radius: 20px;
+}
+
 .video-preview-item .video-preview {
     border-radius: 20px;
     overflow: hidden;

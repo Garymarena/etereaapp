@@ -53,6 +53,9 @@ class CronClearDrafts extends Command
 
         echo '[*]['.date('H:i:s')."] Zombie draft assets deleted. Total files: ".count($attachments).".\r\n";
         Log::channel('cronjobs')->info('[*]['.date('H:i:s')."] Zombie draft assets deleted. Total files: ".count($attachments).".\r\n");
+
+        // TODO: Add removal of /posts/videos/tmp
+
         return 0;
     }
 }
