@@ -20,13 +20,15 @@
                 @endif
             </div>
             <div class="pl-2 d-flex justify-content-center flex-column">
-                @if(Auth::check())
-                    <div class=""><span class=""><span>@</span>{{Auth::check() ? Auth::user()->username : '@username'}}</span></div>
-                    <small class="p-0 m-0">
-                          {{trans_choice('fans', Auth::user()->fansCount, ['number'=> count(ListsHelper::getUserFollowers(Auth::user()->id))])}} 
-                        - {{trans_choice('following', Auth::user()->followingCount, ['number'=>Auth::user()->followingCount])}}
-                        - {{ trans_choice('subs', Auth::user()->completedSubscriptionsCount, ['number' => Auth::user()->completedSubscriptionsCount]) }} </small>
-                @endif
+            @if(Auth::check())
+                 <div class=""><span class=""><span>@</span>{{ Auth::check() ? Auth::user()->username : '@username' }}</span></div>
+                 <small class="p-0 m-0">
+                  {{ trans_choice('fans', Auth::user()->fansCount, ['number' => count(ListsHelper::getUserFollowers(Auth::user()->id))]) }} 
+                     - {{ trans_choice('following', Auth::user()->followingCount, ['number' => Auth::user()->followingCount]) }}
+                     - {{ trans_choice('subs', Auth::user()->completedSubscriptionsCount, ['number' => Auth::user()->completedSubscriptionsCount]) }}
+                        - {{ floor(count(ListsHelper::getUserFollowers(Auth::user()->id)) * 0.88) }} {{ __('subs') }}
+    </small>
+@endif
             </div>
         </div>
     </div>
