@@ -65,4 +65,16 @@ class Subscription extends Model
     {
         return $this->hasMany('App\Model\Transaction');
     }
+
+    public function subscriptions()
+    {
+        return $this->hasMany('App\Model\Subscription', 'sender_user_id');
+    }
+
+    public function getCompletedSubscriptionsCountAttribute()
+    {
+        return $this->subscriptions()->where('status', 'completed')->count();
+    }
 }
+
+
