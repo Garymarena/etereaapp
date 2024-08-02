@@ -25,7 +25,6 @@
                  <small class="p-0 m-0">
                   {{ trans_choice('fans', Auth::user()->fansCount, ['number' => count(ListsHelper::getUserFollowers(Auth::user()->id))]) }} 
                      - {{ trans_choice('following', Auth::user()->followingCount, ['number' => Auth::user()->followingCount]) }}
-                     - {{ floor(count(ListsHelper::getUserFollowers(Auth::user()->id)) * 0.88) }} {{ __('subs') }}
     </small>
 @endif
             </div>
