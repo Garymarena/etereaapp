@@ -95,7 +95,7 @@ class WithdrawalsObserver
                 'content' => __('Email withdrawal processed', [
                         'siteName' => getSetting('site.name'),
                         'status' => __($withdrawal->status),
-                    ]).($withdrawal->status == 'approved' ? ' '.SettingsServiceProvider::getWebsiteFormattedAmount($withdrawal->amount) . (getSetting('payments.withdrawal_allow_fees')? '(-'.SettingsServiceProvider::getWebsiteCurrencySymbol().$withdrawal->amount / getSetting('payments.withdrawal_default_fee_percentage').' taxes)' : '') .' '.__('has been sent to your account.') : ''),
+                    ]).($withdrawal->status == 'approved' ? ' '.SettingsServiceProvider::getWebsiteFormattedAmount($withdrawal->amount) .' '.__('has been sent to your account.') : ''),
                 'button' => $button,
             ]
         );
