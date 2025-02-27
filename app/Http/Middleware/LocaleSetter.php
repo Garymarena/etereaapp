@@ -15,7 +15,7 @@ class LocaleSetter
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  Closure  $next
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -32,20 +32,12 @@ class LocaleSetter
         // Prepping the translation files for frontend usage
         $langPath = app()->langPath().'/'.App::getLocale();
         // Avoiding any 500 errors
-        if (! file_exists($langPath.'.json')) {
+        if (!file_exists($langPath.'.json')) {
             $langPath = app()->langPath().'/en';
             LocalesServiceProvider::setLocale('en');
         }
-
-        if (env('APP_ENV') == 'production') {
-            Cache::remember('translations', 30, function () use ($langPath) {
-                return file_get_contents($langPath.'.json');
-            });
-        } else {
-            Cache::remember('translations', 30, function () use ($langPath) {
-                return file_get_contents($langPath.'.json');
-            });
-        }
+        // Here, we could read and cache all translationsm, and put the active one in the session
+        session()->put('app_translations', file_get_contents($langPath.'.json'));
 
         return $next($request);
     }

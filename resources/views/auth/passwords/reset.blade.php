@@ -1,4 +1,9 @@
 @extends('layouts.no-nav')
+@section('meta')
+    <meta name="robots" content="noindex">
+@stop
+@section('page_title', __('Reset Password'))
+
 @section('content')
     <div class="container-fluid">
         <div class="row no-gutter">

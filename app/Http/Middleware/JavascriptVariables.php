@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App;
 use App\PlatformSettings;
 use App\Providers\InstallerServiceProvider;
+use App\Providers\ListsHelperServiceProvider;
 use App\UserBadge;
 use App\UserStatus;
 use Auth;
@@ -19,19 +20,16 @@ class JavascriptVariables
 {
     public function handle($request, Closure $next)
     {
-        $mode = Cookie::get('app_theme');
-        if(!$mode){
-            $mode = getSetting('site.default_user_theme');
-        }
         $jsData = [
-            'debug' => env('APP_DEBUG'),
+            'debug' => (bool) env('APP_DEBUG', false),
             'baseUrl' => url(''),
-            'theme' => $mode
+            'theme' => App\Providers\GenericHelperServiceProvider::getSiteTheme(),
+            'direction' => App\Providers\GenericHelperServiceProvider::getSiteDirection(),
         ];
         if (InstallerServiceProvider::checkIfInstalled()) {
             $jsData['ppMode'] = getSetting('payments.paypal_live_mode') != null && getSetting('payments.paypal_live_mode') ? 'live' : 'sandbox';
             $jsData['showCookiesBox'] = getSetting('compliance.enable_cookies_box');
-            $jsData['feedDisableRightClickOnMedia'] = getSetting('feed.disable_right_click');
+            $jsData['feedDisableRightClickOnMedia'] = getSetting('media.disable_media_right_click');
             $jsData['currency'] = App\Providers\SettingsServiceProvider::getAppCurrencyCode();
             $jsData['currencySymbol'] = App\Providers\SettingsServiceProvider::getWebsiteCurrencySymbol();
             $jsData['currencyPosition'] = App\Providers\SettingsServiceProvider::getWebsiteCurrencyPosition();
@@ -54,14 +52,21 @@ class JavascriptVariables
             $jsData['open_ai_enabled'] = getSetting('ai.open_ai_enabled');
             $jsData['tosPageSlug'] = App\Providers\GenericHelperServiceProvider::getTOSPage() ? App\Providers\GenericHelperServiceProvider::getTOSPage()->slug : null;
             $jsData['privacyPageSlug'] = App\Providers\GenericHelperServiceProvider::getPrivacyPage() ? App\Providers\GenericHelperServiceProvider::getPrivacyPage()->slug : null;
+            $jsData['siteName'] = getSetting('site.name');
+            $jsData['allow_hyperlinks'] = getSetting('profiles.allow_hyperlinks');
+            $jsData['show_online_users_indicator'] = getSetting('profiles.show_online_users_indicator');
+
         }
-        JavaScript::put(['app'=>$jsData]);
+        JavaScript::put(['app' => $jsData]);
 
         if (Auth::check()) {
             JavaScript::put([
                 'user' => [
                     'username' => Auth::user()->username,
                     'user_id' => Auth::user()->id,
+                    'stripe_connect_verified' => Auth::user()->stripe_onboarding_verified,
+                    'user_country_id' => Auth::user()->country_id,
+                    'lists' => ListsHelperServiceProvider::getUserListTrimmed(),
                 ],
                 'socketsDriver' => getSetting('websockets.driver'),
                 'pusher' => [
@@ -77,9 +82,9 @@ class JavascriptVariables
                 ],
                 'appSettings' => [
                     'feed' => [
-                        'allow_gallery_zoom' => getSetting('feed.allow_gallery_zoom') ? true : false
+                        'allow_gallery_zoom' => getSetting('feed.allow_gallery_zoom') ? true : false,
                     ],
-                ]
+                ],
             ]);
         }
 

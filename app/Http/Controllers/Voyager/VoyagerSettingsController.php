@@ -62,7 +62,7 @@ class VoyagerSettingsController extends BaseVoyagerSettingsController
             try {
                 EmailsServiceProvider::sendGenericEmail(
                     [
-                        'email' => 'smtp-test'.rand(1000,9999).'@mailinator.com',
+                        'email' => 'smtp-test'.rand(1000, 9999).'@mailinator.com',
                         'subject' => __('SMTP Testing'),
                         'title' => __('SMTP Testing'),
                         'content' => __('SMTP Testing'),
@@ -74,12 +74,12 @@ class VoyagerSettingsController extends BaseVoyagerSettingsController
                 );
             }catch (\Exception $e){
                 SettingsServiceProvider::setDefaultStorageDriver('public');
-                Voyager::model('Setting')->where('key','emails.driver')->update(['value' => 'log']);
+                Voyager::model('Setting')->where('key', 'emails.driver')->update(['value' => 'log']);
                 $emailsErrorMessage = $e->getMessage();
             }
         }
 
-        return Voyager::view('voyager::settings.index', compact('settings', 'groups', 'active', 'emailsErrorMessage' , 'storageErrorMessage'));
+        return Voyager::view('voyager::settings.index', compact('settings', 'groups', 'active', 'emailsErrorMessage', 'storageErrorMessage'));
     }
 
     public function update(Request $request)
@@ -119,15 +119,13 @@ class VoyagerSettingsController extends BaseVoyagerSettingsController
             $setting->save();
         }
 
-
         request()->flashOnly('setting_tab');
 
         return back()->with([
             'message'    => __('voyager::settings.successfully_saved'),
             'alert-type' => 'success',
             'changedStorageDriver' => $changedStorageDriver,
-            'changedSEmailDriver' => $changedSEmailDriver
+            'changedSEmailDriver' => $changedSEmailDriver,
         ]);
     }
-
 }

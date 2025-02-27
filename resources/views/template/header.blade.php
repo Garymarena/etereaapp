@@ -10,32 +10,36 @@
         <div class="collapse navbar-collapse pl-3 pl-md-0" id="navbarSupportedContent">
             <!-- Left Side Of Navbar -->
             <ul class="navbar-nav mr-auto">
-                    @if(Auth::check())
+                @if(Auth::check())
+                    @if(!getSetting('site.hide_create_post_menu'))
                         <li class="nav-item">
                             <a class="nav-link ml-0 ml-md-2" href="{{ route('posts.create') }}">{{ __('Create') }}</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link ml-0 ml-md-2" href="{{ route('feed') }}">{{ __('Feed') }}</a>
-                        </li>
                     @endif
+                    <li class="nav-item">
+                        <a class="nav-link ml-0 ml-md-2" href="{{ route('feed') }}">{{ __('Feed') }}</a>
+                    </li>
+                @endif
             </ul>
 
             <!-- Right Side Of Navbar -->
             <ul class="navbar-nav ml-auto">
                 <!-- Authentication Links -->
                 @guest
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                    </li>
-                    @if (Route::has('register'))
+                    @if(Route::currentRouteName() !== 'profile')
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
+                            <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
                         </li>
+                        @if (Route::has('register'))
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
+                            </li>
+                        @endif
                     @endif
                 @else
                     <li class="nav-item dropdown">
                         <a id="navbarDropdown" class="nav-link dropdown-toggle text-right text-truncate d-flex align-items-center" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <div class="text-truncate max-width-150">{{ Auth::user()->name }}</div> <img src="{{Auth::user()->avatar}}" class="rounded-circle home-user-avatar">
+                            <div class="text-truncate max-width-150 mr-1">{{ Auth::user()->name }}</div> <img src="{{Auth::user()->avatar}}" class="rounded-circle home-user-avatar">
                         </a>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" href="{{route('feed')}}">

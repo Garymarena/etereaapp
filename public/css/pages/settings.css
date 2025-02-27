@@ -9,10 +9,6 @@
     flex-wrap:nowrap;
 }
 
-.setting-menu-mobile .mCSB_container{
-    display: flex;
-}
-
 .verify-form .dropzone{
     min-height: auto;!important;
 }

@@ -11,7 +11,7 @@ class AttachmentsObserver
     /**
      * Listen to the Attachment deleted event.
      *
-     * @param  \App\Model\Attachment  $attachment
+     * @param  Attachment  $attachment
      * @return void
      */
     public function deleted(Attachment $attachment)
@@ -19,7 +19,7 @@ class AttachmentsObserver
         try {
             AttachmentServiceProvider::removeAttachment($attachment);
         } catch (\Exception $exception) {
-            Log::error("Failed deleting files for attachment: " . $attachment->id . ", e: " . $exception->getMessage());
+            Log::error("Failed deleting files for attachment: ".$attachment->id.", e: ".$exception->getMessage());
         }
     }
 }

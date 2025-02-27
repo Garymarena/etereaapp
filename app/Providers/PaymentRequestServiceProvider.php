@@ -32,16 +32,16 @@ class PaymentRequestServiceProvider extends ServiceProvider
     }
 
     /**
-     * Creates a payment request for admins by a transaction
+     * Creates a payment request for admins by a transaction.
      * @param $transaction
      */
-    public static function createDepositPaymentRequestByTransaction($transaction, $files, $description){
+    public static function createDepositPaymentRequestByTransaction($transaction, $files, $description) {
         $paymentRequest = PaymentRequest::create([
             'type' => PaymentRequest::DEPOSIT_TYPE,
             'user_id' => $transaction['recipient_user_id'],
             'transaction_id' => $transaction['id'],
             'amount' => $transaction['amount'],
-            'message' => $description
+            'message' => $description,
         ]);
 
         if($paymentRequest){
@@ -50,7 +50,7 @@ class PaymentRequestServiceProvider extends ServiceProvider
                 if(count($filesArray)){
                     foreach ($filesArray as $attachmentId){
                         $attachment = Attachment::query()->where('id', $attachmentId)->first();
-                        if($attachment!=null){
+                        if($attachment != null){
                             $attachment->update(['payment_request_id' => $paymentRequest['id']]);
                         }
                     }

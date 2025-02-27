@@ -8,10 +8,8 @@
 @section('share_type', 'article')
 @section('share_img', GenericHelper::getOGMetaImage())
 
-@if(getSetting('security.recaptcha_enabled') && !Auth::check())
-    @section('meta')
-        {!! NoCaptcha::renderJs() !!}
-    @stop
+@if(getSetting('security.captcha_driver') !== 'none' && !Auth::check())
+    <x-captcha-js />
 @endif
 
 @section('content')
@@ -32,11 +30,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 d-none d-md-flex bg-image p-0 m-0">
-                <div class="d-flex m-0 p-0 bg-gradient-primary w-100 h-100">
-                    <img src="{{asset('/img/pattern-lines.svg')}}" alt="pattern-lines" class="img-fluid opacity-10">
-                </div>
-            </div>
+            @include('auth.login-background')
         </div>
     </div>
 @endsection

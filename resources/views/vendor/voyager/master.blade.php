@@ -57,6 +57,10 @@
 
 <body class="voyager @if(isset($dataType) && isset($dataType->slug)){{ $dataType->slug }}@endif">
 
+@if(\App\Providers\InstallerServiceProvider::hasAvailableMigrations())
+    @include('elements.admin.incomplete-update-dialog')
+@endif
+
 <div id="voyager-loader">
     <?php $admin_loader_img = Voyager::setting('admin.loader', ''); ?>
     @if($admin_loader_img == '')
@@ -116,6 +120,12 @@ if (\Illuminate\Support\Str::startsWith(Auth::user()->avatar, 'http://') || \Ill
     }
     @endif
     var appUrl = "{{url('')}}";
+
+    @if(\App\Providers\InstallerServiceProvider::hasAvailableMigrations())
+    $(document).ready(function(){
+        $('#globalModal').modal('show');
+    });
+    @endif
 
 </script>
 @include('voyager::media.manager')

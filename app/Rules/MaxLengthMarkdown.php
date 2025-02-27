@@ -40,6 +40,6 @@ class MaxLengthMarkdown implements Rule
      */
     public function message()
     {
-        return __('The bio may not be greater than :chars characters.',['chars'=>  getSetting('profiles.max_profile_bio_length')]);
+        return __('The bio may not be greater than :chars characters.', ['chars'=>  getSetting('profiles.max_profile_bio_length')]);
     }
 }

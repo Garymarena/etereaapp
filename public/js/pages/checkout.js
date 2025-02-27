@@ -349,7 +349,7 @@ var checkout = {
     checkoutAmountValidation: function () {
         const checkoutAmount = $('#checkout-amount').val();
         // Apply a tips min-max validation | Rest don't need any constrains
-        if(checkout.paymentData.type == 'tip'){
+        if(checkout.paymentData.type === 'tip'){
             if ((checkoutAmount.length > 0 && checkoutAmount >= app.tipMinAmount && checkoutAmount <= app.tipMaxAmount)) {
                 $('#checkout-amount').removeClass('is-invalid');
                 $('#paypal-deposit-amount').val(checkoutAmount);

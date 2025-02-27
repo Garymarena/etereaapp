@@ -6,28 +6,32 @@
 
 $(function () {
     const location = window.location.href;
+    // Settings page overrides
     if(location.indexOf('admin/settings') >= 0){
+        // Default inits/binds
         Admin.settingsPageInit();
-        // eslint-disable-next-line no-undef
-        Admin.emailSettingsSwitch(site_settings["emails.driver"]);
-        // eslint-disable-next-line no-undef
-        Admin.storageSettingsSwitch(site_settings["storage.driver"]);
-        Admin.socketsSettingsSwitch(site_settings["websockets.driver"]);
-        Admin.videosSettingsSwitch(site_settings["transcoding.driver"]);
         Admin.initActiveTabOnSaveEvents();
-
         Admin.setCustomSettingsTabEvents();
+        Admin.initThemeColorPickers();
+
+        // Driver/Dropdown driver selector inits
+        Admin.emailsDriverSwitch(site_settings["emails.driver"]);
+        Admin.storageDriverSwitch(site_settings["storage.driver"]);
+        Admin.socketsDriverSwitch(site_settings["websockets.driver"]);
+        Admin.transcodingDriverSwitch(site_settings["transcoding.driver"]);
+        Admin.captchaDriverSwitch(site_settings["security.captcha_driver"]);
+
+        // Sub-categories switch
         Admin.paymentsSettingsSubTabSwitch('general');
         Admin.mediaSettingsSubTabSwitch('general');
+        Admin.securitySettingsSubTabSwitch('general');
+        Admin.feedSettingsSubTabSwitch('general');
+        Admin.socialSettingsSubTabSwitch('login');
 
         // CTRL+S Override
         $(document).keydown(function(e) {
-            var key = undefined;
-            var possible = [ e.key, e.keyIdentifier, e.keyCode, e.which ];
-            while (key === undefined && possible.length > 0) {
-                key = possible.pop();
-            }
-            if (key && (key === '115' || key == '83' ) && (e.ctrlKey || e.metaKey) && !(e.altKey)) {
+            var key = e.which || e.keyCode; // Use e.which if available, otherwise fallback to e.keyCode
+            if (key && (key === 83 || key === 115) && (e.ctrlKey || e.metaKey) && !e.altKey) {
                 e.preventDefault();
                 $('.save-settings-form').submit();
                 return false;
@@ -35,35 +39,14 @@ $(function () {
             return true;
         });
 
-        Admin.initThemeColorPickers();
-
     }
 
-    // master
-    var appContainer = document.querySelector('.app-container'),
-        sidebar = appContainer.querySelector('.side-menu'),
-        navbar = appContainer.querySelector('nav.navbar.navbar-top'),
-        loader = document.getElementById('voyager-loader'),
-        hamburgerMenu = document.querySelector('.hamburger'),
-        sidebarTransition = sidebar.style.transition,
-        navbarTransition = navbar.style.transition,
-        containerTransition = appContainer.style.transition;
-
-    sidebar.style.WebkitTransition = sidebar.style.MozTransition = sidebar.style.transition =
-        appContainer.style.WebkitTransition = appContainer.style.MozTransition = appContainer.style.transition =
-            navbar.style.WebkitTransition = navbar.style.MozTransition = navbar.style.transition = 'none';
-
-    if (window.innerWidth > 768 && window.localStorage && window.localStorage['voyager.stickySidebar'] === 'true') {
-        appContainer.className += ' expanded no-animation';
-        loader.style.left = (sidebar.clientWidth/2)+'px';
-        hamburgerMenu.className += ' is-active no-animation';
+    // Withdrawal page overrides
+    if(location.indexOf('admin/withdrawals') >= 0) {
+        Admin.processWithdrawalApproval();
     }
 
-    navbar.style.WebkitTransition = navbar.style.MozTransition = navbar.style.transition = navbarTransition;
-    sidebar.style.WebkitTransition = sidebar.style.MozTransition = sidebar.style.transition = sidebarTransition;
-    appContainer.style.WebkitTransition = appContainer.style.MozTransition = appContainer.style.transition = containerTransition;
-
-    // login
+    // Login page overrides
     if(location.indexOf('admin/login') >= 0){
         var btn = document.querySelector('button[type="submit"]');
         var form = document.forms[0];
@@ -79,7 +62,6 @@ $(function () {
         });
         email.focus();
         document.getElementById('emailGroup').classList.add("focused");
-
         // Focus events for email and password fields
         email.addEventListener('focusin', function(){
             document.getElementById('emailGroup').classList.add("focused");
@@ -87,7 +69,6 @@ $(function () {
         email.addEventListener('focusout', function(){
             document.getElementById('emailGroup').classList.remove("focused");
         });
-
         password.addEventListener('focusin', function(){
             document.getElementById('passwordGroup').classList.add("focused");
         });
@@ -96,11 +77,11 @@ $(function () {
         });
     }
 
-
 });
 
 var Admin = {
 
+    approveWithdrawalId: '',
     activeSettingsTab : '',
     themeColors: {
         theme_color_code: '#cb0c9f',
@@ -110,82 +91,31 @@ var Admin = {
 
     initActiveTabOnSaveEvents: function(){
         $('.save-settings-form').on('submit',function(evt){
-            // code
             if(Admin.activeSettingsTab === 'payments-processors' || Admin.activeSettingsTab === 'payments-general' || Admin.activeSettingsTab === 'payments-invoices' || Admin.activeSettingsTab === 'payments-withdrawals') {
                 $('.setting_tab').val('Payments');
             }
-
             if(Admin.activeSettingsTab === 'media-general' || Admin.activeSettingsTab === 'media-videos') {
                 $('.setting_tab').val('Media');
             }
-
+            if(Admin.activeSettingsTab === 'security-general' || Admin.activeSettingsTab === 'security-captcha') {
+                $('.setting_tab').val('Security');
+            }
+            if(Admin.activeSettingsTab === 'feed-general' || Admin.activeSettingsTab === 'feed-widgets') {
+                $('.setting_tab').val('Feed');
+            }
+            if(Admin.activeSettingsTab === 'social-login' || Admin.activeSettingsTab === 'social-links') {
+                $('.setting_tab').val('Social');
+            }
             if(Admin.activeSettingsTab === 'colors'){
                 evt.preventDefault();
                 Admin.generateTheme();
             }
-
             if(Admin.activeSettingsTab === 'license'){
                 evt.preventDefault();
                 Admin.saveLicense();
             }
-
             if(!Admin.validateSettingFields()){
-                evt.preventDefault();
-                // launch toast
-            }
-        });
-    },
-
-    /**
-     * Theme generator function
-     */
-    generateTheme: function(){
-        const data = {
-            'product' :'fans',
-            'skip_rtl' : $('*[name="theme_skip_rtl"]').is(':checked') ? false : true,
-            'color_code' : Admin.themeColors.theme_color_code.replace('#',''),
-            'gradient_from' : Admin.themeColors.theme_gradient_from.replace('#',''),
-            'gradient_to' : Admin.themeColors.theme_gradient_to.replace('#',''),
-            'code' : $('*[name="license_product_license_key"]').val(),
-        };
-
-        $('#voyager-loader').fadeIn();
-        $.ajax({
-            type: 'POST',
-            data: data,
-            url: appUrl + '/admin/theme/generate',
-            success: function (result) {
-                $('#voyager-loader').fadeOut();
-                toastr.success(result.message);
-                if(result.data.doBrowserRedirect){
-                    window.location="https://themes-v2.qdev.tech/"+result.data.path;
-                }
-            },
-            error: function (result) {
-                $('#voyager-loader').fadeOut();
-                toastr.error(result.responseJSON.error);
-            }
-        });
-    },
-
-    /**
-     * Saves license data
-     */
-    saveLicense: function(){
-        $('#voyager-loader').fadeIn();
-        $.ajax({
-            type: 'POST',
-            data: {
-                'product_license_key' : $('.license_product_license_key').val()
-            },
-            url: appUrl + '/admin/license/save',
-            success: function (result) {
-                $('#voyager-loader').fadeOut();
-                toastr.success(result.message);
-            },
-            error: function (result) {
-                $('#voyager-loader').fadeOut();
-                toastr.error(result.responseJSON.error);
+                evt.preventDefault(); // Maybe launch a toast
             }
         });
     },
@@ -203,182 +133,224 @@ var Admin = {
     settingsPageInit: function(){
         // $('.settings-menu-site').click(); // Avoiding settings mess up bug
         $('select[name="emails.driver"]').on('change',function () {
-            Admin.emailSettingsSwitch($(this).val());
+            Admin.emailsDriverSwitch($(this).val());
         });
         $('select[name="storage.driver"]').on('change',function () {
-            Admin.storageSettingsSwitch($(this).val());
+            Admin.storageDriverSwitch($(this).val());
         });
         $('select[name="websockets.driver"]').on('change',function () {
-            Admin.socketsSettingsSwitch($(this).val());
+            Admin.socketsDriverSwitch($(this).val());
         });
         $('select[name="payments.driver"]').on('change',function () {
-            Admin.paymentsSettingsSwitch($(this).val());
+            Admin.paymentsDriverSwitch($(this).val());
         });
         $('select[name="media.transcoding_driver"]').on('change',function () {
-            Admin.videosSettingsSwitch($(this).val());
+            Admin.transcodingDriverSwitch($(this).val());
+        });
+        $('select[name="security.captcha_driver"]').on('change',function () {
+            Admin.captchaDriverSwitch($(this).val());
+        });
+        $('select[name="feed.widget"]').on('change',function () {
+            Admin.widgetDriverSwitch($(this).val());
         });
         Admin.settingsHide();
     },
 
     /**
-     * Validate setting fields manually, as voyager doesn't apply rules on setting fields
+     * Validates setting fields manually, as Voyager doesn't apply rules on setting fields.
      * @returns {boolean}
      */
-    validateSettingFields: function(){
+    validateSettingFields: function() {
         let error = 'Please fill in all the fields';
-        if(Admin.activeSettingsTab === 'storage' && $('select[name="storage.driver"]').val() === 's3'){
-            if(
-                $('input[name="storage.aws_access_key').val().length > 0 &&
-                $('input[name="storage.aws_secret_key').val().length > 0 &&
-                $('input[name="storage.aws_region').val().length > 0 &&
-                $('input[name="storage.aws_bucket_name').val().length > 0
-            ){
-                return true;
-            }
-            else{
-                toastr.error(error);
-                return false;
-            }
-        }
-        if(Admin.activeSettingsTab === 'storage' && $('select[name="storage.driver"]').val() === 'wasabi'){
-            if(
-                $('input[name="storage.was_access_key').val().length > 0 &&
-                $('input[name="storage.was_secret_key').val().length > 0 &&
-                $('input[name="storage.was_region').val().length > 0 &&
-                $('input[name="storage.was_bucket_name').val().length > 0
-            ){
-                return true;
-            }
-            else{
-                toastr.error(error);
-                return false;
-            }
-        }
-        if(Admin.activeSettingsTab === 'storage' && $('select[name="storage.driver"]').val() === 'do_spaces'){
-            if(
-                $('input[name="storage.do_access_key').val().length > 0 &&
-                $('input[name="storage.do_secret_key').val().length > 0 &&
-                $('input[name="storage.do_region').val().length > 0 &&
-                $('input[name="storage.do_bucket_name').val().length > 0
-            ){
-                return true;
-            }
-            else{
-                toastr.error(error);
-                return false;
-            }
-        }
-        if(Admin.activeSettingsTab === 'storage' && $('select[name="storage.driver"]').val() === 'minio'){
-            if(
-                $('input[name="storage.minio_access_key').val().length > 0 &&
-                $('input[name="storage.minio_secret_key').val().length > 0 &&
-                $('input[name="storage.minio_region').val().length > 0 &&
-                $('input[name="storage.minio_endpoint').val().length > 0 &&
-                $('input[name="storage.minio_bucket_name').val().length > 0
-            ){
-                return true;
-            }
-            else{
-                toastr.error(error);
-                return false;
+
+        if (Admin.activeSettingsTab === 'storage') {
+            let storageDriver = $('select[name="storage.driver"]').val();
+
+            // Mapping of storage drivers to their required fields
+            let requiredFields = {
+                's3': [
+                    'storage.aws_access_key',
+                    'storage.aws_secret_key',
+                    'storage.aws_region',
+                    'storage.aws_bucket_name'
+                ],
+                'wasabi': [
+                    'storage.was_access_key',
+                    'storage.was_secret_key',
+                    'storage.was_region',
+                    'storage.was_bucket_name'
+                ],
+                'do_spaces': [
+                    'storage.do_access_key',
+                    'storage.do_secret_key',
+                    'storage.do_region',
+                    'storage.do_bucket_name'
+                ],
+                'minio': [
+                    'storage.minio_access_key',
+                    'storage.minio_secret_key',
+                    'storage.minio_region',
+                    'storage.minio_endpoint',
+                    'storage.minio_bucket_name'
+                ],
+                'pushr': [
+                    'storage.pushr_access_key',
+                    'storage.pushr_secret_key',
+                    'storage.pushr_endpoint',
+                    'storage.pushr_bucket_name'
+                ]
+            };
+
+            let fields = requiredFields[storageDriver];
+
+            if (fields) {
+                let allFieldsFilled = fields.every(function(fieldName) {
+                    let fieldValue = $('input[name="' + fieldName + '"]').val();
+                    return fieldValue && fieldValue.trim().length > 0;
+                });
+
+                if (allFieldsFilled) {
+                    return true;
+                } else {
+                    toastr.error(error);
+                    return false;
+                }
             }
         }
-        if(Admin.activeSettingsTab === 'storage' && $('select[name="storage.driver"]').val() === 'pushr'){
-            if(
-                $('input[name="storage.pushr_access_key').val().length > 0 &&
-                $('input[name="storage.pushr_secret_key').val().length > 0 &&
-                $('input[name="storage.pushr_endpoint').val().length > 0 &&
-                $('input[name="storage.pushr_bucket_name').val().length > 0
-            ){
-                return true;
-            }
-            else{
-                toastr.error(error);
-                return false;
-            }
-        }
+
+        // Return true if no validation is needed
         return true;
     },
 
     /**
-     * Filters up emails settings based on a dropdown value
-     * @param type
+     * Filters email settings based on the selected driver type.
+     * @param {string} type - The selected email driver type.
      */
-    emailSettingsSwitch: function(type){
+    emailsDriverSwitch: function(type) {
+        // Hide all email settings
         Admin.settingsHide('emails');
-        $('.setting-row').each(function(key,element) {
-            if($(element).attr('class').indexOf(type) >= 0){
-                $(element).show();
-            }
-        });
+        // Show settings that match the selected type
+        $('.setting-row[class*="' + type + '"]').show();
     },
 
-    paymentsSettingsSwitch: function(type){
+    /**
+     * Switches the payments driver settings based on the selected type.
+     * @param {string} type - The selected payments driver.
+     */
+    paymentsDriverSwitch: function(type) {
+        // Hide all payments settings
         Admin.settingsHide('payments');
-        switch (type) {
-        case 'stripe':
-            Admin.togglePaymentsSubCategory('stripe');
-            break;
-        case 'paypal':
-            Admin.togglePaymentsSubCategory('paypal');
-            break;
-        case 'coinbase':
-            Admin.togglePaymentsSubCategory('coinbase');
-            break;
-        case 'nowpayments':
-            Admin.togglePaymentsSubCategory('nowpayments');
-            break;
-        case 'ccbill':
-            Admin.togglePaymentsSubCategory('ccbill');
-            break;
-        case 'offline':
+
+        if (type === 'offline') {
+            // Show all payment subcategory info
             Admin.togglePaymentsSubCategoryInfo('all');
-            $('.setting-row').each(function(key,element) {
-                if($(element).attr('class').indexOf('payments.allow_manual_payments') >= 0 || $(element).attr('class').indexOf('payments.offline_payments') >= 0){
-                    $(element).show();
-                }
-            });
-            break;
-        case 'paystack':
-            Admin.togglePaymentsSubCategory('paystack');
-            break;
-        case 'mercado':
-            Admin.togglePaymentsSubCategory('mercado');
-            break;
+
+            // Show specific settings for 'offline' payments by matching class substrings
+            $('.setting-row[class*="payments.allow_manual_payments"], .setting-row[class*="payments.offline_payments"]').show();
+        } else {
+            // Toggle the payments subcategory for the selected type
+            Admin.togglePaymentsSubCategory(type);
         }
+
+        // Set the payments driver value
         $('#payments.driver').val(type);
     },
 
     /**
-     * Parses all settings and only shows
-     * @param pattern
+     * Parses all payment settings and only shows those matching the pattern.
+     * @param {string} pattern - The payment subcategory pattern to match.
      */
-    togglePaymentsSubCategory: function(pattern){
-        // Show hide fields in an efficient manner
-        //TODO: Use lets/unset them?
-        var rows = $('.setting-row');
-        var rowsLength = rows.length;
-        for(let i = 0; i < rowsLength; i++){
-            let element = rows[i];
-            if($(element).attr('class').indexOf('payments.'+pattern) >= 0){
-                element.style.display = 'block';
-            }
-        }
+    togglePaymentsSubCategory: function(pattern) {
+        // Show settings that match the pattern
+        var selector = '.setting-row[class*="payments.' + pattern + '"]';
+        $(selector).show();
+
+        // Update the payments subcategory info
         Admin.togglePaymentsSubCategoryInfo(pattern);
     },
 
-    toggleMediaSubCategory: function(pattern){
-        // Show hide fields in an efficient manner
-        //TODO: Use lets/unset them?
-        var rows = $('.setting-row');
-        var rowsLength = rows.length;
-        for(let i = 0; i < rowsLength; i++){
-            let element = rows[i];
-            if($(element).attr('class').indexOf('media.'+pattern) >= 0){
-                element.style.display = 'block';
-            }
-        }
+    /**
+     * Shows media settings fields based on the provided pattern.
+     * @param {string} pattern - The pattern to match in the media settings.
+     */
+    toggleMediaSubCategory: function(pattern) {
+        // Hide all media settings
+        // $('.setting-row[class*="media."]').hide();
+
+        // Show settings that match the pattern
+        var selector = '.setting-row[class*="media.' + pattern + '"]';
+        $(selector).show();
     },
+
+    /**
+     * Shows security settings fields based on the provided pattern.
+     * @param {string} pattern - The pattern to match in the security settings.
+     */
+    toggleSecuritySubCategory: function(pattern) {
+        // Hide all security settings
+        // $('.setting-row[class*="security."]').hide();
+
+        // Show settings that match the pattern
+        var selector = '.setting-row[class*="security.' + pattern + '"]';
+        $(selector).show();
+    },
+
+    /**
+     * Shows feed settings fields based on the provided pattern.
+     * @param {string} pattern - The pattern to match in the security settings.
+     */
+    toggleFeedSubCategory: function(pattern) {
+        var selector = ""; // Initialize selector variable
+
+        switch (pattern) {
+        case "suggestions":
+            // Classes related to "suggestions"
+            var suggestionsClasses = [
+                "feed.hide_suggestions_slider",
+                "feed.suggestions_skip_empty_profiles",
+                "feed.suggestions_skip_unverified_profiles",
+                "feed.suggestions_use_featured_users_list",
+                "feed.feed_suggestions_autoplay",
+                "feed.feed_suggestions_total_cards",
+                "feed.feed_suggestions_total_cards",
+                "feed.feed_suggestions_card_per_page",
+
+            ];
+            selector = suggestionsClasses.map(cls => '.setting-row[class*="' + cls + '"]').join(",");
+            break;
+
+        case "expired-subs":
+            // Classes related to "expired-subs"
+            var expiredSubsClasses = [
+                "feed.expired_subs_widget_autoplay",
+                "feed.expired_subs_widget_card_per_page",
+                "feed.expired_subs_widget_total_cards",
+                "feed.expired_subs_widget_hide"
+            ];
+            selector = expiredSubsClasses.map(cls => '.setting-row[class*="' + cls + '"]').join(",");
+            break;
+
+        case "search":
+            // Classes related to "search"
+            var searchClasses = [
+                "feed.default_search_widget_filter",
+                "feed.search_widget_hide",
+            ];
+            selector = searchClasses.map(cls => '.setting-row[class*="' + cls + '"]').join(",");
+            break;
+
+        default:
+            // Default case for unmatched patterns
+            selector = '.setting-row[class*="feed.' + pattern + '"]';
+            break;
+        }
+
+        // Hide all rows and then show only the matched ones
+        // $('.setting-row').hide();
+        $(selector).show();
+    },
+
+
 
     /**
      * Hide/show payments info box
@@ -402,63 +374,49 @@ var Admin = {
     },
 
     /**
-     * Switches sockets settings tabs
-     * @param type
+     * Switches sockets settings tabs.
+     * @param {string} type - The sockets driver type (e.g., 'pusher', 'some_other_driver').
      */
-    socketsSettingsSwitch: function(type = 'pusher'){
+    socketsDriverSwitch: function(type = 'pusher') {
+        // Hide all sockets settings
         Admin.settingsHide('sockets');
-        $('.setting-row').each(function(key,element) {
-            if($(element).attr('class').indexOf(type) >= 0){
-                $(element).show();
-            }
-        });
+        // Show settings that match the driver type
+        var selector = '.setting-row[class*="' + type + '"]';
+        $(selector).show();
     },
 
     /**
-     * Filters up storage settings based on a dropdown value
-     * @param type
+     * Filters storage settings based on a dropdown value.
+     * @param {string} type - The selected storage type.
      */
-    storageSettingsSwitch: function(type){
+    storageDriverSwitch: function(type) {
         Admin.settingsHide('storage');
-        if(type === 's3'){
-            $('.setting-row').each(function(key,element) {
-                if($(element).attr('class').indexOf('aws') >= 0 || $(element).attr('class').indexOf('cdn_domain_name') >= 0){
-                    $(element).show();
-                }
-            });
-        }
-        else if(type === 'wasabi'){
-            $('.setting-row').each(function(key,element) {
-                if($(element).attr('class').indexOf('was') >= 0){
-                    $(element).show();
-                }
-            });
-        }
-        else if(type === 'do_spaces'){
-            $('.setting-row').each(function(key,element) {
-                if($(element).attr('class').indexOf('do_') >= 0){
-                    $(element).show();
-                }
-            });
-        }
-        else if(type === 'minio'){
-            $('.setting-row').each(function(key,element) {
-                if($(element).attr('class').indexOf('minio_') >= 0){
-                    $(element).show();
-                }
-            });
-        }
-        else if(type === 'pushr'){
-            $('.setting-row').each(function(key,element) {
-                if($(element).attr('class').indexOf('pushr_') >= 0){
-                    $(element).show();
-                }
-            });
+
+        // Mapping of storage types to their corresponding class substrings
+        var classMap = {
+            's3': ['aws', 'cdn_domain_name'],
+            'wasabi': ['was'],
+            'do_spaces': ['do_'],
+            'minio': ['minio_'],
+            'pushr': ['pushr_']
+        };
+
+        var substringsToMatch = classMap[type];
+
+        if (substringsToMatch) {
+            // Create a selector string that matches elements whose class attribute contains the substring
+            var selector = substringsToMatch.map(function(substring) {
+                return '.setting-row[class*="' + substring + '"]';
+            }).join(', ');
+
+            // Show the selected elements
+            $(selector).show();
         }
     },
 
     /**
      * Hides some settings fields by default
+     * May keep some general fields available in multiple sub-tabs
      * @param prefix
      */
     settingsHide: function (prefix, hideAll = false) {
@@ -473,6 +431,11 @@ var Admin = {
                     break;
                 case 'storage':
                     if(settingName !== 'storage.driver'){
+                        $(element).hide();
+                    }
+                    break;
+                case 'social':
+                    if(hideAll){
                         $(element).hide();
                     }
                     break;
@@ -507,6 +470,53 @@ var Admin = {
                             'media.users_covers_size',
                             'media.users_avatars_size',
                             'media.max_avatar_cover_file_size',
+                            'media.disable_media_right_click',
+                            'media.use_blurred_previews_for_locked_posts'
+                        ].includes(settingName)){
+                            $(element).hide();
+                        }
+                    }
+                    break;
+                case 'security':
+                    if(hideAll){
+                        $(element).hide();
+                    }
+                    else{
+                        if([
+                            'security.allow_geo_blocking',
+                            'security.abstract_api_key',
+                            'security.enforce_email_valid_check',
+                            'security.email_abstract_api_key',
+                            'security.enable_2fa',
+                            'security.default_2fa_on_register',
+                            'security.allow_users_2fa_switch',
+                            'security.enforce_app_ssl',
+                            'security.recaptcha_enabled',
+                            'security.recaptcha_site_key',
+                            'security.recaptcha_site_secret_key',
+                            'security.hcaptcha_site_key',
+                            'security.hcaptcha_site_secret_key',
+                            'security.turnstile_site_key',
+                            'security.turnstile_site_secret_key',
+                        ].includes(settingName)){
+                            $(element).hide();
+                        }
+                    }
+                    break;
+                case 'feed':
+                    if(hideAll){
+                        $(element).hide();
+                    }
+                    else{
+                        if([
+                            'security.allow_geo_blocking',
+                            'security.abstract_api_key',
+                            'security.enforce_email_valid_check',
+                            'security.email_abstract_api_key',
+                            'security.enable_2fa',
+                            'security.default_2fa_on_register',
+                            'security.allow_users_2fa_switch',
+                            'security.enforce_app_ssl',
                         ].includes(settingName)){
                             $(element).hide();
                         }
@@ -521,121 +531,302 @@ var Admin = {
      * Hides some settings fields by default
      * @param prefix
      */
+    /**
+     * Updates the payments settings view based on the selected sub-tab.
+     * @param {string} prefix - The selected sub-tab prefix.
+     */
     paymentsSettingsSubTabSwitch: function (prefix) {
+        // Hide all payments settings
         Admin.settingsHide('payments', true);
-        $('.setting-row').each(function(key,element) {
+        // Reset withdrawal stripe connect info
+        Admin.toggleWithdrawalsStripeConnectInfo(false);
 
-            if($(element).attr('class').indexOf('payments'+'.') >= 0){
-                let settingName = $(element).data('settingkey');
-                switch (prefix) {
-                case 'general':
-                    Admin.togglePaymentsSubCategoryInfo('all');
-                    if([
-                        'payments.deposit_min_amount',
-                        'payments.deposit_max_amount',
-                        'payments.currency_code',
-                        'payments.currency_symbol',
-                        'payments.currency_position',
-                        'payments.default_subscription_price',
-                        'payments.min_tip_value',
-                        'payments.max_tip_value',
-                        'payments.maximum_subscription_price',
-                        'payments.minimum_subscription_price',
-                        'payments.min_posts_until_creator',
-                        'payments.min_ppv_post_price',
-                        'payments.max_ppv_post_price',
-                        'payments.min_ppv_message_price',
-                        'payments.max_ppv_message_price',
-                        'payments.min_ppv_stream_price',
-                        'payments.max_ppv_stream_price',
-                        'payments.disable_local_wallet_for_subscriptions'
-                    ].includes(settingName)){
-                        $(element).show();
-                    }
-                    break;
-                case 'processors':
-                    Admin.paymentsSettingsSwitch('stripe');
-                    if(['payments.driver'].includes(settingName)){
-                        $(element).show();
-                    }
-                    break;
-                case 'invoices':
-                    Admin.togglePaymentsSubCategoryInfo('all');
-                    if(settingName.indexOf('payments.invoices_') >= 0){
-                        $(element).show();
-                    }
-                    break;
-                case 'withdrawals':
-                    Admin.togglePaymentsSubCategoryInfo('all');
-                    if(settingName.indexOf('payments.withdrawal_') >= 0){
-                        $(element).show();
-                    }
-                    break;
-                }
-            }
-        });
-    },
+        var selectors = [];
+        var settingKeysToShow = [];
 
-    mediaSettingsSubTabSwitch: function (prefix) {
-        Admin.settingsHide('media', true);
-        $('.coconut-info').addClass('d-none');
-        $('.setting-row').each(function(key,element) {
-            if($(element).attr('class').indexOf('media.') >= 0){
-                let settingName = $(element).data('settingkey');
-                switch (prefix) {
-                case 'general':
-                    // TODO: Check this
-                    if([
-                        'media.allowed_file_extensions',
-                        'media.max_file_upload_size',
-                        'media.use_chunked_uploads',
-                        'media.upload_chunk_size',
-                        'media.apply_watermark',
-                        'media.watermark_image',
-                        'media.use_url_watermark',
-                        'media.users_covers_size',
-                        'media.users_avatars_size',
-                        'media.max_avatar_cover_file_size',
-                    ].includes(settingName)){
-                        $(element).show();
-                    }
-                    break;
-                case 'videos':
-                    Admin.videosSettingsSwitch($('*[name="media.transcoding_driver"]').val());
-                    break;
-                }
-            }
-        });
-    },
-
-    videosSettingsSwitch: function(type){
-        // Check this
-        Admin.settingsHide('media');
-        $('.coconut-info').addClass('d-none');
-        switch (type) {
-        case 'ffmpeg':
-            Admin.toggleMediaSubCategory('ffmpeg');
-            $('.setting-row').each(function(key,element) {
-                if(
-                    $(element).attr('class').indexOf('media.ffprobe_path') >= 0 ||
-                    $(element).attr('class').indexOf('media.enforce_mp4_conversion') >= 0
-                ){
-                    $(element).show();
-                }
+        switch (prefix) {
+        case 'general':
+            Admin.togglePaymentsSubCategoryInfo('all');
+            settingKeysToShow = [
+                'payments.deposit_min_amount',
+                'payments.deposit_max_amount',
+                'payments.currency_code',
+                'payments.currency_symbol',
+                'payments.currency_position',
+                'payments.default_subscription_price',
+                'payments.min_tip_value',
+                'payments.max_tip_value',
+                'payments.maximum_subscription_price',
+                'payments.minimum_subscription_price',
+                'payments.min_posts_until_creator',
+                'payments.min_ppv_post_price',
+                'payments.max_ppv_post_price',
+                'payments.min_ppv_message_price',
+                'payments.max_ppv_message_price',
+                'payments.min_ppv_stream_price',
+                'payments.max_ppv_stream_price',
+                'payments.disable_local_wallet_for_subscriptions'
+            ];
+            // Create selectors for the settings to show
+            selectors = settingKeysToShow.map(function(key) {
+                return '.setting-row[data-settingkey="' + key + '"]';
             });
             break;
-        case 'coconut':
-            $('.coconut-info').removeClass('d-none');
-            Admin.toggleMediaSubCategory('coconut');
+
+        case 'processors':
+            // Initialize payments settings for 'stripe'
+            Admin.paymentsDriverSwitch('stripe');
+            // Show the 'payments.driver' setting
+            selectors = ['.setting-row[data-settingkey="payments.driver"]'];
+            break;
+
+        case 'invoices':
+            Admin.togglePaymentsSubCategoryInfo('all');
+            // Select settings where data-settingkey starts with 'payments.invoices_'
+            selectors = ['.setting-row[data-settingkey^="payments.invoices_"]'];
+            break;
+
+        case 'withdrawals':
+            Admin.togglePaymentsSubCategoryInfo('all');
+            Admin.toggleWithdrawalsStripeConnectInfo(true);
+            // Select settings where data-settingkey starts with 'payments.withdrawal_'
+            selectors = ['.setting-row[data-settingkey^="payments.withdrawal_"]'];
+            break;
+
+        default:
+            // Handle unexpected prefixes if necessary
+            // console.warn('Unknown prefix:', prefix);
             break;
         }
-        $('.setting-row').each(function(key,element) {
-            if($(element).attr('class').indexOf('media.transcoding_driver') >= 0){
-                $(element).show();
-            }
-        });
+
+        if (selectors.length > 0) {
+            // Combine selectors into a single selector string
+            var selectorString = selectors.join(', ');
+            // Show the selected settings
+            $(selectorString).show();
+        }
+    },
+
+    /**
+     * Switches the media settings sub-tab based on the provided prefix.
+     * @param {string} prefix - The selected sub-tab prefix ('general' or 'videos').
+     */
+    mediaSettingsSubTabSwitch: function (prefix) {
+        // Hide all media settings
+        Admin.settingsHide('media', true);
+        // Hide coconut info
+        $('.coconut-info').addClass('d-none');
+
+        if (prefix === 'general') {
+            // Settings to show in the 'general' sub-tab
+            var settingsToShow = [
+                'media.allowed_file_extensions',
+                'media.max_file_upload_size',
+                'media.use_chunked_uploads',
+                'media.upload_chunk_size',
+                'media.apply_watermark',
+                'media.watermark_image',
+                'media.use_url_watermark',
+                'media.users_covers_size',
+                'media.users_avatars_size',
+                'media.max_avatar_cover_file_size',
+                'media.disable_media_right_click',
+                'media.use_blurred_previews_for_locked_posts'
+            ];
+
+            // Create a selector for the settings to show
+            var selector = settingsToShow.map(function(settingKey) {
+                return '.setting-row[data-settingkey="' + settingKey + '"]';
+            }).join(', ');
+
+            // Show the selected settings
+            $(selector).show();
+        } else if (prefix === 'videos') {
+            // Get the current transcoding driver value
+            var transcodingDriver = $('*[name="media.transcoding_driver"]').val();
+            // Switch the videos settings based on the transcoding driver
+            Admin.transcodingDriverSwitch(transcodingDriver);
+        }
+    },
+
+    /**
+     * Switches the security settings sub-tab based on the provided prefix.
+     * @param {string} prefix - The selected sub-tab prefix ('general' or 'captcha').
+     */
+    securitySettingsSubTabSwitch: function (prefix) {
+        // Hide all security settings
+        Admin.settingsHide('security', true);
+
+        if (prefix === 'general') {
+            // Settings to show in the 'general' sub-tab
+            var settingsToShow = [
+                'security.allow_geo_blocking',
+                'security.abstract_api_key',
+                'security.enforce_email_valid_check',
+                'security.email_abstract_api_key',
+                'security.enable_2fa',
+                'security.default_2fa_on_register',
+                'security.allow_users_2fa_switch',
+                'security.enforce_app_ssl',
+            ];
+
+            // Create a selector for the settings to show
+            var selector = settingsToShow.map(function(settingName) {
+                return '.setting-row[data-settingkey="' + settingName + '"]';
+            }).join(', ');
+
+            // Show the selected settings
+            $(selector).show();
+        } else if (prefix === 'captcha') {
+            // Call the securitySettingsSwitch function with the current captcha driver value
+            var captchaDriver = $('*[name="security.captcha_driver"]').val();
+            Admin.captchaDriverSwitch(captchaDriver);
+        }
+    },
+
+    /**
+     * Switches the security settings sub-tab based on the provided prefix.
+     * @param {string} prefix - The selected sub-tab prefix ('general' or 'captcha').
+     */
+    socialSettingsSubTabSwitch: function (prefix) {
+        // Hide all security settings
+        Admin.settingsHide('social', true);
+        let settingsToShow = [];
+        if (prefix === 'login') {
+            $('.social-login-info').show();
+            // Settings to show in the 'general' sub-tab
+            settingsToShow = [
+                'social.facebook_client_id',
+                'social.facebook_secret',
+                'social.twitter_client_id',
+                'social.twitter_secret',
+                'social.google_client_id',
+                'social.google_secret',
+            ];
+
+        } else if (prefix === 'links') {
+            $('.social-login-info').hide();
+            // Settings to show in the 'general' sub-tab
+            settingsToShow = [
+                'social.facebook_url',
+                'social.instagram_url',
+                'social.twitter_url',
+                'social.whatsapp_url',
+                'social.tiktok_url',
+                'social.youtube_url',
+                'social.telegram_link',
+                'social.reddit_url',
+            ];
+
+        }
+        // Create a selector for the settings to show
+        var selector = settingsToShow.map(function(settingName) {
+            return '.setting-row[data-settingkey="' + settingName + '"]';
+        }).join(', ');
+        $(selector).show();
+
+    },
+
+    /**
+     * Switches the security settings sub-tab based on the provided prefix.
+     * @param {string} prefix - The selected sub-tab prefix ('general' or 'captcha').
+     */
+    feedSettingsSubTabSwitch: function (prefix) {
+        // Hide all security settings
+        Admin.settingsHide('feed', true);
+
+        if (prefix === 'general') {
+            // Settings to show in the 'general' sub-tab
+            var settingsToShow = [
+                'feed.feed_posts_per_page',
+                'feed.min_post_description',
+                'feed.post_box_max_height',
+                'feed.allow_post_scheduling',
+                'feed.allow_post_polls',
+                'feed.enable_post_description_excerpts',
+                'feed.disable_posts_text_preview',
+                'feed.allow_gallery_zoom',
+            ];
+
+            // Create a selector for the settings to show
+            var selector = settingsToShow.map(function(settingName) {
+                return '.setting-row[data-settingkey="' + settingName + '"]';
+            }).join(', ');
+
+            // Show the selected settings
+            $(selector).show();
+        } else if (prefix === 'widgets') {
+            // Call the securitySettingsSwitch function with the current captcha driver value
+            var widgetSelector = $('*[name="feed.widget"]').val();
+            Admin.widgetDriverSwitch(widgetSelector);
+        }
+    },
+
+    /**
+     * Switches the transcoding driver settings based on the selected type.
+     * @param {string} type - The selected transcoding driver ('ffmpeg' or 'coconut').
+     */
+    transcodingDriverSwitch: function(type) {
+        // Hide all media settings
+        Admin.settingsHide('media');
+        // Hide coconut info
+        $('.coconut-info').addClass('d-none');
+
+        if (type === 'ffmpeg') {
+            // Show ffmpeg media settings
+            Admin.toggleMediaSubCategory('ffmpeg');
+            // Show specific settings for ffmpeg
+            $('.setting-row[class*="media.ffprobe_path"], .setting-row[class*="media.enforce_mp4_conversion"]').show();
+        } else if (type === 'coconut') {
+            // Show coconut info
+            $('.coconut-info').removeClass('d-none');
+            // Show coconut media settings
+            Admin.toggleMediaSubCategory('coconut');
+        }
+
+        // Show transcoding driver setting
+        $('.setting-row[class*="media.transcoding_driver"]').show();
+
+        // Set the media driver value
         $('#media.driver').val(type);
     },
+
+    /**
+     * Switches the captcha driver settings based on the selected type.
+     * @param {string} type - The selected captcha driver ('recaptcha', 'turnstile', 'hcaptcha').
+     */
+    captchaDriverSwitch: function(type) {
+        // Hide all security settings
+        Admin.settingsHide('security');
+
+        // Toggle the security subcategory based on the captcha driver type
+        Admin.toggleSecuritySubCategory(type);
+
+        // Show the captcha driver setting
+        $('.setting-row[class*="security.captcha_driver"]').show();
+
+        // Set the security driver value
+        $('#security.driver').val(type);
+    },
+
+    /**
+     * Switches the widget selector settings based on the selected type.
+     * @param {string} type - The selected captcha driver ('suggestions', 'expired', 'search').
+     */
+    widgetDriverSwitch: function(type) {
+        // Hide all security settings
+        Admin.settingsHide('feed', true);
+
+        // Toggle the security subcategory based on the widget driver type
+        Admin.toggleFeedSubCategory(type);
+
+        // Show the widget driver setting
+        $('.setting-row[class*="feed.widget"]').show();
+
+        // Set the security driver value
+        $('#feed.widget').val(type);
+    },
+
 
     /**
      * Inits the color pickers
@@ -745,5 +936,119 @@ var Admin = {
         });
     },
 
+    /**
+     * Approve withdrawal
+     */
+    approveWithdrawal: function(){
+        $('#approve-withdrawal').modal('hide');
+        $('#voyager-loader').fadeIn();
+        $.ajax({
+            type: 'POST',
+            url: appUrl + '/admin/withdrawals/' + Admin.approveWithdrawalId + '/approve',
+            success: function (result) {
+                $('#voyager-loader').fadeOut();
+                Admin.hideWithdrawalExtraButtons(Admin.approveWithdrawalId);
+                toastr.success(result.message);
+            },
+            error: function (result) {
+                $('#voyager-loader').fadeOut();
+                toastr.error(result.responseJSON.error);
+            }
+        });
+    },
+
+    /**
+     * Reject withdrawal
+     */
+    rejectWithdrawal: function(withdrawalId){
+        $('#voyager-loader').fadeIn();
+        $.ajax({
+            type: 'POST',
+            url: appUrl + '/admin/withdrawals/' + withdrawalId + '/reject',
+            success: function (result) {
+                $('#voyager-loader').fadeOut();
+                Admin.hideWithdrawalExtraButtons(withdrawalId);
+                toastr.success(result.message);
+            },
+            error: function (result) {
+                $('#voyager-loader').fadeOut();
+                toastr.error(result.responseJSON.error);
+            }
+        });
+    },
+
+    processWithdrawalApproval: function() {
+        $('.approve-withdrawal-button').on('click',function(){
+            Admin.approveWithdrawalId = $(this).data('value');
+        });
+    },
+
+    hideWithdrawalExtraButtons: function(withdrawalId) {
+        $('.approve-button-' + withdrawalId).addClass('d-none');
+        $('.reject-button-' + withdrawalId).addClass('d-none');
+        $('.dropdown-toggle-' + withdrawalId).addClass('d-none');
+    },
+
+    toggleWithdrawalsStripeConnectInfo: function(toggle) {
+        if(toggle) {
+            $('.payments-info-stripeConnect').removeClass('d-none');
+        } else {
+            $('.payments-info-stripeConnect').addClass('d-none');
+        }
+    },
+
+    /**
+     * Theme generator function
+     */
+    generateTheme: function(){
+        const data = {
+            'product' :'fans',
+            'skip_rtl' : $('*[name="theme_skip_rtl"]').is(':checked') ? false : true,
+            'color_code' : Admin.themeColors.theme_color_code.replace('#',''),
+            'gradient_from' : Admin.themeColors.theme_gradient_from.replace('#',''),
+            'gradient_to' : Admin.themeColors.theme_gradient_to.replace('#',''),
+            'code' : $('*[name="license_product_license_key"]').val(),
+        };
+
+        $('#voyager-loader').fadeIn();
+        $.ajax({
+            type: 'POST',
+            data: data,
+            url: appUrl + '/admin/theme/generate',
+            success: function (result) {
+                $('#voyager-loader').fadeOut();
+                toastr.success(result.message);
+                if(result.data.doBrowserRedirect){
+                    window.location="https://themes-v2.qdev.tech/"+result.data.path;
+                }
+            },
+            error: function (result) {
+                $('#voyager-loader').fadeOut();
+                toastr.error(result.responseJSON.error);
+            }
+        });
+    },
+
+    /**
+     * Saves license data
+     */
+    saveLicense: function(){
+        $('#voyager-loader').fadeIn();
+        $.ajax({
+            type: 'POST',
+            data: {
+                'product_license_key' : $('.license_product_license_key').val()
+            },
+            url: appUrl + '/admin/license/save',
+            success: function (result) {
+                $('#voyager-loader').fadeOut();
+                toastr.success(result.message);
+            },
+            error: function (result) {
+                $('#voyager-loader').fadeOut();
+                toastr.error(result.responseJSON.error);
+            }
+        });
+    },
 
 };

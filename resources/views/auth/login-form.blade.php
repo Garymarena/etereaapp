@@ -1,6 +1,6 @@
 <form method="POST" action="{{ route('login') }}">
     @csrf
-    @if(getSetting('social-login.facebook_client_id') || getSetting('social-login.twitter_client_id') || getSetting('social-login.google_client_id'))
+    @if(getSetting('social.facebook_client_id') || getSetting('social.twitter_client_id') || getSetting('social.google_client_id'))
         <div class="my-1">
             <p class="mb-0">
                 {{__("Don't have an account?")}}
@@ -59,7 +59,7 @@
 
 </form>
 
-@if(!getSetting('social-login.facebook_client_id') && !getSetting('social-login.twitter_client_id') && !getSetting('social-login.google_client_id'))
+@if(!getSetting('social.facebook_client_id') && !getSetting('social.twitter_client_id') && !getSetting('social.google_client_id'))
     <hr>
     <div class=" text-center py-2">
         <p class="">

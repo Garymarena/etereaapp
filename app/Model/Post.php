@@ -7,12 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
-
-
-    const PENDING_STATUS = 0;
-    const APPROVED_STATUS = 1;
-    const DISAPPROVED_STATUS = 2;
-
+    public const PENDING_STATUS = 0;
+    public const APPROVED_STATUS = 1;
+    public const DISAPPROVED_STATUS = 2;
 
     /**
      * The attributes that are mass assignable.
@@ -26,7 +23,7 @@ class Post extends Model
         'status',
         'release_date',
         'expire_date',
-        'is_pinned'
+        'is_pinned',
     ];
 
     /**
@@ -46,15 +43,14 @@ class Post extends Model
 
     ];
 
-
-    public function getIsExpiredAttribute(){
+    public function getIsExpiredAttribute() {
         if($this->expire_date > Carbon::now()){
             return false;
         }
         return true;
     }
 
-    public function getIsScheduledAttribute(){
+    public function getIsScheduledAttribute() {
         if($this->release_date > Carbon::now()){
             return true;
         }
@@ -90,6 +86,11 @@ class Post extends Model
         return $this->hasMany('App\Model\Attachment');
     }
 
+    public function poll()
+    {
+        return $this->hasOne('App\Model\Poll', 'post_id', 'id');
+    }
+
     public function transactions()
     {
         return $this->hasMany('App\Model\Transaction');
@@ -105,7 +106,7 @@ class Post extends Model
         return $this->hasMany('App\Model\Transaction')->where('type', 'tip')->where('status', 'approved');
     }
 
-    public static function getStatusName($status){
+    public static function getStatusName($status) {
         switch ($status){
             case self::PENDING_STATUS:
                 return __("pending");
@@ -120,15 +121,14 @@ class Post extends Model
     }
 
     // Scopes
-    public function scopeNotExpiredAndReleased($query){
-        $query->where(function($query) {
+    public function scopeNotExpiredAndReleased($query) {
+        $query->where(function ($query) {
             $query->where('release_date', '<', Carbon::now());
-            $query->orWhere('release_date',null);
+            $query->orWhere('release_date', null);
         });
-        $query->where(function($query) {
+        $query->where(function ($query) {
             $query->where('expire_date', '>', Carbon::now());
             $query->orWhere('expire_date', null);
         });
     }
-
 }

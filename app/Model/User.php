@@ -29,7 +29,9 @@ class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
         'profile_access_price_12_months',
         'profile_access_price_3_months',
         'public_profile', 'city', 'country', 'state', 'email_verified_at', 'paid_profile',
-        'auth_provider','auth_provider_id', 'enable_2fa', 'enable_geoblocking', 'open_profile', 'referral_code'
+        'auth_provider', 'auth_provider_id', 'enable_2fa', 'enable_geoblocking', 'open_profile', 'referral_code', 'country_id',
+        'last_active_at',
+        'last_ip',
     ];
 
     /**
@@ -54,6 +56,8 @@ class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
 
     /*
      * Virtual attributes
+     * TODO: This causes some issues when we're trying to internally refer to to actual raw values
+     * TODO: Maybe refactor
      */
     public function getAvatarAttribute($value)
     {
@@ -65,13 +69,12 @@ class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
         return GenericHelperServiceProvider::getStorageCoverPath($value);
     }
 
-
     /**
-     * Gets current count of active subscribers
+     * Gets current count of active subscribers.
      * @return int
      * @throws \Exception
      */
-    public function getFansCountAttribute(){
+    public function getFansCountAttribute() {
         $activeSubscriptionsCount = Subscription::query()
             ->where('recipient_user_id', Auth::user()->id)
             ->whereDate('expires_at', '>=', new \DateTime('now', new \DateTimeZone('UTC')))
@@ -81,10 +84,10 @@ class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
     }
 
     /**
-     * Gets the count of followers
+     * Gets the count of followers.
      * @return int|mixed
      */
-    public function getFollowingCountAttribute(){
+    public function getFollowingCountAttribute() {
         $userId = Auth::user()->id;
         $userFollowingMembers = UserList::query()
             ->where(['user_id' => $userId, 'type' => 'following'])
@@ -93,17 +96,16 @@ class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
         return $userFollowingMembers != null && $userFollowingMembers->members_count > 0 ? $userFollowingMembers->members_count : 0;
     }
 
-
     public function getIsActiveCreatorAttribute($value)
     {
         if(getSetting('compliance.monthly_posts_before_inactive')){
-            $check = Post::where('user_id', $this->id)->where('created_at','>=',Carbon::now()->subdays(30))->count();
+            $check = Post::where('user_id', $this->id)->where('created_at', '>=', Carbon::now()->subdays(30))->count();
             $hasPassedPreApprovedLimit = true;
             if(getSetting('compliance.admin_approved_posts_limit')){
                 $hasPassedPreApprovedLimit = Post::where('user_id', $this->id)->where('status', Post::APPROVED_STATUS)->count();
                 $hasPassedPreApprovedLimit = $hasPassedPreApprovedLimit >= (int)getSetting('compliance.admin_approved_posts_limit');
             }
-            return ($hasPassedPreApprovedLimit && $check >= (int)getSetting('compliance.monthly_posts_before_inactive'));
+            return $hasPassedPreApprovedLimit && $check >= (int)getSetting('compliance.monthly_posts_before_inactive');
         }
         return true;
     }
@@ -113,11 +115,11 @@ class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
      */
     public function posts()
     {
-			if(getSetting('compliance.admin_approved_posts_limit') > 0) {
-				return $this->hasMany('App\Model\Post')->where('status', Post::APPROVED_STATUS);
-			} else {
-				return $this->hasMany('App\Model\Post');
-			}
+            if(getSetting('compliance.admin_approved_posts_limit') > 0) {
+                return $this->hasMany('App\Model\Post')->where('status', Post::APPROVED_STATUS);
+            } else {
+                return $this->hasMany('App\Model\Post');
+            }
     }
 
     public function postComments()
@@ -138,6 +140,11 @@ class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
     public function activeSubscriptions()
     {
         return $this->hasMany('App\Model\Subscription', 'sender_user_id')->where('status', 'completed');
+    }
+
+    public function expiredSubscriptions($limit = 9)
+    {
+        return $this->hasMany('App\Model\Subscription', 'sender_user_id')->whereIn('status', [Subscription::EXPIRED_STATUS, Subscription::CANCELED_STATUS])->limit($limit);
     }
 
     public function activeCanceledSubscriptions()
@@ -190,4 +197,26 @@ class User extends \TCG\Voyager\Models\User implements MustVerifyEmail
         return $this->hasOne('App\Model\CreatorOffer');
     }
 
+    public function userCountry()
+    {
+        return $this->belongsTo('App\Model\Country', 'country_id');
+    }
+
+    public function getLastActiveForHumansAttribute()
+    {
+        if (!$this->last_active_at) {
+            return 'N/A';
+        }
+
+        $time = Carbon::parse($this->last_active_at);
+        $secondsAgo = $time->diffInSeconds(now());
+
+        // If it's less than 60 seconds, shift the timestamp so no seconds away are shown
+        if ($secondsAgo < 60) {
+            $time->subSeconds(60);
+        }
+
+        // This way, diffForHumans() will show "1 minute ago"
+        return $time->diffForHumans();
+    }
 }

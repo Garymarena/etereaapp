@@ -7,8 +7,8 @@
 /* global app, messengerVars, pusher, FileUpload,
   Lists, Pusher, PusherBatchAuthorizer, updateButtonState,
   mswpScanPage, trans, bootstrapDetectBreakpoint, incrementNotificationsCount, passesMinMaxPPVMessageLimits
-  EmojiButton, filterXSS, launchToast, initTooltips, soketi, socketsDriver, showDialog, hideDialog, noMessagesLabel,
-  contactElement, noContactsLabel, messageElement */
+  filterXSS, launchToast, initTooltips, soketi, socketsDriver, showDialog, hideDialog, noMessagesLabel,
+  contactElement, noContactsLabel, messageElement, mediaSettings, bindNoLongPressEvents, Autolinker */
 
 $(function () {
 
@@ -18,20 +18,35 @@ $(function () {
         messenger.initAutoScroll();
         messenger.initMarkAsSeen();
         messenger.resetTextAreaHeight();
-        messenger.initEmojiPicker();
         if(messengerVars.lastContactID !== false && messengerVars.lastContactID !== 0){
             messenger.fetchConversation(messengerVars.lastContactID);
         }
         else{
             $('.conversation-content').html(noMessagesLabel());
         }
-        FileUpload.initDropZone('.dropzone','/attachment/upload/message');
+        FileUpload.initDropZone('.dropzone','/attachment/upload/message', mediaSettings.use_chunked_uploads);
         messenger.initSelectizeUserList();
     }
-
     messenger.initNewConversationUI();
-
 });
+
+/**
+ * Adjusts conversation content to fill device height
+ */
+function adjustMinHeight() {
+    var headerHeight = $('.mobile-bottom-nav').outerHeight();
+    var viewportHeight = window.innerHeight;
+    var elements = $('.conversations-wrapper, .conversation-wrapper');
+    elements.each(function() {
+        $(this).css('height', (viewportHeight - headerHeight) + 'px');
+    });
+}
+
+// Adjust on page load
+$(document).ready(adjustMinHeight);
+
+// Adjust on window resize
+$(window).resize(adjustMinHeight);
 
 var messenger = {
 
@@ -58,7 +73,7 @@ var messenger = {
      * Boots up the main messenger functions
      */
     boot: function(){
-        Pusher.logToConsole = typeof messengerVars.pusherDebug !== 'undefined' ? messengerVars.pusherDebug : false;
+        Pusher.logToConsole = app.debug;
         let params = {
             authorizer: PusherBatchAuthorizer,
             authDelay: 200,
@@ -187,6 +202,9 @@ var messenger = {
                     messenger.state.activeConversationUserID = userID;
                     messenger.setActiveContact(userID);
                     messenger.reloadConversationHeader();
+                    if(app.feedDisableRightClickOnMedia !== null){
+                        messenger.disableMesagesRightClick();
+                    }
                     initTooltips();
                 }
                 else{
@@ -559,19 +577,27 @@ var messenger = {
     /**
      * Globally instantiates all href links within a conversation
      */
-    initLinks: function(){
-        $('.conversation-content .message-bubble').html(function(i, text) {
-            var body = text.replace(
-                // eslint-disable-next-line no-useless-escape
-                /\bhttps:\/\/([\w\.-]+\.)+[a-z]{2,}\/.+\b/gi,
-                '<a target="_blank" class="text-white" href="$&">$&</a>'
-            );
-            return body.replace(
-                // eslint-disable-next-line no-useless-escape
-                /\bhttp:\/\/([\w\.-]+\.)+[a-z]{2,}\/.+\b/gi,
-                '<a target="_blank" class="text-white" href="$&">$&</a>'
-            );
-        });
+    initLinks: function() {
+        if(app.allow_hyperlinks) {
+            $('.conversation-content .message-bubble').each(function() {
+                var linkedText = Autolinker.link($(this).html(), {
+                    urls: {schemeMatches: true},
+                    email: false,
+                    phone: false,
+                    mention: false,
+                    hashtag: false,
+                    sanitizeHtml: true,
+                    className: "text-white",
+                    truncate: { length: 64, location: 'middle' },
+                    replaceFn: function ( match ) {
+                        var tag = match.buildTag();
+                        tag.setAttr('rel', 'nofollow noopener noreferrer');
+                        return tag;
+                    }
+                });
+                $(this).html(linkedText);
+            });
+        }
     },
 
     /**
@@ -642,40 +668,6 @@ var messenger = {
         $('#messageModal').modal('show');
     },
 
-    /**
-     * Instantiates the emoji picker messenger
-     * @param post_id
-     */
-    initEmojiPicker: function(){
-        try{
-            const button = document.querySelector('.conversation-writeup .trigger');
-            const picker = new EmojiButton(
-                {
-                    position: 'top-end',
-                    theme: app.theme,
-                    autoHide: false,
-                    rows: 4,
-                    recentsCount: 16,
-                    emojiSize: '1.3em',
-                    showSearch: false,
-                }
-            );
-            picker.on('emoji', emoji => {
-                document.querySelector('input').value += emoji;
-                $('.messageBoxInput').val($('.messageBoxInput').val() + emoji);
-
-            });
-            button.addEventListener('click', () => {
-                picker.togglePicker(button);
-            });
-        }
-        catch (e) {
-            // Maybe avoid ending up in here entirely
-            // console.error(e)
-        }
-
-    },
-
     showSetPriceDialog: function () {
         $('#message-set-price-dialog').modal('show');
     },
@@ -718,9 +710,9 @@ var messenger = {
         case 'moov':
         case 'mov':
             attachmentsHtml = `
-                <a href="${file.path}" rel="mswp" title="" class="mr-2 mt-2">
+                <a href="${file.path}" rel="mswp" title="" class="mr-2 mt-2 no-long-press">
                     <div class="video-wrapper">
-                     <video class="video-preview" src="${file.path}" width="150" height="150" controls autoplay muted></video>
+                     <video class="video-preview" src="${file.path}" width="150" height="150" controls controlsList="nodownload" autoplay muted></video>
                     </div>
                  </a>`;
             break;
@@ -728,9 +720,9 @@ var messenger = {
         case 'wav':
         case 'ogg':
             attachmentsHtml = `
-                <a href="${file.path}" rel="mswp" title="" class="mr-2 mt-2 d-flex align-items-center">
+                <a href="${file.path}" rel="mswp" title="" class="mr-2 mt-2 d-flex align-items-center no-long-press">
                     <div class="video-wrapper">
-                         <audio id="video-preview" src="${file.path}" controls type="audio/mpeg" muted></audio>
+                         <audio id="video-preview" src="${file.path}" controls controlsList="nodownload" type="audio/mpeg" muted></audio>
                     </div>
                  </a>`;
             break;
@@ -738,7 +730,7 @@ var messenger = {
         case 'jpg':
         case 'jpeg':
             attachmentsHtml = `
-                    <a href="${file.path}" rel="mswp" title="">
+                    <a href="${file.path}" rel="mswp" title="" class="no-long-press">
                         <img src="${file.thumbnail}" class="mr-2 mt-2">
                     </a>`;
             break;
@@ -854,7 +846,7 @@ var messenger = {
             var optKeys = Object.keys(el.options);
             let i = 0;
             optKeys.forEach(function (key) {
-                if(i > 50){return false;};
+                if(i > 50){return false;}
                 el.addItem(key);
                 i++;
             });
@@ -880,6 +872,21 @@ var messenger = {
         $('.conversation-content').html('');
         messenger.state.newConversationMode = true;
         return true;
-    }
+    },
+
+    /**
+     * Disabling right for posts ( if site wise setting is set to do it )
+     */
+    disableMesagesRightClick: function () {
+        $(".attachments-holder").unbind('contextmenu');
+        $(".attachments-holder").on("contextmenu",function(){
+            return false;
+        });
+        $(".post-media, .pswp__item").unbind('contextmenu');
+        $(".post-media, .pswp__item").on("contextmenu",function(){
+            return false;
+        });
+        bindNoLongPressEvents();
+    },
 
 };

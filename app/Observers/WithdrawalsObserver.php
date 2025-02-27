@@ -2,12 +2,12 @@
 
 namespace App\Observers;
 
-use App\Model\Wallet;
 use App\Model\Withdrawal;
 use App\Providers\EmailsServiceProvider;
 use App\Providers\NotificationServiceProvider;
 use App\Providers\PaymentsServiceProvider;
 use App\Providers\SettingsServiceProvider;
+use App\Providers\WithdrawalsServiceProvider;
 use App\User;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +17,7 @@ class WithdrawalsObserver
     /**
      * Listen to the Withdrawal updating event.
      *
-     * @param  \App\Model\Withdrawal  $withdrawal
+     * @param  Withdrawal  $withdrawal
      * @return void
      */
     public function saving(Withdrawal $withdrawal)
@@ -36,9 +36,12 @@ class WithdrawalsObserver
                     ];
 
                     self::processWithdrawalNotifications($withdrawal, $emailSubject, $button);
-
                     // mark withdrawal as processed
                     $withdrawal->processed = true;
+                    // Adding fee if enabled
+                    if(getSetting('payments.withdrawal_allow_fees')){
+                        $withdrawal->fee = $withdrawal->amount * (getSetting('payments.withdrawal_default_fee_percentage') / 100);
+                    }
                 }
             }
         }
@@ -58,12 +61,12 @@ class WithdrawalsObserver
     }
 
     /**
-     * Returns money to the user and send notifications for a rejected/deleted withdrawal
+     * Returns money to the user and send notifications for a rejected/deleted withdrawal.
      * @param $withdrawal
      * @param $skipNotficationEntry
      */
-    private function handleWithdrawalRejection($withdrawal, $skipNotficationEntry = false){
-        self::creditUserForRejetectedWithdrawal($withdrawal);
+    private function handleWithdrawalRejection($withdrawal, $skipNotficationEntry = false) {
+        WithdrawalsServiceProvider::creditUserForRejectedWithdrawal($withdrawal);
         $emailSubject = __('Your withdrawal request has been denied.');
         $button = [
             'text' => __('Try again'),
@@ -77,16 +80,21 @@ class WithdrawalsObserver
     }
 
     /**
-     * Creates email / user notifications
+     * Creates email / user notifications.
      * @param $withdrawal
      * @param $emailSubject
      * @param $button
      * @param $skipNotficationEntry
      */
-    private function processWithdrawalNotifications($withdrawal, $emailSubject, $button, $skipNotficationEntry = false){
+    private function processWithdrawalNotifications($withdrawal, $emailSubject, $button, $skipNotficationEntry = false) {
         // Sending out the user notification
         $user = User::find($withdrawal->user_id);
-        App::setLocale($user->settings['locale']);
+        try{
+            App::setLocale($user->settings['locale']);
+        }
+        catch (\Exception $e){
+            App::setLocale('en');
+        }
         EmailsServiceProvider::sendGenericEmail(
             [
                 'email' => $user->email,
@@ -95,7 +103,7 @@ class WithdrawalsObserver
                 'content' => __('Email withdrawal processed', [
                         'siteName' => getSetting('site.name'),
                         'status' => __($withdrawal->status),
-                    ]).($withdrawal->status == 'approved' ? ' '.SettingsServiceProvider::getWebsiteFormattedAmount($withdrawal->amount) .' '.__('has been sent to your account.') : ''),
+                    ]).($withdrawal->status == 'approved' ? ' '.SettingsServiceProvider::getWebsiteFormattedAmount($withdrawal->amount).(getSetting('payments.withdrawal_allow_fees') ? '(-'.SettingsServiceProvider::getWebsiteCurrencySymbol().($withdrawal->amount * (getSetting('payments.withdrawal_default_fee_percentage') / 100)).' taxes)' : '').' '.__('has been sent to your account.') : ''),
                 'button' => $button,
             ]
         );
@@ -104,17 +112,5 @@ class WithdrawalsObserver
         if(!$skipNotficationEntry){
             NotificationServiceProvider::createApprovedOrRejectedWithdrawalNotification($withdrawal);
         }
-    }
-
-
-    /**
-     * Restoring the money to the user
-     * @param $withdrawal
-     */
-    public static function creditUserForRejetectedWithdrawal($withdrawal) {
-        // Restoring the money to the user
-        $userId = $withdrawal->user_id;
-        $wallet = Wallet::where('user_id',$userId)->first();
-        $wallet->update(['total' => $wallet->total + floatval($withdrawal->amount)]);
     }
 }

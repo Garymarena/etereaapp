@@ -16,7 +16,7 @@ class TransactionsObserver
     /**
      * Listen to the Transaction deleting event.
      *
-     * @param  \App\Model\Transaction  $transaction
+     * @param  Transaction  $transaction
      * @return void
      */
     public function deleting(Transaction $transaction)
@@ -28,7 +28,7 @@ class TransactionsObserver
     }
 
     /**
-     * Listen to the Transaction created event
+     * Listen to the Transaction created event.
      * @param Transaction $transaction
      * @return void
      */
@@ -40,11 +40,11 @@ class TransactionsObserver
     }
 
     /**
-     * Listen to the Transaction updated event
+     * Listen to the Transaction updated event.
      * @param Transaction $transaction
      * @return void
      */
-    public function updating(Transaction  $transaction) {
+    public function updating(Transaction $transaction) {
         if($transaction->getOriginal('status') !== $transaction->status && $transaction->status === Transaction::APPROVED_STATUS) {
             $this->createRewardForTransaction($transaction);
         }
@@ -120,7 +120,7 @@ class TransactionsObserver
                     }
                 }
             } catch (\Exception $exception){
-                Log::log(LogLevel::ERROR, "Failed to generate reward: " . $exception->getMessage());
+                Log::log(LogLevel::ERROR, "Failed to generate reward: ".$exception->getMessage());
             }
         }
     }

@@ -1,4 +1,4 @@
-<div class="modal fade" tabindex="-1" role="dialog" id="stream-update-dialog">
+`   `   <div class="modal fade" tabindex="-1" role="dialog" id="stream-update-dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -9,7 +9,16 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="username">{{__('Stream name')}}</label>
+
+                    <div class="d-flex justify-content-between">
+                        <label for="username">{{__('Stream name')}}</label>
+                        <div>
+                            @if(getSetting('ai.open_ai_enabled'))
+                                <a href="javascript:void(0)" onclick="{{"AiSuggestions.suggestDescriptionDialog();"}}" data-toggle="tooltip" data-placement="left" title="{{__('Use AI to generate your description.')}}">{{trans_choice("Suggestion",2)}}</a>
+                            @endif
+                        </div>
+                    </div>
+
                     <input class="form-control" id="stream-name" name="stream-name" aria-describedby="name" value="{{$activeStream ? $activeStream->name : ''}}">
                     <span class="invalid-feedback" role="alert">
                             <strong></strong>

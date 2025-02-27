@@ -33,9 +33,9 @@
             '/libs/swiper/swiper-bundle.min.js',
             '/js/plugins/media/photoswipe.js',
             '/libs/photoswipe/dist/photoswipe-ui-default.min.js',
-            '/libs/@joeattardi/emoji-button/dist/index.js',
             '/js/plugins/media/mediaswipe.js',
             '/js/plugins/media/mediaswipe-loader.js',
+            '/libs/autolinker/dist/autolinker.min.js'
          ])->withFullUrl()
     !!}
 @stop
@@ -43,16 +43,12 @@
 @section('content')
     <div class="container">
         <div class="row">
-            <div class="col-12 col-sm-12 col-lg-8 col-md-7 second p-0 ">
+            <div class="col-12 col-sm-12 col-lg-8 col-md-7 second p-0">
                 <div class="d-flex d-md-none px-3 py-3 feed-mobile-search neutral-bg fixed-top-m">
                     @include('elements.search-box')
                 </div>
 
-                @if(!getSetting('feed.hide_suggestions_slider'))
-                    <div class="d-block d-md-none d-lg-none m-pt-70 feed-suggestions-wrapper">
-                        @include('elements.feed.suggestions-box',['profiles'=>$suggestions, 'isMobile'=> true])
-                    </div>
-                @endif
+                <div class="m-pt-70"></div>
 
                 {{-- @include('elements.user-stories-box')--}}
 
@@ -68,13 +64,37 @@
             <div class="col-12 col-sm-12 col-md-5 col-lg-4 first border-left order-0 pt-4 pb-5 min-vh-100 suggestions-wrapper d-none d-md-block">
 
                 <div class="feed-widgets">
-                    <div class="mb-3">
-                        @include('elements.search-box')
-                    </div>
-
-                    @if(!getSetting('feed.hide_suggestions_slider'))
-                        @include('elements.feed.suggestions-box',['profiles'=>$suggestions, 'isMobile'=> false])
+                    @if(!getSetting('feed.search_widget_hide'))
+                        <div class="mb-3">
+                            @include('elements.search-box')
+                        </div>
                     @endif
+                    @if(!getSetting('feed.hide_suggestions_slider'))
+                        @include('elements.feed.suggestions-box',[
+                             'id' => 'suggestions-box',
+                             'profiles' => $suggestions,
+                             'isMobile' => false,
+                             'hideControls' => false,
+                             'title' => __('Suggestions'),
+                             'perPage' => (int)getSetting('feed.feed_suggestions_card_per_page'),
+                        ])
+                    @endif
+
+                    @if(!getSetting('feed.expired_subs_widget_hide'))
+                        @if($expiredSubscriptions->count())
+                            <div class="mt-3">
+                                @include('elements.feed.suggestions-box',[
+                                    'id' => 'suggestions-box-expired',
+                                    'profiles' => $expiredSubscriptions,
+                                    'isMobile' => false,
+                                    'hideControls' => true,
+                                    'title' => __('Expired subscriptions'),
+                                    'perPage' => (int)getSetting('feed.expired_subs_widget_card_per_page'),
+                                ])
+                            </div>
+                        @endif
+                    @endif
+
                     @if(getSetting('custom-code-ads.sidebar_ad_spot'))
                         <div class="mt-3">
                             {!! getSetting('custom-code-ads.sidebar_ad_spot') !!}

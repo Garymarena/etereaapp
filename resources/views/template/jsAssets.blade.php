@@ -8,6 +8,8 @@
         '/js/plugins/toasts.js',
         '/libs/cookieconsent/build/cookieconsent.min.js',
         '/libs/xss/dist/xss.min.js',
+        '/libs/pusher-js-auth/lib/pusher-auth.js',
+        '/js/Websockets.js',
         '/js/app.js',
     ],
     (isset($additionalJs) ? $additionalJs : [])

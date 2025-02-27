@@ -33,8 +33,10 @@ return [
     'feed' => [
         'feed_posts_per_page' => 3,
         'feed_responsive_media' => 'responsive',
-        'feed_suggestions_total_cards' => 3,
+        'feed_suggestions_total_cards' => 9,
         'feed_suggestions_card_per_page' => 3,
+        'expired_subs_widget_total_cards' => 8,
+        'expired_subs_widget_card_per_page' => 2,
     ],
 
     'homepage' => [

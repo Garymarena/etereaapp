@@ -33,7 +33,7 @@
                                 </div>
                             @endif
                         @endif
-                        @if(Auth::check() && $post->user_id === Auth::user()->id && $post->price > 0)
+                        @if((Auth::check() && $post->price > 0) || (!Auth::check() && $post->price > 0))
                             <div class="pr-3 pr-md-3"><span class="badge badge-pill bg-gradient-faded-primary">{{ucfirst(__("PPV"))}}</span></div>
                         @endif
 
@@ -47,9 +47,14 @@
 
                         <div class="pr-3 pr-md-3">
                             <a class="text-dark-r text-hover d-flex" onclick="PostsPaginator.goToPostPageKeepingNav({{$post->id}},{{$post->postPage}},'{{route('posts.get',['post_id'=>$post->id,'username'=>$post->user->username])}}')" href="javascript:void(0)">
-                                {{$post->created_at->diffForHumans(null,false,true)}}
+                                @if($post->release_date)
+                                    {{\Carbon\Carbon::parse($post->release_date)->diffForHumans(null,false,true)}}
+                                @else
+                                    {{$post->created_at->diffForHumans(null,false,true)}}
+                                @endif
                             </a>
                         </div>
+
                         <div class="dropdown {{GenericHelper::getSiteDirection() == 'rtl' ? 'dropright' : 'dropleft'}}">
                             <a class="btn btn-sm text-dark-r text-hover btn-outline-{{(Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? 'dark' : 'light') : (Cookie::get('app_theme') == 'dark' ? 'dark' : 'light'))}} dropdown-toggle px-2 py-1 m-0" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                                 @include('elements.icon',['icon'=>'ellipsis-horizontal-outline'])
@@ -58,16 +63,29 @@
                                 <!-- Dropdown menu links -->
                                 <a class="dropdown-item" href="javascript:void(0)" onclick="shareOrCopyLink('{{route('posts.get',['post_id'=>$post->id,'username'=>$post->user->username])}}')">{{__('Copy post link')}}</a>
                                 @if(Auth::check())
-                                    <a class="dropdown-item bookmark-button {{PostsHelper::isPostBookmarked($post->bookmarks) ? 'is-active' : ''}}" href="javascript:void(0);" onclick="Post.togglePostBookmark({{$post->id}});">{{PostsHelper::isPostBookmarked($post->bookmarks) ? __('Remove the bookmark') : __('Bookmark this post') }} </a>
-                                    @if(Auth::user()->id === $post->user_id)
-                                        <a class="dropdown-item pin-button {{$post->is_pinned ? 'is-active' : ''}}" href="javascript:void(0);" onclick="Post.togglePostPin({{$post->id}});">{{$post->is_pinned ? __('Un-pin post') : __('Pin this post') }} </a>
-                                    @endif
+
+                                    {{--  Free/Open profiles should not get action buttons unless following --}}
+                                    @if($post->isSubbed)
+                                        <a class="dropdown-item bookmark-button {{PostsHelper::isPostBookmarked($post->bookmarks) ? 'is-active' : ''}}" href="javascript:void(0);" onclick="Post.togglePostBookmark({{$post->id}});">{{PostsHelper::isPostBookmarked($post->bookmarks) ? __('Remove the bookmark') : __('Bookmark this post') }} </a>
+
+                                        @if(Auth::user()->id === $post->user_id)
+                                            <a class="dropdown-item pin-button {{$post->is_pinned ? 'is-active' : ''}}" href="javascript:void(0);" onclick="Post.togglePostPin({{$post->id}});">{{$post->is_pinned ? __('Un-pin post') : __('Pin this post') }} </a>
+                                        @endif
                                         @if(Auth::check() && Auth::user()->id != $post->user->id)
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="javascript:void(0);" onclick="Lists.showListManagementConfirmation('{{'unfollow'}}', {{$post->user->id}});">{{__('Unfollow')}}</a>
-                                        <a class="dropdown-item" href="javascript:void(0);" onclick="Lists.showListManagementConfirmation('{{'block'}}', {{$post->user->id}});">{{__('Block')}}</a>
+                                            <div class="dropdown-divider"></div>
+                                            @if(ListsHelper::isUserFollowing(Auth::user()->id, $post->user->id))
+                                                <a class="dropdown-item" href="javascript:void(0);" onclick="Lists.showListManagementConfirmation('{{'unfollow'}}', {{$post->user->id}});">{{__('Unfollow')}}</a>
+                                            @endif
+                                            <a class="dropdown-item" href="javascript:void(0);" onclick="Lists.showListManagementConfirmation('{{'block'}}', {{$post->user->id}});">{{__('Block')}}</a>
+                                        @endif
+
+                                    @endif
+
+                                    @if(Auth::check() && Auth::user()->id != $post->user->id)
                                         <a class="dropdown-item" href="javascript:void(0);" onclick="Lists.showReportBox({{$post->user->id}},{{$post->id}});">{{__('Report')}}</a>
                                     @endif
+
+
                                     @if(Auth::check() && Auth::user()->id == $post->user->id)
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="{{route('posts.edit',['post_id'=>$post->id])}}">{{__('Edit post')}}</a>
@@ -86,11 +104,17 @@
     </div>
 
     <div class="post-content mt-3 {{count($post->attachments) ? "mb-3" : ""}} pl-3 pr-3">
-        <div class="text-break post-content-data {{getSetting('feed.enable_post_description_excerpts') && (strlen($post->text) >= 85 || substr_count($post->text,"\r\n") > 1) ? 'line-clamp-3 /*pb-0 mb-0*/' : ''}}">
-            {!!   GenericHelper::parseSafeHTML($post->text) !!}
+        <div class="text-break post-content-data {{getSetting('feed.enable_post_description_excerpts') ? 'line-clamp-3' : ''}}">
+            @if(getSetting('feed.disable_posts_text_preview'))
+                @if($post->isSubbed || (getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile))
+                    {!!GenericHelper::parseSafeHTML($post->text)!!}
+                @endif
+            @else
+                {!!GenericHelper::parseSafeHTML($post->text)!!}
+            @endif
         </div>
-        @if(getSetting('feed.enable_post_description_excerpts') && (strlen($post->text) >= 85 || substr_count($post->text,"\r\n") > 1))
-            <div class="text-primary pointer-cursor {{count($post->attachments) ? "mb-3" : ""}}" onclick="Post.toggleFullDescription({{$post->id}})">
+        @if(getSetting('feed.enable_post_description_excerpts'))
+            <div class="text-primary pointer-cursor show-more-actions {{count($post->attachments) ? "mb-3" : ""}} d-none" onclick="Post.toggleFullDescription({{$post->id}})">
                 <span class="label-more">{{__('Show more')}}</span>
                 <span class="label-less d-none">{{__('Show less')}}</span>
             </div>
@@ -131,6 +155,20 @@
             @endif
         </div>
     @endif
+
+    @if($post->isSubbed || (getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile))
+        @if(!((Auth::check() && Auth::user()->id !== $post->user_id && $post->price > 0 && !PostsHelper::hasUserUnlockedPost($post->postPurchases)) || (!Auth::check() && $post->price > 0 )))
+            @if($post->poll)
+                <div class="post-poll-{{$post->poll->id}} mt-3 pl-3 pr-3">
+                    @include('elements.feed.post-box-poll', [
+                        'pollResults' => PostsHelper::getPollResults($post->poll),
+                        'votedAnswer' => PostsHelper::hasUserVotedInPoll($post->poll->id)
+                ])
+                </div>
+            @endif
+        @endif
+    @endif
+
     <div class="post-footer mt-3 pl-3 pr-3">
         <div class="footer-actions d-flex justify-content-between">
             <div class="d-flex">
@@ -165,7 +203,7 @@
                     @if($post->isSubbed || (getSetting('profiles.allow_users_enabling_open_profiles') && $post->user->open_profile))
                         <div class="h-pill h-pill-primary send-a-tip to-tooltip poi {{(!GenericHelper::creatorCanEarnMoney($post->user)) ? 'disabled' : ''}}"
                              @if(!GenericHelper::creatorCanEarnMoney($post->user))
-                             data-placement="top"
+                                 data-placement="top"
                              title="{{__('This creator cannot earn money yet')}}">
                             @else
                                 data-toggle="modal"

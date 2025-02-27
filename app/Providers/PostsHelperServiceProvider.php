@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Model\Attachment;
+use App\Model\Poll;
+use App\Model\PollAnswer;
+use App\Model\PollUserAnswer;
 use App\Model\Post;
 use App\Model\PostComment;
 use App\Model\Stream;
@@ -13,6 +16,7 @@ use App\User;
 use Carbon\Carbon;
 use Cookie;
 use DB;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use View;
@@ -49,7 +53,7 @@ class PostsHelperServiceProvider extends ServiceProvider
      */
     public static function getLatestUserAttachments($userID = false, $type = false)
     {
-        if (! $userID) {
+        if (!$userID) {
             if (Auth::check()) {
                 $userID = Auth::user()->id;
             } else {
@@ -75,13 +79,13 @@ class PostsHelperServiceProvider extends ServiceProvider
                                 ->where('transactions.sender_user_id', '=', Auth::user()->id);
                         });
                 })
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->where('posts.expire_date', '>', Carbon::now());
                     $query->orWhere('posts.expire_date', null);
                 })
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->where('posts.release_date', '<', Carbon::now());
-                    $query->orWhere('posts.release_date',null);
+                    $query->orWhere('posts.release_date', null);
                 })
                 ->where('posts.status', 1);
         }
@@ -124,16 +128,16 @@ class PostsHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get following users with free profiles
+     * Get following users with free profiles.
      * @param $userId
      * @return mixed
      */
-    public static function getFreeFollowingProfiles($userId){
-        $followingList = UserList::where('user_id', $userId)->where('type', 'following')->with(['members','members.user'])->first();
+    public static function getFreeFollowingProfiles($userId) {
+        $followingList = UserList::where('user_id', $userId)->where('type', 'following')->with(['members', 'members.user'])->first();
         $followingUserIds = [];
         foreach($followingList->members as $member){
             if(!$member->user->paid_profile || (getSetting('profiles.allow_users_enabling_open_profiles') && $member->user->open_profile)){
-                $followingUserIds[] =  $member->user->id;
+                $followingUserIds[] = $member->user->id;
             }
         }
         return $followingUserIds;
@@ -207,7 +211,7 @@ class PostsHelperServiceProvider extends ServiceProvider
     /**
      * Returns lists of posts, conditioned by different filters.
      * TODO: This one should get refactored a little bit - eg: remove all un-necessary params to differ between these feed pages:
-     * feed - profile (logged in/not logged in) - search - bookmarks
+     * feed - profile (logged in/not logged in) - search - bookmarks.
      * @param $userID
      * @param bool $encodePostsToHtml
      * @param bool $pageNumber
@@ -259,11 +263,11 @@ class PostsHelperServiceProvider extends ServiceProvider
 
         // Filtering the search term
         if($searchTerm){
-            $posts = self::filterPosts($posts, $userID, 'search',false,false,$searchTerm);
+            $posts = self::filterPosts($posts, $userID, 'search', false, false, $searchTerm);
         }
 
         // Processing sorting
-        $posts = self::filterPosts($posts, $userID, 'order',false,$sortOrder);
+        $posts = self::filterPosts($posts, $userID, 'order', false, $sortOrder);
 
         if ($pageNumber) {
             $posts = $posts->paginate(getSetting('feed.feed_posts_per_page'), ['*'], 'page', $pageNumber)->appends(request()->query());
@@ -292,7 +296,7 @@ class PostsHelperServiceProvider extends ServiceProvider
                 } else {
                     $post->setAttribute('isSubbed', true);
                 }
-                $post->setAttribute('postPage',$data['currentPage']);
+                $post->setAttribute('postPage', $data['currentPage']);
                 $post = ['id' => $post->id, 'html' => View::make('elements.feed.post-box')->with('post', $post)->render()];
 
                 return $post;
@@ -308,7 +312,7 @@ class PostsHelperServiceProvider extends ServiceProvider
                 } else {
                     $post->setAttribute('isSubbed', true);
                 }
-                $post->setAttribute('postPage',$postsCurrentPage);
+                $post->setAttribute('postPage', $postsCurrentPage);
                 return $post;
             });
             $data = $posts;
@@ -357,6 +361,10 @@ class PostsHelperServiceProvider extends ServiceProvider
                 $join->on('user_bookmarks.post_id', '=', 'posts.id');
                 $join->on('user_bookmarks.user_id', '=', DB::raw($userID));
             });
+            $posts->orderBy('user_bookmarks.created_at', 'DESC');
+            // Filtering allowed userIDs only for active bookmarks
+            $userIds = array_merge(self::getUserActiveSubs($userID), self::getFreeFollowingProfiles($userID), [$userID]);
+            $posts->whereIn('posts.user_id', $userIds);
         }
 
         if ($filterType == 'media') {
@@ -369,9 +377,9 @@ class PostsHelperServiceProvider extends ServiceProvider
 
         if ($filterType == 'search'){
             $posts->where(
-                function($query) use ($searchTerm){
+                function ($query) use ($searchTerm) {
                     $query->where('text', 'like', '%'.$searchTerm.'%')
-                        ->orWhereHas('user', function($q) use ($searchTerm) {
+                        ->orWhereHas('user', function ($q) use ($searchTerm) {
                             $q->where('username', 'like', '%'.$searchTerm.'%');
                             $q->orWhere('name', 'like', '%'.$searchTerm.'%');
                         });
@@ -380,23 +388,23 @@ class PostsHelperServiceProvider extends ServiceProvider
         }
 
         if ($filterType == 'pinned'){
-            $posts->orderBy('is_pinned','DESC');
+            $posts->orderBy('is_pinned', 'DESC');
         }
 
         if ($filterType == 'order'){
             if($sortOrder){
                 if($sortOrder == 'top'){
-                    $relationsCount = ['reactions','comments'];
+                    $relationsCount = ['reactions', 'comments'];
                     $posts->withCount($relationsCount);
-                    $posts->orderBy('comments_count','DESC');
-                    $posts->orderBy('reactions_count','DESC');
+                    $posts->orderBy('comments_count', 'DESC');
+                    $posts->orderBy('reactions_count', 'DESC');
                 }
-                elseif($sortOrder =='latest'){
-                    $posts->orderBy('created_at','DESC');
+                elseif($sortOrder == 'latest'){
+                    $posts->orderBy('created_at', 'DESC');
                 }
             }
             else{
-                $posts->orderBy('created_at','DESC');
+                $posts->orderBy('created_at', 'DESC');
             }
         }
 
@@ -512,7 +520,7 @@ class PostsHelperServiceProvider extends ServiceProvider
      */
     public static function isComingFromPostPage($page)
     {
-        if (isset($page) && is_int(strpos($page['url'], '/posts')) && ! is_int(strpos($page['url'], '/posts/create'))) {
+        if (isset($page) && is_int(strpos($page['url'], '/posts')) && !is_int(strpos($page['url'], '/posts/create'))) {
             return true;
         }
 
@@ -546,7 +554,7 @@ class PostsHelperServiceProvider extends ServiceProvider
      */
     public static function shouldDeletePaginationCookie($request)
     {
-        if (! self::isComingFromPostPage(self::getPrevPage($request))) {
+        if (!self::isComingFromPostPage(self::getPrevPage($request))) {
             Cookie::queue(Cookie::forget('app_feed_prev_page'));
             Cookie::queue(Cookie::forget('app_prev_post'));
             return true;
@@ -565,13 +573,13 @@ class PostsHelperServiceProvider extends ServiceProvider
         $attachments = Attachment::
         leftJoin('posts', 'posts.id', '=', 'attachments.post_id')
             ->where('attachments.user_id', $userID)->where('post_id', '<>', null)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('posts.expire_date', '>', Carbon::now());
                 $query->orWhere('posts.expire_date', null);
             })
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('posts.release_date', '<', Carbon::now());
-                $query->orWhere('posts.release_date',null);
+                $query->orWhere('posts.release_date', null);
             })
             ->get();
         $typeCounts = [
@@ -582,86 +590,85 @@ class PostsHelperServiceProvider extends ServiceProvider
         foreach ($attachments as $attachment) {
             $typeCounts[AttachmentServiceProvider::getAttachmentType($attachment->type)] += 1;
         }
-        $streams = Stream::where('user_id',$userID)->where('is_public',1)->whereIn('status',[Stream::ENDED_STATUS,Stream::IN_PROGRESS_STATUS])->count();
+        $streams = Stream::where('user_id', $userID)->where('is_public', 1)->whereIn('status', [Stream::ENDED_STATUS, Stream::IN_PROGRESS_STATUS])->count();
         $typeCounts['streams'] = $streams;
         return $typeCounts;
     }
 
     /**
-     * Check if user paid for post
+     * Check if user paid for post.
      * @param $userId
      * @param $postId
      * @return bool
      */
-    public static function userPaidForPost($userId, $postId){
+    public static function userPaidForPost($userId, $postId) {
         return Transaction::query()->where(
-                [
+            [
                     'post_id' => $postId,
                     'sender_user_id' => $userId,
                     'type' => Transaction::POST_UNLOCK,
-                    'status' => Transaction::APPROVED_STATUS
+                    'status' => Transaction::APPROVED_STATUS,
                 ]
-            )->first() != null;
+        )->first() != null;
     }
 
     /**
-     * Check if user paid for stream access
+     * Check if user paid for stream access.
      * @param $userId
      * @param $streamId
      * @return bool
      */
-    public static function userPaidForStream($userId, $streamId){
+    public static function userPaidForStream($userId, $streamId) {
         return Transaction::query()->where(
-                [
+            [
                     'stream_id' => $streamId,
                     'sender_user_id' => $userId,
                     'type' => Transaction::STREAM_ACCESS,
-                    'status' => Transaction::APPROVED_STATUS
+                    'status' => Transaction::APPROVED_STATUS,
                 ]
-            )->first() != null;
+        )->first() != null;
     }
 
     /**
-     * Checks if user paid access for this message
+     * Checks if user paid access for this message.
      * @param $userId
      * @param $messageId
      * @return bool
      */
-    public static function userPaidForMessage($userId, $messageId){
+    public static function userPaidForMessage($userId, $messageId) {
         return Transaction::query()->where(
-                [
+            [
                     'user_message_id' => $messageId,
                     'sender_user_id' => $userId,
                     'type' => Transaction::MESSAGE_UNLOCK,
-                    'status' => Transaction::APPROVED_STATUS
+                    'status' => Transaction::APPROVED_STATUS,
                 ]
-            )->first() != null;
+        )->first() != null;
     }
 
-
     /**
-     * Returns number of approved posts
+     * Returns number of approved posts.
      * @param $userID
      * @return mixed
      */
-    public static function getUserApprovedPostsCount($userID){
+    public static function getUserApprovedPostsCount($userID) {
         return $postsCount = Post::where([
             'user_id' =>  $userID,
-            'status' => Post::APPROVED_STATUS
+            'status' => Post::APPROVED_STATUS,
         ])->count();
     }
 
-    public static function getPostsCountLeftTillAutoApprove($userID){
+    public static function getPostsCountLeftTillAutoApprove($userID) {
         return (int)getSetting('compliance.admin_approved_posts_limit') - self::getUserApprovedPostsCount(Auth::user()->id);
     }
 
     /**
      * Returns the default status for post to be created
      * If admin_approved_posts_limit is > 0, user must have had more posts than that number
-     * Otherwise, post goes to pending state
+     * Otherwise, post goes to pending state.
      * @return int
      */
-    public static function getDefaultPostStatus($userID){
+    public static function getDefaultPostStatus($userID) {
         $postStatus = Post::APPROVED_STATUS;
         if(getSetting('compliance.admin_approved_posts_limit')){
             $postsCount = self::getUserApprovedPostsCount($userID);
@@ -673,15 +680,15 @@ class PostsHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Counts types of media for a post attachments
+     * Counts types of media for a post attachments.
      * @param $attachments
      * @return array
      */
-    public static function getAttachmentsTypesCount($attachments){
+    public static function getAttachmentsTypesCount($attachments) {
         $counts = [
             'image' => 0,
             'video' => 0,
-            'audio' => 0
+            'audio' => 0,
         ];
         foreach($attachments as $attachment){
             AttachmentServiceProvider::getAttachmentType($attachment->type);
@@ -692,4 +699,166 @@ class PostsHelperServiceProvider extends ServiceProvider
         return $counts;
     }
 
+    /**
+     * Sends post-notifications to users.
+     * @return void
+     */
+    public static function sendPostNotifications()
+    {
+        // Grabbing followers
+        $followers = ListsHelperServiceProvider::getUserFollowers(Auth::user()->id);
+        // Sending them email notifications, if site & user settings allows it
+        foreach($followers as $follower){
+            $serializedSettings = json_decode($follower['settings']);
+            if(isset($serializedSettings->notification_email_new_post_created) && $serializedSettings->notification_email_new_post_created == 'true'){
+                App::setLocale($serializedSettings->locale);
+                EmailsServiceProvider::sendGenericEmail(
+                    [
+                        'email' => $follower['email'],
+                        'subject' => __('New content from @:username', ['username' => Auth::user()->username]),
+                        'title' => __('Hello, :name,', ['name'=>$follower['name']]),
+                        'content' => __('New content from people you follow is available', ['siteName'=>getSetting('site.name')]),
+                        'button' => [
+                            'text' => __('View your feed'),
+                            'url' => route('feed'),
+                        ],
+                    ]
+                );
+                App::setLocale(Auth::user()->settings['locale']);
+            }
+        }
+    }
+
+    /**
+     * Sends admin notifications on posts to be approved.
+     * @return void
+     */
+    public static function sendAdminPostsApprovalNotifications()
+    {
+        // Sending out admin email
+        $adminEmails = User::where('role_id', 1)->select(['email', 'name'])->get();
+        foreach ($adminEmails as $user) {
+            EmailsServiceProvider::sendGenericEmail(
+                [
+                    'email' => $user->email,
+                    'subject' => __('Action required | New post pending approval'),
+                    'title' => __('Hello, :name,', ['name' => $user->name]),
+                    'content' => __('There is a new post pending your approval on :siteName.', ['siteName' => getSetting('site.name')]),
+                    'button' => [
+                        'text' => __('Go to admin'),
+                        'url' => route('voyager.dashboard').'/user-posts?key=status&filter=equals&s=0',
+                    ],
+                ]
+            );
+        }
+    }
+
+    /**
+     * Creates a new poll.
+     * @param $postID
+     * @param $pollAnswers
+     * @return true
+     */
+    public static function createNewPoll($postID, $pollAnswers)
+    {
+        $pollID = Poll::create([
+            'user_id' => Auth::user()->id,
+            'post_id' => $postID,
+            'ends_at' => null,
+        ])->id;
+        foreach($pollAnswers as $pollAnswer){
+            PollAnswer::create([
+                'poll_id' => $pollID,
+                'answer' => $pollAnswer['value'],
+            ]);
+        }
+        return true;
+    }
+
+    /**
+     * Update existing poll.
+     * @param $post
+     * @param $pollAnswers
+     * @return true
+     */
+    public static function updatePoll($post, $pollAnswers)
+    {
+        // Get existing answers keyed by ID
+        $existingAnswers = $post->poll->answers->keyBy('id');
+
+        // Loop over answers from the request
+        foreach ($pollAnswers as $answerData) {
+            $answerId = $answerData['id'] ?? null;
+            $answerValue = $answerData['value'];
+
+            if ($answerId && $existingAnswers->has($answerId)) {
+                // Update existing
+                $existingAnswers[$answerId]->update([
+                    'answer' => $answerValue,
+                ]);
+                // Remove from the list so it's not deleted
+                $existingAnswers->forget($answerId);
+
+            } else {
+                // Create new
+                PollAnswer::create([
+                    'poll_id' => $post->poll->id,
+                    'answer'  => $answerValue,
+                ]);
+            }
+        }
+
+        // Delete leftovers
+        foreach ($existingAnswers as $toDelete) {
+            $toDelete->delete();
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if user has voted in a particular poll
+     * If so, returns that poll answer id.
+     * @param $pollID
+     * @return null
+     */
+    public static function hasUserVotedInPoll($pollID)
+    {
+        $pollAnswer = PollUserAnswer::where('user_id', Auth::user()->id)->where('poll_id', $pollID)->first();
+        if($pollAnswer){
+            return $pollAnswer->answer->id;
+        }
+        return null;
+    }
+
+    /**
+     * Returns a wrap up of a posts
+     * EG: Aggregates and percentages on answers.
+     * @param $poll
+     * @return \Illuminate\Support\Collection
+     */
+    public static function getPollResults($poll)
+    {
+        // 1) Count the total votes across all answers
+        $totalVotes = $poll->answers->reduce(function ($carry, $answer) {
+            return $carry + $answer->votes->count();
+        }, 0);
+
+        // 2) Map each answer to an array containing votes & percentage
+        $results = $poll->answers->map(function ($answer) use ($totalVotes) {
+            $votesCount = $answer->votes->count();
+            return [
+                'id'        => $answer->id,
+                'answer'    => $answer->answer,
+                'votes'     => $votesCount,
+                'percentage'=> $totalVotes > 0
+                    ? round(($votesCount / $totalVotes) * 100, 2)
+                    : 0,
+            ];
+        });
+        return collect([
+            'totalVotes' => $totalVotes,
+            'answers' => $results,
+        ]);
+    }
 }

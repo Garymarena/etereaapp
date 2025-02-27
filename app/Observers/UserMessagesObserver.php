@@ -12,7 +12,7 @@ class UserMessagesObserver
     /**
      * Listen to the Attachment deleted event.
      *
-     * @param  \App\Model\UserMessage  $userMessage
+     * @param  UserMessage  $userMessage
      * @return void
      */
     public function deleting(UserMessage $userMessage)
@@ -22,7 +22,7 @@ class UserMessagesObserver
                 try {
                     AttachmentServiceProvider::removeAttachment($attachment);
                 } catch (\Exception $exception) {
-                    Log::error("Failed deleting files for attachment: " . $attachment->id . ", e: " . $exception->getMessage());
+                    Log::error("Failed deleting files for attachment: ".$attachment->id.", e: ".$exception->getMessage());
                 }
             });
         }

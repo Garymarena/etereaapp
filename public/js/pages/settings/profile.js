@@ -2,7 +2,7 @@
  * Settings profile component
  */
 "use strict";
-/* global app, mediaSettings, launchToast, EasyMDE, bioConfig, AiSuggestions */
+/* global app, mediaSettings, launchToast, EasyMDE, bioConfig, AiSuggestions, trans */
 
 $(function () {
     ProfileSettings.initUploader('avatar');
@@ -106,7 +106,8 @@ var ProfileSettings = {
                     launchToast('danger','Error ',errorMessage.errors.file,'now');
                 }
                 file.previewElement.innerHTML = "";
-            }
+            },
+            dictInvalidFileType: trans("You can't upload files of this type."),
         });
     },
 

@@ -20,13 +20,10 @@
                 @endif
             </div>
             <div class="pl-2 d-flex justify-content-center flex-column">
-            @if(Auth::check())
-                 <div class=""><span class=""><span>@</span>{{ Auth::check() ? Auth::user()->username : '@username' }}</span></div>
-                 <small class="p-0 m-0">
-                  {{ trans_choice('fans', Auth::user()->fansCount, ['number' => count(ListsHelper::getUserFollowers(Auth::user()->id))]) }} 
-                     - {{ trans_choice('following', Auth::user()->followingCount, ['number' => Auth::user()->followingCount]) }}
-    </small>
-@endif
+                @if(Auth::check())
+                    <div class=""><span class=""><span>@</span>{{Auth::check() ? Auth::user()->username : '@username'}}</span></div>
+                    <small class="p-0 m-0">{{trans_choice('fans', Auth::user()->fansCount, ['number'=> count(ListsHelper::getUserFollowers(Auth::user()->id))])}} - {{trans_choice('following', Auth::user()->followingCount, ['number'=>Auth::user()->followingCount])}}</small>
+                @endif
             </div>
         </div>
     </div>
@@ -37,6 +34,11 @@
                 <a class="scroll-link d-flex align-items-center" href="{{route('profile',['username'=>Auth::user()->username])}}">
                     @include('elements.icon',['icon'=>'person-circle-outline','variant'=>'medium','centered'=>false,'classes'=>'mr-2'])
                     {{__('My profile')}}</a>
+            </li>
+            <li class="{{Route::currentRouteName() == 'my.notifications' ? 'active' : ''}} ">
+                <a class="scroll-link d-flex align-items-center" href="{{route('my.notifications')}}">
+                    @include('elements.icon',['icon'=>'notifications-outline','variant'=>'medium','centered'=>false,'classes'=>'mr-2'])
+                    {{__('Notifications')}}</a>
             </li>
             @if(getSetting('streams.allow_streams'))
                 <li class="{{ in_array(Route::currentRouteName(), ['my.streams.get', 'public.stream.get', 'public.vod.get']) ? 'active' : ''}}">
@@ -97,7 +99,7 @@
                     @foreach(LocalesHelper::getAvailableLanguages() as $languageCode)
                         @if(LocalesHelper::getLanguageName($languageCode))
                             <li>
-                                <a class="scroll-link d-flex align-items-center" href="{{route('language',['locale' => $languageCode])}}">{{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}</a>
+                                <a class="scroll-link d-flex align-items-center" href="{{route('language',['locale' => $languageCode])}}" rel="nofollow">{{ucfirst(__(LocalesHelper::getLanguageName($languageCode)))}}</a>
                             </li>
                         @endif
                     @endforeach

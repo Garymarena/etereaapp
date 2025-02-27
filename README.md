@@ -51,8 +51,8 @@ php artisan npm:publish
 _Running Code quality checkers and fixers_
 
 ````
-php artisan code:check type=php/js
-php artisan code:fix type=php/js
+php artisan code:check php/js cs/pasta
+php artisan code:fix php/js
 ````
 
 _Setting up the crons_

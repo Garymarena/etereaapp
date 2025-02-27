@@ -18,8 +18,8 @@
 @stop
 
 @section('content')
-    <div class="row">
-        <div class="min-vh-100 border-right col-12 pr-md-0">
+    <div class="d-flex flex-wrap">
+        <div class="min-vh-100 border-right col-12 pr-md-0 px-0">
             <div class="pt-4 pl-4 px-3 d-flex justify-content-between pb-3 border-bottom">
                 <h5 class="mb-0 text-truncate text-bold {{(Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? '' : 'text-dark-r') : (Cookie::get('app_theme') == 'dark' ? '' : 'text-dark-r'))}}">{{__($list->name)}}</h5>
                 @if($list->isManageable)
@@ -40,11 +40,11 @@
                 @endif
             </div>
             <div class="mx-4 pt-2">
-                <div class="list-wrapper mt-2">
+                <div class="list-wrapper">
                     @if(count($list->members))
                         <div class="row">
                             @foreach($list->members as $member)
-                                <div class="col-12 col-md-6 col-xl-4">
+                                <div class="col-12 col-md-6 col-xl-4 px-2 py-2">
                                     @include('elements.feed.suggestion-card',['profile' => $member, 'isListMode' => true, 'isListManageable' => ($list->type == \App\Model\UserList::FOLLOWERS_TYPE ? false : true)])
                                 </div>
                             @endforeach

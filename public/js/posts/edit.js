@@ -12,6 +12,9 @@ $(function () {
     PostCreate.initPostDraft(postData,'edit');
     PostCreate.postPrice = postData.price;
     FileUpload.initDropZone('.dropzone','/attachment/upload/post');
+    if(postData.hasPoll){
+        PostCreate.savePoll();
+    }
 });
 
 // Saving draft data before unload

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\NewStreamChatMessage;
 use App\Http\Requests\SaveNewStreamRequest;
+use App\Http\Requests\StreamCoverUploadRequest;
 use App\Model\Stream;
 use App\Model\StreamMessage;
 use App\Providers\AttachmentServiceProvider;
@@ -25,13 +26,12 @@ use View;
 
 class StreamsController extends Controller
 {
-
     /**
-     * Streams management endpoint
+     * Streams management endpoint.
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function index(Request $request){
+    public function index(Request $request) {
         $action = false;
         if(!getSetting('streams.allow_streams')){
             abort(404);
@@ -54,21 +54,21 @@ class StreamsController extends Controller
                 'manual_payments_pdf_icon' => asset('/img/pdf-preview.svg'),
             ],
         ]);
-        return view('pages.streams',[
+        return view('pages.streams', [
             'activeStream' => StreamsServiceProvider::getUserInProgressStream(),
             'previousStreams' => StreamsServiceProvider::getUserStreams(),
         ]);
     }
 
     /**
-     * Stream actual page
+     * Stream actual page.
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function getStream(Request $request){
+    public function getStream(Request $request) {
         $streamID = $request->route('streamID');
         $streamSlug = $request->route('slug');
-        $stream = Stream::where('id',$streamID)->where('slug',$streamSlug)->where('status',Stream::IN_PROGRESS_STATUS)->first();
+        $stream = Stream::where('id', $streamID)->where('slug', $streamSlug)->where('status', Stream::IN_PROGRESS_STATUS)->first();
         if(!$stream){
             abort(404);
         }
@@ -93,7 +93,7 @@ class StreamsController extends Controller
                 'pusherDebug' => (bool) env('APP_DEBUG'),
                 'pusherCluster' => config('broadcasting.connections.pusher.options.cluster'),
                 'streamOwnerId' => $stream->user_id,
-                'streamPoster' => $stream->poster
+                'streamPoster' => $stream->poster,
             ],
         ]);
         $data['stream'] = $stream;
@@ -101,15 +101,15 @@ class StreamsController extends Controller
     }
 
     /**
-     * Vod page rendering endpoint
+     * Vod page rendering endpoint.
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function getVod(Request $request){
+    public function getVod(Request $request) {
         $streamID = $request->route('streamID');
         $streamSlug = $request->route('slug');
 
-        $stream = Stream::where('id',$streamID)->where('slug',$streamSlug)->where('status',Stream::ENDED_STATUS)->first();
+        $stream = Stream::where('id', $streamID)->where('slug', $streamSlug)->where('status', Stream::ENDED_STATUS)->first();
         if(!$stream){
             abort(404);
         }
@@ -135,7 +135,7 @@ class StreamsController extends Controller
                 'streamId' => $stream->id,
                 'pusherDebug' => (bool) env('APP_DEBUG'),
                 'pusherCluster' => config('broadcasting.connections.pusher.options.cluster'),
-                'streamOwnerId' => $stream->user_id
+                'streamOwnerId' => $stream->user_id,
             ],
         ]);
 
@@ -145,7 +145,7 @@ class StreamsController extends Controller
     }
 
     /**
-     * Initiate live streaming by creator
+     * Initiate live streaming by creator.
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -161,7 +161,7 @@ class StreamsController extends Controller
         if(!GenericHelperServiceProvider::isUserVerified() && getSetting('site.enforce_user_identity_checks')){
             return response()->json([
                 'success' => false,
-                'message' => __('Please confirm your ID first.')
+                'message' => __('Please confirm your ID first.'),
             ]);
         }
 
@@ -170,7 +170,7 @@ class StreamsController extends Controller
             $responseData = [
                 'success' => true,
                 'data' => $streaming['data'],
-                'html' => View::make('elements.streams.stream-element')->with('stream', $streaming['data'])->with('isLive', true)->render()
+                'html' => View::make('elements.streams.stream-element')->with('stream', $streaming['data'])->with('isLive', true)->render(),
             ];
 
             // Send message to followers
@@ -207,13 +207,13 @@ class StreamsController extends Controller
     }
 
     /**
-     * (Re)saves stream details when updating
+     * (Re)saves stream details when updating.
      * @param SaveNewStreamRequest $request
      * @return array
      */
-    public function saveStreamDetails(SaveNewStreamRequest $request){
+    public function saveStreamDetails(SaveNewStreamRequest $request) {
         try{
-            $stream =  Stream::query()
+            $stream = Stream::query()
                 ->where([
                     'user_id' => Auth::user()->id,
                     'status' => Stream::IN_PROGRESS_STATUS,
@@ -232,7 +232,7 @@ class StreamsController extends Controller
                 'price' => $request->get('price'),
                 'requires_subscription' => $request->get('requires_subscription') == 'true' ? 1 : 0,
                 'is_public' => $request->get('is_public') == 'true' ? 1 : 0,
-                'poster' => $request->get('poster')
+                'poster' => $request->get('poster'),
             ]);
             return ['success' => true, 'message' => __('Stream updated successfully.'), 'data' => ['poster' => $stream->poster]];
 
@@ -243,12 +243,12 @@ class StreamsController extends Controller
     }
 
     /**
-     * Stream end endpoint
+     * Stream end endpoint.
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function stopStream(Request $request){
+    public function stopStream(Request $request) {
         try {
             $stream = StreamsServiceProvider::getUserInProgressStream(false);
             if ($stream) {
@@ -265,12 +265,12 @@ class StreamsController extends Controller
             else{
                 return response()->json([
                     'success' => false,
-                    'message' => __('No active streams available.')
+                    'message' => __('No active streams available.'),
                 ]);
             }
             return response()->json([
                 'success' => true,
-                'message' => __('The stream has been queued to be stopped.')
+                'message' => __('The stream has been queued to be stopped.'),
             ]);
         }
         catch (\Exception $exception){
@@ -279,14 +279,14 @@ class StreamsController extends Controller
     }
 
     /**
-     * Stream delete endpoint
+     * Stream delete endpoint.
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deleteStream(Request $request){
+    public function deleteStream(Request $request) {
         try {
             $streamId = $request->get('id');
-            $stream = Stream::where('user_id',Auth::user()->id)->where('status',Stream::ENDED_STATUS)->where('id',$streamId)->withCount('streamPurchases')->first();
+            $stream = Stream::where('user_id', Auth::user()->id)->where('status', Stream::ENDED_STATUS)->where('id', $streamId)->withCount('streamPurchases')->first();
 
             if(getSetting('compliance.disable_creators_ppv_delete')){
                 if($stream->stream_purchases_count > 0){
@@ -301,12 +301,12 @@ class StreamsController extends Controller
             else{
                 return response()->json([
                     'success' => false,
-                    'message' => __('Stream could not be found.')
+                    'message' => __('Stream could not be found.'),
                 ]);
             }
             return response()->json([
                 'success' => true,
-                'message' => __('The stream has been deleted successfully.')
+                'message' => __('The stream has been deleted successfully.'),
             ]);
         }
         catch (\Exception $exception){
@@ -315,7 +315,7 @@ class StreamsController extends Controller
     }
 
     /**
-     * Pusher init method for stream live counter
+     * Pusher init method for stream live counter.
      * @param Request $request
      * @return array|\Illuminate\Http\JsonResponse
      * @throws \Pusher\PusherException
@@ -358,43 +358,43 @@ class StreamsController extends Controller
     }
 
     /**
-     * Method that adds comments to stream chats
+     * Method that adds comments to stream chats.
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function addComment(Request $request){
+    public function addComment(Request $request) {
         $message = $request->get('message');
         $streamId = $request->get('streamId');
-        $stream = Stream::where('id',$streamId)->where('status',Stream::IN_PROGRESS_STATUS)->first();
+        $stream = Stream::where('id', $streamId)->where('status', Stream::IN_PROGRESS_STATUS)->first();
 
         if(!$stream){
-            return response()->json(['success' => false, 'message' => __('Invalid stream')],500);
+            return response()->json(['success' => false, 'message' => __('Invalid stream')], 500);
         }
 
         // Access checks
-        $canWatchStream =  true;
+        $canWatchStream = true;
         if($stream->requires_subscription && !PostsHelperServiceProvider::hasActiveSub(Auth::user()->id, $stream->user->id)){
-            $canWatchStream =  false;
+            $canWatchStream = false;
         }
         if($stream->price > 0 && !StreamsServiceProvider::userPaidForStream(Auth::user()->id, $stream->id)){
-            $canWatchStream =  false;
+            $canWatchStream = false;
         }
         if(Auth::user()->id == $stream->user->id){
-            $canWatchStream =  true;
+            $canWatchStream = true;
         }
 
         if(!$canWatchStream){
-            return response()->json(['success' => false, 'message' => __('Stream access denied')],500);
+            return response()->json(['success' => false, 'message' => __('Stream access denied')], 500);
         }
 
         try {
             $message = StreamMessage::create([
                 'message' => $message,
                 'stream_id' => $streamId,
-                'user_id' => Auth::user()->id
+                'user_id' => Auth::user()->id,
             ]);
 
-            $renderedMessage = View::make('elements.streams.stream-chat-message')->with('message', $message)->with('streamOwnerId',$stream->user_id)->render();
+            $renderedMessage = View::make('elements.streams.stream-chat-message')->with('message', $message)->with('streamOwnerId', $stream->user_id)->render();
 
             // Broadcast the message
             broadcast(new NewStreamChatMessage($streamId, $renderedMessage, Auth::user()->id))->toOthers();
@@ -402,27 +402,27 @@ class StreamsController extends Controller
             return response()->json([
                 'status'=>'success',
                 'data'=> $message,
-                'dataHtml' => $renderedMessage
+                'dataHtml' => $renderedMessage,
             ]);
 
         } catch (\Exception $exception) {
-            return response()->json(['success' => false, 'message' => $exception->getMessage()],500);
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 500);
         }
     }
 
     /**
-     * Method used for deleting stream messages
+     * Method used for deleting stream messages.
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deleteComment(Request $request){
+    public function deleteComment(Request $request) {
         $commentId = $request->get('id');
-        $comment = StreamMessage::where('id',$commentId)->with(['stream'])->first();
+        $comment = StreamMessage::where('id', $commentId)->with(['stream'])->first();
         if(!$comment){
-            return response()->json(['success' => false, 'message' => __('Invalid stream')],500);
+            return response()->json(['success' => false, 'message' => __('Invalid stream')], 500);
         }
         if($comment->stream->user_id !== Auth::user()->id){
-            return response()->json(['success' => false, 'message' => __('Access denied')],500);
+            return response()->json(['success' => false, 'message' => __('Access denied')], 500);
         }
         try {
             $comment->delete();
@@ -430,27 +430,26 @@ class StreamsController extends Controller
                 'status'=>'success',
             ]);
         } catch (\Exception $exception) {
-            return response()->json(['success' => false, 'message' => $exception->getMessage()],500);
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 500);
         }
     }
 
     /**
-     * Method used for uploading stream posters
+     * Method used for uploading stream posters.
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function posterUpload(Request $request){
+    public function posterUpload(StreamCoverUploadRequest $request) {
         $file = $request->file('file');
         try {
             $directory = 'streams/posters';
             $s3 = Storage::disk(config('filesystems.defaultFilesystemDriver'));
             $fileId = Uuid::uuid4()->getHex();
-            $filePath = $directory.'/'.$fileId.'.'.$file->guessClientExtension();
+            $filePath = $directory.'/'.$fileId.'.jpg';
             $img = Image::make($file);
             $coverWidth = 1920;
             $coverHeight = 960;
             $img->fit($coverWidth, $coverHeight)->orientate();
-            $data = ['poster' => $filePath];
             // Resizing the asset
             $img->encode('jpg', 100);
             // Saving to disk
@@ -460,5 +459,4 @@ class StreamsController extends Controller
         }
         return response()->json(['success' => true, 'assetSrc' => asset(Storage::url($filePath)), 'assetPath' => $filePath]);
     }
-
 }

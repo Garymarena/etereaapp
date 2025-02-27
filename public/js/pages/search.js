@@ -18,11 +18,17 @@ $(function () {
             console.error('Pagination failed to initialize.');
         }
         PostsPaginator.initPostsGalleries(initialPostIDs);
+        PostsPaginator.initPostsHyperLinks();
+        // Animate polls
+        Post.animatePollResults();
+
         Post.setActivePage('search');
         if(getCookie('app_prev_post') !== null){
             PostsPaginator.scrollToLastPost(getCookie('app_prev_post'));
         }
         Post.initPostsMediaModule();
+        // Initing read more/less toggler based on clip property
+        PostsPaginator.initDescriptionTogglers();
     }
 
     if(searchType === 'people') {
@@ -53,8 +59,8 @@ $(function () {
         Search.initSearchFilterLiveReloads();
     }
 
-    SuggestionsSlider.init('.suggestions-box-mobile');
-    SuggestionsSlider.init('.suggestions-box');
+    SuggestionsSlider.init('#suggestions-box');
+    SuggestionsSlider.init('#suggestions-box-expired');
 });
 
 $(window).scroll(function () {

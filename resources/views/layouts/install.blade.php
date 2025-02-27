@@ -44,6 +44,7 @@
         '/js/plugins/toasts.js',
         '/libs/cookieconsent/build/cookieconsent.min.js',
         '/js/Installer.js',
+        '/js/app.js',
         ]
     )->withFullUrl()
 !!}

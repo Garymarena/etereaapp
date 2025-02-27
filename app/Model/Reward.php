@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reward extends Model
 {
-    const FEE_PERCENTAGE_REWARD_TYPE = 0;
+    public const FEE_PERCENTAGE_REWARD_TYPE = 0;
 
     /**
      * The attributes that are mass assignable.
@@ -14,7 +14,7 @@ class Reward extends Model
      * @var array
      */
     protected $fillable = [
-        'from_user_id', 'to_user_id', 'transaction_id', 'reward_type', 'referral_code_usage_id', 'amount'
+        'from_user_id', 'to_user_id', 'transaction_id', 'reward_type', 'referral_code_usage_id', 'amount',
     ];
 
     /**

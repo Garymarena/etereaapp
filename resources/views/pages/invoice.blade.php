@@ -17,56 +17,61 @@
         <div class="invoice-logo text-center">
             <img class="brand-logo text-center" src="{{asset( (Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? getSetting('site.dark_logo') : getSetting('site.light_logo')) : (Cookie::get('app_theme') == 'dark' ? getSetting('site.dark_logo') : getSetting('site.light_logo'))) )}}">
         </div>
-        @if(isset($invoice->data))
-            <div class="row invoice row-printable d-flex justify-content-center align-items-center">
-                <div class="col-md-10 invoice-content invoice-border-{{(Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? 'dark' : 'light') : (Cookie::get('app_theme') == 'dark' ? 'dark' : 'light'))}}">
+        @if(isset($invoice->decodedData))
+            <div class="row invoice row-printable d-flex justify-content-center align-items-center mb-5">
+                <div class="col-md-10 p-4 invoice-content rounded invoice-border-{{(Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? 'dark' : 'light') : (Cookie::get('app_theme') == 'dark' ? 'dark' : 'light'))}}">
                     <!-- col-lg-12 start here -->
                     <div class="panel panel-default plain" id="dash_0">
                         <!-- Start .panel -->
-                        <div class="panel-body p30 mt-5">
+                        <div class="panel-body p30 mt-2">
                             <!-- Start .row -->
                             <div class="row">
                             <!-- col-lg-6 end here -->
                                 <div class="col-lg-12">
                                     <!-- col-lg-12 start here -->
-                                    <div class="invoice-details mt25">
-                                        <div class="well">
-                                            <ul class="list-unstyled mb0">
-                                                <li><strong>{{__('Invoice')}}</strong>
-                                                    #{{$invoice->data['invoicePrefix'] ? $invoice->data['invoicePrefix']. '_' : ''  }}{{$invoice->invoice_id}}
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <div class="invoice-details mt25">
+                                                <div class="well">
+                                                    <ul class="list-unstyled mb0">
+                                                        <li><strong>{{__('Invoice')}}</strong>
+                                                            #{{$invoice->decodedData['invoicePrefix'] ? $invoice->decodedData['invoicePrefix']. '_' : ''  }}{{$invoice->invoice_id}}
+                                                        </li>
+                                                        <li><strong>{{__('Invoice')}}
+                                                                {{__('Date')}}
+                                                                :</strong> {{ \Carbon\Carbon::parse($invoice->created_at)->format('Y-m-d')}}
+                                                        </li>
+                                                        <li><strong>{{__('Due')}}
+                                                                {{__('Date')}}
+                                                                :</strong> {{ \Carbon\Carbon::parse($invoice->created_at)->format('Y-m-d')}}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <ul class="list-unstyled text-break">
+                                                <li><strong>{{__('Invoiced To')}}</strong></li>
+                                                <li>{{$invoice->decodedData['billingDetails']['receiverFirstName']}} {{$invoice->decodedData['billingDetails']['receiverLastName']}}</li>
+                                                <li>{{$invoice->decodedData['billingDetails']['receiverBillingAddress']}},
+                                                    {{$invoice->decodedData['billingDetails']['receiverState']}},
+                                                    {{$invoice->decodedData['billingDetails']['receiverPostcode']}}
                                                 </li>
-                                                <li><strong>{{__('Invoice')}}
-                                                        {{__('Date')}}
-                                                        :</strong> {{ \Carbon\Carbon::parse($invoice->created_at)->format('Y-m-d')}}
-                                                </li>
-                                                <li><strong>{{__('Due')}}
-                                                        {{__('Date')}}
-                                                        :</strong> {{ \Carbon\Carbon::parse($invoice->created_at)->format('Y-m-d')}}
+                                                <li>{{$invoice->decodedData['billingDetails']['receiverCity']}}</li>
+                                                <li>{{$invoice->decodedData['billingDetails']['receiverCountryName']}}</li>
                                             </ul>
                                         </div>
+                                        <div class="col-6">
+                                            <ul class="list-unstyled text-right text-break">
+                                                <li><strong>{{__('Invoice From')}}</strong></li>
+                                                <li>{{$invoice->decodedData['billingDetails']['senderName']}}</li>
+                                                <li>{{$invoice->decodedData['billingDetails']['senderAddress']}} {{$invoice->decodedData['billingDetails']['senderState']}} {{$invoice->decodedData['billingDetails']['senderPostcode']}}</li>
+                                                <li>{{$invoice->decodedData['billingDetails']['senderCity']}}</li>
+                                                <li>{{$invoice->decodedData['billingDetails']['senderCountry']}}</li>
+                                                <li>{{$invoice->decodedData['billingDetails']['senderCompanyNumber'] ? __('VAT Number').' '.$invoice->decodedData['billingDetails']['senderCompanyNumber'] : '' }}</li>
+                                            </ul>
+                                        </div>
+
+
                                     </div>
-                                    <div class="mt25">
-                                        <ul class="list-unstyled left w-50 text-break">
-                                            <li><strong>{{__('Invoiced To')}}</strong></li>
-                                            <li>{{$invoice->data['billingDetails']['receiverFirstName']}} {{$invoice->data['billingDetails']['receiverLastName']}}</li>
-                                            <li>{{$invoice->data['billingDetails']['receiverBillingAddress']}},
-                                                {{$invoice->data['billingDetails']['receiverState']}},
-                                                {{$invoice->data['billingDetails']['receiverPostcode']}}
-                                            </li>
-                                            <li>{{$invoice->data['billingDetails']['receiverCity']}}</li>
-                                            <li>{{$invoice->data['billingDetails']['receiverCountryName']}}</li>
-                                        </ul>
-                                        <ul class="list-unstyled text-right right w-50 text-break">
-                                            <li><strong>{{__('Invoice From')}}</strong></li>
-                                            <li>{{$invoice->data['billingDetails']['senderName']}}</li>
-                                            <li>{{$invoice->data['billingDetails']['senderAddress']}} {{$invoice->data['billingDetails']['senderState']}} {{$invoice->data['billingDetails']['senderPostcode']}}</li>
-                                            <li> {{$invoice->data['billingDetails']['senderCity']}}</li>
-                                            <li>{{$invoice->data['billingDetails']['senderCountry']}}</li>
-                                            <li>{{__('VAT')}}
-                                                {{__('Number')}} {{$invoice->data['billingDetails']['senderCompanyNumber']}}</li>
-                                        </ul>
-                                    </div>
-                                    <div class="invoice-items mb-5">
+                                    <div class="invoice-items mb-3">
                                         <div class="table-responsive"
                                              tabindex="0">
                                             <table class="table table-bordered">
@@ -88,15 +93,15 @@
                                                     </td>
                                                     {{--<td class="text-center">1</td>--}}
                                                     <td class="text-center">
-                                                        {{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount($invoice->data['subtotal'])}}
+                                                        {{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount($invoice->decodedData['subtotal'])}}
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <th colspan="2" class="text-right">{{__('Total taxes')}}:</th>
-                                                    <th class="text-center">{{ \App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount($invoice->data['taxesTotalAmount'])}}</th>
+                                                    <th class="text-center">{{ \App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount($invoice->decodedData['taxesTotalAmount'])}}</th>
                                                 </tr>
-                                                @if(isset($invoice->data['taxes']) && isset($invoice->data['taxes']['data']))
-                                                    @foreach($invoice->data['taxes']['data'] as $tax)
+                                                @if(isset($invoice->decodedData['taxes']) && isset($invoice->decodedData['taxes']['data']))
+                                                    @foreach($invoice->decodedData['taxes']['data'] as $tax)
                                                         <tr>
                                                             <th colspan="2" class="text-right">
                                                                 {{$tax['taxName']}}
@@ -113,7 +118,7 @@
                                                 @endif
                                                 <tr>
                                                     <th colspan="2" class="text-right">{{__('Total:')}}</th>
-                                                    <th class="text-center">{{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount($invoice->data['totalAmount'])}}</th>
+                                                    <th class="text-center">{{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount($invoice->decodedData['totalAmount'])}}</th>
                                                 </tr>
                                                 </tfoot>
                                             </table>
@@ -135,6 +140,10 @@
                     <!-- End .panel -->
                 </div>
                 <!-- col-lg-12 end here -->
+            </div>
+        @else
+            <div class="d-flex justify-content-center align-content-center my-5">
+                <p class="h5">⚠ {{__("Invalid invoice data provided")}}</p>
             </div>
         @endif
     </div>

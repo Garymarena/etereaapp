@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Session;
 class UserController extends Controller
 {
     /**
-     * Impersonate admin as user and act like him in the website
+     * Impersonate admin as user and act like him in the website.
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse|string
      */
-    public function impersonate(Request $request){
+    public function impersonate(Request $request) {
         $userId = $request->route('id');
         try{
             $currentUserId = Auth::user()->id;
@@ -31,7 +31,7 @@ class UserController extends Controller
     }
 
     /**
-     * Leave impersonation and return to admin user
+     * Leave impersonation and return to admin user.
      * @param Request $request
      * @return string
      */

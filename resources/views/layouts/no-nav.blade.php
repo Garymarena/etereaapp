@@ -5,6 +5,7 @@
 </head>
 <body class="d-flex flex-column">
 @include('elements.impersonation-header')
+@include('elements.global-announcement')
 <div class="flex-fill">
     @yield('content')
 </div>

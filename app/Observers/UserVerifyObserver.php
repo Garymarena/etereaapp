@@ -14,7 +14,7 @@ class UserVerifyObserver
     /**
      * Listen to the User updating event.
      *
-     * @param  \App\User  $user
+     * @param  User  $user
      * @return void
      */
     public function saving(UserVerify $userVerify)
@@ -38,7 +38,12 @@ class UserVerifyObserver
 
             // Sending out the user notification
             $user = User::find($userVerify->user_id);
-            App::setLocale($user->settings['locale']);
+            try{
+                App::setLocale($user->settings['locale']);
+            }
+            catch (\Exception $e){
+                App::setLocale('en');
+            }
             EmailsServiceProvider::sendGenericEmail(
                 [
                     'email' => $user->email,

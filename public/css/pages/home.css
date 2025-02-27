@@ -1,5 +1,5 @@
 .home-header{
-    height: 500px;
+    /*height:460px;*/
     background-position: top right;
     background-repeat: no-repeat;
 }
@@ -15,4 +15,8 @@
 
 .coinbasae-logo{
     height:1.3rem
+}
+
+.suggestion-header-bg {
+    height: 140px !important;
 }

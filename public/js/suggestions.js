@@ -19,6 +19,9 @@ var AiSuggestions = {
      */
     suggestDescriptionDialog: function(){
         $('#suggest-description-dialog').modal('show');
+        if(this.suggestionType === 'stream'){
+            $('#stream-update-dialog').modal('hide');
+        }
     },
 
     /**
@@ -57,6 +60,9 @@ var AiSuggestions = {
             else{
                 $(this.targetedClass).val(description);
             }
+            if(this.suggestionType === 'stream'){
+                $('#stream-update-dialog').modal('show');
+            }
             $('#ai-request').removeClass('is-invalid');
         }
     },
@@ -77,7 +83,7 @@ var AiSuggestions = {
             updateButtonState('loading',$('.suggest-description'), trans('Suggest'), 'light');
             let route = app.baseUrl + '/suggestions/generate';
             let data = {
-                'text': $('#ai-request').val(),
+                'text': $('#ai-request').val() + trans('Do not include any explanation.'),
             };
             $.ajax({
                 type: 'POST',
@@ -120,10 +126,13 @@ var AiSuggestions = {
      */
     setDefaultDescription: function (type) {
         let description;
-        if(type == 'post') {
-            description = trans('Write me a short post description to post on my profile');
-        } else if(type == 'profile') {
-            description = trans('Write me a short profile bio description');
+        if(type === 'post') {
+            description = trans('Write me a short post description to post on my profile', {'siteName': app.siteName});
+        } else if(type === 'profile') {
+            description = trans('Write me a short profile bio description', {'siteName': app.siteName});
+        }
+        else if(type === 'stream') {
+            description = trans('Write me a shot stream title', {'siteName': app.siteName});
         }
         if(description) {
             $('#ai-request').val(description);

@@ -12,7 +12,7 @@ class ReferralCodeUsage extends Model
      * @var array
      */
     protected $fillable = [
-        'used_by', 'referral_code'
+        'used_by', 'referral_code',
     ];
 
     /**

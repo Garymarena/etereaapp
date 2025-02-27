@@ -4,7 +4,8 @@
 "use strict";
 /* global Swiper, CommentsPaginator, PostsPaginator  */
 /* global app */
-/* global updateButtonState, redirect, trans, trans_choice, launchToast, mswpScanPage, showDialog, hideDialog, EmojiButton  */
+/* global updateButtonState, redirect, trans, trans_choice, launchToast */
+/* global  mswpScanPage, showDialog, hideDialog, filterXSS, initTooltips, bindNoLongPressEvents  */
 
 
 var Post = {
@@ -17,6 +18,7 @@ var Post = {
     activePage: 'post',
     postID: null,
     commentID: null,
+    scrollToPostWhenTogglingDescription: true,
 
     /**
      * Sets the current active page
@@ -65,7 +67,7 @@ var Post = {
         $.ajax({
             type: 'POST',
             data: {
-                'message': postElement.find('textarea').val(),
+                'message': postElement.find('.new-comment-textarea').val(),
                 'post_id': postID
             },
             url: app.baseUrl+'/posts/comments/add',
@@ -74,7 +76,7 @@ var Post = {
                     launchToast('success',trans('Success'),trans('Comment added'));
                     postElement.find('.no-comments-label').addClass('d-none');
                     postElement.find('.post-comments-wrapper').prepend(result.data).fadeIn('slow');
-                    postElement.find('textarea').val('');
+                    postElement.find('.new-comment-textarea').val('');
                     const commentsCount = parseInt(postElement.find('.post-comments-label-count').html()) + 1;
                     postElement.find('.post-comments-label-count').html(commentsCount);
                     postElement.find('.post-comments-label').html(trans_choice('comments',commentsCount));
@@ -87,11 +89,11 @@ var Post = {
                 newCommentButton.blur();
             },
             error: function (result) {
-                postElement.find('textarea').addClass('is-invalid');
+                postElement.find('.new-comment-textarea').addClass('is-invalid');
                 if(result.status === 422) {
                     $.each(result.responseJSON.errors,function (field,error) {
                         if(field === 'message'){
-                            postElement.find('textarea').parent().find('.invalid-feedback').html(error);
+                            postElement.find('.new-comment-textarea').parent().find('.invalid-feedback').html(error);
                         }
                     });
                     updateButtonState('loaded',newCommentButton);
@@ -186,43 +188,6 @@ var Post = {
         else{
             postElement.addClass('d-none');
         }
-
-        Post.initEmojiPicker(post_id);
-
-    },
-
-    /**
-     * Instantiates the emoji picker for any given post
-     * @param post_id
-     */
-    initEmojiPicker: function(post_id){
-        try{
-            const button = document.querySelector('*[data-postID="'+post_id+'"] .trigger');
-            const picker = new EmojiButton(
-                {
-                    position: 'top-end',
-                    theme: app.theme,
-                    autoHide: false,
-                    rows: 4,
-                    recentsCount: 16,
-                    emojiSize: '1.3em',
-                    showSearch: false,
-                }
-            );
-            picker.on('emoji', emoji => {
-                document.querySelector('input').value += emoji;
-                $('*[data-postID="'+post_id+'"] .comment-textarea').val($('*[data-postID="'+post_id+'"] .comment-textarea').val() + emoji);
-
-            });
-            button.addEventListener('click', () => {
-                picker.togglePicker(button);
-            });
-        }
-        catch (e) {
-            // Maybe avoid ending up in here entirely
-            // console.error(e)
-        }
-
     },
 
     /**
@@ -390,7 +355,7 @@ var Post = {
     togglePostPin: function (id) {
         let reactElement = $('*[data-postID="'+id+'"] .pin-button');
         const isPinned = reactElement.hasClass('is-active');
-        $('.pinned-post-label').addClass('d-none')
+        $('.pinned-post-label').addClass('d-none');
         $.ajax({
             type: 'POST',
             data: {
@@ -402,12 +367,12 @@ var Post = {
             success: function (result) {
                 if(result.success){
                     if(isPinned){
-                        $('*[data-postID="'+id+'"] .pinned-post-label').addClass('d-none')
+                        $('*[data-postID="'+id+'"] .pinned-post-label').addClass('d-none');
                         reactElement.removeClass('is-active');
                         reactElement.html(trans('Pin this post'));
                     }
                     else{
-                        $('*[data-postID="'+id+'"] .pinned-post-label').removeClass('d-none')
+                        $('*[data-postID="'+id+'"] .pinned-post-label').removeClass('d-none');
                         reactElement.addClass('is-active');
                         reactElement.html(trans('Un-pin post'));
                     }
@@ -432,6 +397,7 @@ var Post = {
         $(".post-media, .pswp__item").on("contextmenu",function(){
             return false;
         });
+        bindNoLongPressEvents();
     },
 
     /**
@@ -448,7 +414,128 @@ var Post = {
             postElement.find('.post-content-data').addClass('line-clamp-3');
             postElement.find('.label-more').removeClass('d-none');
         }
-        PostsPaginator.scrollToLastPost(postID);
+        if(Post.scrollToPostWhenTogglingDescription){
+            PostsPaginator.scrollToLastPost(postID);
+        }
+    },
+
+    showEditCommentInterface: function (postID, commentID){
+        Post.cancelEditCommentInterface();
+        let commentElement = $('*[data-commentID="'+commentID+'"]');
+        commentElement.find('.post-comment-content').addClass('d-none');
+        commentElement.find('.post-comment-edit').removeClass('d-none');
+    },
+
+    cancelEditCommentInterface: function (){
+        $('.post-comment').each(function(key,element) {
+            $(element).find('.post-comment-content').removeClass('d-none');
+            $(element).find('.post-comment-edit').addClass('d-none');
+            let commentElement = $(element);
+            commentElement.find('.edit-comment-textarea').removeClass('is-invalid');
+            let commentContent = commentElement.find('.comment-content').html();
+            commentContent = filterXSS(commentContent);
+            commentElement.find('textarea').val(commentContent);
+        });
+    },
+
+    saveEditedComment: function (postID, commentID){
+        let commentElement = $('*[data-commentID="'+commentID+'"]');
+        let newCommentButton = commentElement.find('.post-comment-edit').find('button');
+        let commentContent = commentElement.find('textarea').val();
+        updateButtonState('loading',newCommentButton);
+        $.ajax({
+            type: 'POST',
+            data: {
+                'message': commentContent,
+                'post_id': postID,
+                'comment_id': commentID
+            },
+            url: app.baseUrl+'/posts/comments/edit',
+            success: function (result) {
+                if(result.success){
+                    launchToast('success',trans('Success'),trans('Comment saved'));
+                    commentContent = filterXSS(commentContent);
+                    commentElement.find('textarea').val(commentContent);
+                    commentElement.find('.comment-content').html(commentContent);
+                    Post.cancelEditCommentInterface();
+                    initTooltips();
+                    updateButtonState('loaded',newCommentButton);
+                }
+                else{
+                    launchToast('danger',trans('Error'),result.errors[0]);
+                    updateButtonState('loaded',newCommentButton);
+                }
+                newCommentButton.blur();
+            },
+            error: function (result) {
+                commentElement.find('textarea').addClass('is-invalid');
+                if(result.status === 422) {
+                    $.each(result.responseJSON.errors,function (field,error) {
+                        if(field === 'message'){
+                            commentElement.find('textarea').parent().find('.invalid-feedback').html(error);
+                        }
+                    });
+                    updateButtonState('loaded',newCommentButton);
+                }
+                else if(result.status === 403 || result.status === 404){
+                    launchToast('danger',trans('Error'), result.responseJSON.message);
+                }
+                newCommentButton.blur();
+            }
+        });
+    },
+
+    /**
+     * Add user vote to a given poll
+     * @param pollID
+     * @param answerID
+     */
+    voteForPoll: function (pollID, answerID){
+        $.ajax({
+            type: 'POST',
+            data: {
+                pollID,
+                answerID
+            },
+            dataType: 'json',
+            url: app.baseUrl+'/posts/polls/vote',
+            success: function (result) {
+                if(result.success){
+                    // launchToast('success',trans('Success'),result.message);
+                    $('.post-poll-'+pollID).html(result.html);
+                    Post.animatePollResults();
+                }
+                else{
+                    launchToast('danger',trans('Error'),result.errors[0]);
+                }
+            },
+            error: function (result) {
+                launchToast('danger',trans('Error'),result.responseJSON.message);
+            }
+        });
+    },
+
+    /**
+     * Animates the poll results in an UI friendly way
+     */
+    animatePollResults: function (){
+        const bars = document.querySelectorAll('.poll-bar');
+        bars.forEach(bar => {
+            const finalWidth = bar.getAttribute('data-width') || '0%';
+
+            // If already animated (or already at final width), skip
+            if (bar.dataset.animated === 'true' || bar.style.width === finalWidth) {
+                return;
+            }
+
+            // Otherwise, animate it
+            bar.style.width = '0'; // ensure it's back to zero
+            setTimeout(() => {
+                bar.style.width = finalWidth;
+                // Mark it so we know not to re-animate
+                bar.dataset.animated = 'true';
+            }, 50);
+        });
     },
 
 };

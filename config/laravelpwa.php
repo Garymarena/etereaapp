@@ -14,11 +14,11 @@ return [
         'icons' => [
             '192x192' => [
                 'path' => '/img/pwa/manifest-icon-192.maskable.png',
-                'purpose' => 'any maskable'
+                'purpose' => 'any maskable',
             ],
             '512x512' => [
                 'path' => '/img/pwa/manifest-icon-512.maskable.png',
-                'purpose' => 'any maskable'
+                'purpose' => 'any maskable',
             ],
 
         ],
@@ -39,6 +39,6 @@ return [
             '1668x2388' => '/img/pwa/apple-splash-2388-1668.jpg',
             '2048x2732' => '/img/pwa/apple-splash-2732-2048.jpg',
         ],
-        'custom' => []
-    ]
+        'custom' => [],
+    ],
 ];

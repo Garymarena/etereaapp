@@ -12,7 +12,7 @@
 */
 
 // Admin routes ( Needs to be placed above )
-Route::group(['prefix' => 'admin', 'middleware' => 'jsVars'], function () {
+Route::group(['prefix' => 'admin', 'middleware' => ['jsVars', 'admin']], function () {
     Voyager::routes();
     Route::get('/metrics/new/users/value', 'MetricsController@newUsersValue')->name('admin.metrics.new.users.value');
     Route::get('/metrics/new/users/trend', 'MetricsController@newUsersTrend')->name('admin.metrics.new.users.trend');
@@ -28,6 +28,8 @@ Route::group(['prefix' => 'admin', 'middleware' => 'jsVars'], function () {
     Route::get('/leave-impersonation', 'UserController@leaveImpersonation')->name('admin.leaveImpersonation');
     Route::get('/clear-app-cache', 'GenericController@clearAppCache')->name('admin.clear.cache');
 
+    Route::post('/withdrawals/{withdrawalId}/approve', 'WithdrawalsController@approveWithdrawal')->name('admin.withdrawals.approve');
+    Route::post('/withdrawals/{withdrawalId}/reject', 'WithdrawalsController@rejectWithdrawal')->name('admin.withdrawals.reject');
 });
 
 // Home & contact page
@@ -49,7 +51,7 @@ Route::get('socialAuth/{provider}/callback', ['uses' => 'Auth\LoginController@ha
 /*
  * (User) Protected routes
  */
-Route::group(['middleware' => ['auth','verified','2fa']], function () {
+Route::group(['middleware' => ['auth', 'verified', '2fa']], function () {
     // Settings panel routes
     Route::group(['prefix' => 'my', 'as' => 'my.'], function () {
 
@@ -123,6 +125,10 @@ Route::group(['middleware' => ['auth','verified','2fa']], function () {
             Route::post('poster-upload', ['uses' => 'StreamsController@posterUpload', 'as'   => 'poster.upload']);
         });
 
+        Route::group(['prefix' => '', 'as' => 'polls.'], function () {
+            Route::post('/polls/save', ['uses' => 'ListsController@saveList', 'as'   => 'save']);
+        });
+
     });
 
     Route::post('authorizeStreamPresence', ['uses' => 'StreamsController@authorizeUser', 'as'  => 'public.stream.authorizeUser']);
@@ -164,14 +170,16 @@ Route::group(['middleware' => ['auth','verified','2fa']], function () {
         Route::get('/{post_id}/{username}', ['uses' => 'PostsController@getPost', 'as'   => 'get']);
         Route::get('/comments', ['uses' => 'PostsController@getPostComments', 'as'   => 'get.comments']);
         Route::post('/comments/add', ['uses' => 'PostsController@addNewComment', 'as'   => 'add.comments']);
+        Route::post('/comments/edit', ['uses' => 'PostsController@editComment', 'as'   => 'edit.comments']);
         Route::delete('/comments/delete', ['uses' => 'PostsController@deleteComment', 'as'   => 'delete.comments']);
 
         Route::post('/reaction', ['uses' => 'PostsController@updateReaction', 'as'   => 'react']);
         Route::post('/bookmark', ['uses' => 'PostsController@updatePostBookmark', 'as'   => 'bookmark']);
         Route::post('/pin', ['uses' => 'PostsController@updatePostPin', 'as'   => 'pin']);
         Route::delete('/delete', ['uses' => 'PostsController@deletePost', 'as'   => 'delete']);
-    });
 
+        Route::post('/polls/vote', ['uses' => 'PostsController@userPollVote', 'as'   => 'polls.vote']);
+    });
 
     // Subscriptions routes
     Route::group(['prefix' => 'subscriptions', 'as' => 'subscriptions.'], function () {
@@ -181,6 +189,7 @@ Route::group(['middleware' => ['auth','verified','2fa']], function () {
     // Withdrawals routes
     Route::group(['prefix' => 'withdrawals', 'as' => 'withdrawals.'], function () {
         Route::post('/request', ['uses' => 'WithdrawalsController@requestWithdrawal', 'as'   => 'request']);
+        Route::get('/onboarding', ['uses' => 'WithdrawalsController@onboarding', 'as'   => 'onboarding']);
     });
 
     // Invoices routes
@@ -197,10 +206,13 @@ Route::group(['middleware' => ['auth','verified','2fa']], function () {
     Route::group(['prefix' => 'suggestions', 'as' => 'suggestions.'], function () {
         Route::post('/generate', ['uses' => 'AiController@generateSuggestion', 'as'   => 'generate']);
     });
+
+    Route::post('/auth/presence-channel', ['uses' => 'GenericController@authorizePresenceChannel', 'as' => 'presence.auth']);
+
 });
 
 // 2FA related routes
-Route::group(['middleware' => ['auth','verified']], function () {
+Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::get('device-verify', ['uses' => 'TwoFAController@index', 'as' => '2fa.index']);
     Route::post('device-verify', ['uses' => 'TwoFAController@store', 'as' => '2fa.post']);
     Route::get('device-verify/reset', ['uses' => 'TwoFAController@resend', 'as' => '2fa.resend']);
@@ -215,6 +227,11 @@ Route::any('beacon/{type}', [
 Route::post('payment/stripeStatusUpdate', [
     'as'   => 'stripe.payment.update',
     'uses' => 'PaymentsController@stripePaymentsHook',
+]);
+
+Route::post('payment/stripeConnectStatusUpdate', [
+    'as'   => 'stripeConnect.payment.update',
+    'uses' => 'PaymentsController@stripeConnectHook',
 ]);
 
 Route::post('payment/paypalStatusUpdate', [
@@ -271,11 +288,13 @@ Route::get('/search/posts', ['uses' => 'SearchController@getSearchPosts', 'as' =
 Route::get('/search/users', ['uses' => 'SearchController@getUsersSearch', 'as' => 'search.users']);
 Route::get('/search/streams', ['uses' => 'SearchController@getStreamsSearch', 'as' => 'search.streams']);
 
+Route::post('/markBannerAsSeen', ['uses' => 'GenericController@markBannerAsSeen', 'as'   => 'banner.mark.seen']);
+
 // Public profile
 Route::get('/{username}', ['uses' => 'ProfileController@index', 'as'   => 'profile']);
 Route::get('/{username}/posts', ['uses' => 'ProfileController@getUserPosts', 'as'   => 'profile.posts']);
 Route::get('/{username}/streams', ['uses' => 'ProfileController@getUserStreams', 'as'   => 'profile.streams']);
 
 Route::fallback(function () {
-    return view('errors.404'); // template should exists
+    abort(404);
 });

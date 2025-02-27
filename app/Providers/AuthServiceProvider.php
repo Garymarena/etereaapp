@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    const ALPHABET = '0123456789ACDEFGHKMNPQRTVWXY';
+    public const ALPHABET = '0123456789ACDEFGHKMNPQRTVWXY';
 
     /**
      * The policy mappings for the application.
@@ -31,14 +31,11 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->registerPolicies();
     }
 
     /**
      * Function used to create an user
      * Used in the register function & installer process.
-     * TODO: Create this associated data as an observer event, inheriting these props when creating an user from admin
-     *
      * @param $data
      * @return mixed
      */
@@ -80,7 +77,7 @@ class AuthServiceProvider extends ServiceProvider
             $userData['paid_profile'] = 0;
         }
 
-        if(getSetting('profiles.default_user_privacy_setting_on_register') && getSetting('profiles.default_user_privacy_setting_on_register')  == 'private'){
+        if(getSetting('profiles.default_user_privacy_setting_on_register') && getSetting('profiles.default_user_privacy_setting_on_register') == 'private'){
             $userData['public_profile'] = false;
         }
         else{
@@ -92,10 +89,19 @@ class AuthServiceProvider extends ServiceProvider
         }
 
         if(getSetting('payments.default_subscription_price')){
-            $price = getSetting('payments.default_subscription_price');
+            $price = str_replace(',', '.', getSetting('payments.default_subscription_price'));
             $userData['profile_access_price'] = $price;
+            $userData['profile_access_price_3_months'] = $price;
             $userData['profile_access_price_6_months'] = $price;
             $userData['profile_access_price_12_months'] = $price;
+        }
+
+        if(getSetting('profiles.record_users_last_ip_address')){
+            $userData['last_ip'] = request()->ip();
+        }
+
+        if(getSetting('profiles.record_users_last_activity_time')) {
+            $userData['last_active_at'] = Carbon::now();
         }
 
         try {
@@ -114,7 +120,7 @@ class AuthServiceProvider extends ServiceProvider
     }
 
     /**
-     * Function that generates new 2FA codes and emails them
+     * Function that generates new 2FA codes and emails them.
      */
     public static function generate2FACode()
     {
@@ -122,16 +128,21 @@ class AuthServiceProvider extends ServiceProvider
             $user = Auth::user();
             $code = rand(100000, 999999);
             UserCode::updateOrCreate(
-                [ 'user_id' => $user->id ],
-                [ 'code' => $code ]
+                ['user_id' => $user->id],
+                ['code' => $code]
             );
-            App::setLocale($user->settings['locale']);
+            try{
+                App::setLocale($user->settings['locale']);
+            }
+            catch (\Exception $e){
+                App::setLocale('en');
+            }
             EmailsServiceProvider::sendGenericEmail(
                 [
                     'email' => $user->email,
                     'subject' => __('Verify your new device'),
                     'title' => __('Hello, :name,', ['name'=>$user->name]),
-                    'content' => __('Your verification code is:') . ' ' .  $code,
+                    'content' => __('Your verification code is:').' '.$code,
                     'button' => [
                         'text' => __('Go to site'),
                         'url' => route('feed'),
@@ -144,27 +155,27 @@ class AuthServiceProvider extends ServiceProvider
     }
 
     /**
-     * Generates new string for current addr&agent
+     * Generates new string for current addr&agent.
      * @return string
      */
-    public static function generate2FaDeviceSignature(){
+    public static function generate2FaDeviceSignature() {
         return sha1(request()->ip().request()->header('User-Agent'));
     }
 
     /**
-     * Adds a new user device
+     * Adds a new user device.
      * @param $userID
      * @param bool $verified
      * @return mixed
      */
-    public static function addNewUserDevice($userID, $verified = false){
+    public static function addNewUserDevice($userID, $verified = false) {
         $signature = self::generate2FaDeviceSignature();
-        if(!UserDevice::where('signature',$signature)->where('user_id',$userID)->first()) {
+        if(!UserDevice::where('signature', $signature)->where('user_id', $userID)->first()) {
             $data = [
                 'user_id' => $userID,
                 'address' => request()->ip(),
                 'agent' => request()->header('User-Agent'),
-                'signature' => $signature
+                'signature' => $signature,
             ];
             if ($verified) {
                 $data['verified_at'] = Carbon::now();
@@ -175,12 +186,12 @@ class AuthServiceProvider extends ServiceProvider
     }
 
     /**
-     * Gets validated user devices
+     * Gets validated user devices.
      * @param $userID
      * @return mixed
      */
-    public static function getUserDevices($userID){
-        return UserDevice::where('user_id',$userID)->where('verified_at','<>',null)->select('signature')->pluck('signature')->toArray();
+    public static function getUserDevices($userID) {
+        return UserDevice::where('user_id', $userID)->where('verified_at', '<>', null)->select('signature')->pluck('signature')->toArray();
     }
 
     /**
@@ -195,10 +206,9 @@ class AuthServiceProvider extends ServiceProvider
         }
 
         if (!empty($prefix)) {
-            $code = $prefix . $code;
+            $code = $prefix.$code;
         }
 
         return $code;
     }
-
 }

@@ -3,13 +3,13 @@
         <div class="card-body">
             <form name="{{ $name }}" action="{{ route($route) }}" method="get">
                 <div class="row">
-                    <div class="col-md-8 col-xs-12">
-                        <div class="text-muted font-weight-bolder">{{ $title }}</div>
+                    <div class="col-md-8 col-xs-12 mb-0">
+                        <div class="text-muted font-weight-bolder fs-5">{{ $title }}</div>
 
                         <div class="mt-3 d-none text-muted font-weight-medium" data-card-legend>
                             <div class="row mb-2 d-none" data-legend-placeholder>
-                                <div class="col-md-6 mb-1"><span class="chart-legend mr-2 rounded d-inline-block" style></span><span data-legend-name></span></div>
-                                <div class="col-md-6 mb-1"><span class="text-muted" data-legend-value></span></div>
+                                <div class="col-md-5 mb-2 d-flex align-items-center"><div class="chart-legend mr-3 rounded w-10" style></div><span data-legend-name></span></div>
+                                <div class="col-md-7 mb-2"><span class="text-muted ml-3" data-legend-value></span></div>
                             </div>
                         </div>
 
@@ -22,7 +22,7 @@
                             <span data-card-status-loading>{{ __('Loading...') }}</span>
                         </div>
                     </div>
-                    <div class="col-md-4 col-xs-12">
+                    <div class="col-md-4 col-xs-12 mb-0">
                         <div class="d-flex justify-content-center align-items-center">
                             <input type="hidden" name="api_token" value="">
                             <input type="hidden" name="function" value="{{ $form['function'] }}">

@@ -77,9 +77,8 @@ return [
             'secret' => '',
             'region' => '',
             'bucket' => '',
-            'root' => '/',
             'visibility' => 'public',
-            'endpoint' => env('WASABI_ENDPOINT', 'https://s3.eu-central-1.wasabisys.com/'),
+            'endpoint' => env('WASABI_ENDPOINT', 'https://s3.wasabisys.com'),
         ],
 
         'do_spaces' => [
@@ -102,7 +101,7 @@ return [
             'bucket' => '',
             'visibility' => 'public',
             'use_path_style_endpoint' => true,
-            #'bucket_endpoint' => true,
+            //'bucket_endpoint' => true,
         ],
 
         'pushr' => [

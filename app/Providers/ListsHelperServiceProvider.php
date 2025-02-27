@@ -89,30 +89,55 @@ class ListsHelperServiceProvider extends ServiceProvider
      */
     public static function getUserLists()
     {
-        $lists = UserList::with(['members', 'members.user', 'members.userPosts'])->where('user_id', Auth::user()->id)->get()->each(function ($item, $key) {
-            $item->posts_count = 0;
-            foreach ($item->members as $member) {
-                $item->posts_count += count($member->userPosts->posts);
-            }
-            $item->members = self::getUsersForListMembers($item->members);
-            return $item;
-        });
+        $lists = UserList::with(['members', 'members.user', 'members.userPosts'])
+            ->where('user_id', Auth::user()->id)
+            ->get()
+            ->each(function ($item, $key) {
+                $item->posts_count = 0;
+                foreach ($item->members as $member) {
+                    $item->posts_count += count($member->userPosts->posts);
+                }
+                $item->members = self::getUsersForListMembers($item->members);
+                return $item;
+            });
+
+        // Take the first two, reverse the rest, then merge back together
+        $firstTwo = $lists->take(2);
+        $rest = $lists->skip(2)->reverse();
+
+        // Concatenate the first two with the reversed remainder
+        $lists = $firstTwo->concat($rest);
+
         return $lists;
     }
 
     /**
-     * Creates a "virtual" list, holding all of the user followers
+     * Returns all the lists of an user.
+     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public static function getUserListTrimmed()
+    {
+        $lists = self::getUserLists();
+        $filteredLists = [];
+        foreach($lists as $list){
+            $filteredLists[$list->name] = $list->id;
+        }
+        return $filteredLists;
+    }
+
+    /**
+     * Creates a "virtual" list, holding all of the user followers.
      * @return UserList
      */
-    public static function getUserFollowersList(){
+    public static function getUserFollowersList() {
         $followersList = new UserList();
         $followersList->name = __("Followers");
         $followersList->type = UserList::FOLLOWERS_TYPE;
         $followersList->user_id = Auth::user()->id;
         $followersList->posts_count = 0;
-        $followers = ListsHelperServiceProvider::getUserFollowers(Auth::user()->id);
+        $followers = self::getUserFollowers(Auth::user()->id);
         $followers = collect($followers)->pluck('user_id');
-        $followers = User::whereIn('id',$followers)->withCount('posts')->get();
+        $followers = User::whereIn('id', $followers)->withCount('posts')->get();
         $followersList->posts_count = 0;
         foreach($followers as $follower){
             $followersList->posts_count += $follower->posts_count;
@@ -121,12 +146,12 @@ class ListsHelperServiceProvider extends ServiceProvider
         return $followersList;
     }
 
-    public static function getUsersForListMembers($members){
+    public static function getUsersForListMembers($members) {
         $filteredUsers = [];
         foreach ($members as $member) {
             $filteredUsers[] = $member->user;
         }
-        $members = collect($filteredUsers);
+        $members = collect($filteredUsers)->reverse();
         return $members;
     }
 
@@ -137,22 +162,30 @@ class ListsHelperServiceProvider extends ServiceProvider
      */
     public static function createUserDefaultLists($user_id)
     {
-        UserList::insert([
+        $lists = [
             [
-                'user_id' => $user_id,
                 'type' => 'following',
                 'name' => 'Following',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
             ],
             [
-                'user_id' => $user_id,
                 'type' => 'blocked',
                 'name' => 'Blocked',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
             ],
-        ]);
+        ];
+
+        foreach ($lists as $list) {
+            UserList::firstOrCreate(
+                [
+                    'user_id' => $user_id,
+                    'type'    => $list['type'],
+                ],
+                [
+                    'name'       => $list['name'],
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]
+            );
+        }
     }
 
     /**
@@ -237,7 +270,7 @@ class ListsHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Check if current logged user is following specific user
+     * Check if current logged user is following specific user.
      * @param $userId
      * @return bool
      */
@@ -257,12 +290,12 @@ class ListsHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Checks follow relation between two users
+     * Checks follow relation between two users.
      * @param $fromUserID
      * @param $toUserID
      * @return bool
      */
-    public static function isUserFollowing($fromUserID, $toUserID){
+    public static function isUserFollowing($fromUserID, $toUserID) {
         $loggedUserId = $fromUserID;
         $userId = $toUserID;
         $userFollowersListId = UserList::query()->where(['user_id' => $loggedUserId, 'type' => 'following'])->select('id')->first();
@@ -276,7 +309,7 @@ class ListsHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Check current user following type
+     * Check current user following type.
      * @param $userId
      * @param bool $getTranslated
      * @return array|\Illuminate\Contracts\Translation\Translator|string|null
@@ -296,8 +329,8 @@ class ListsHelperServiceProvider extends ServiceProvider
         }
     }
 
-    public static function getUserFollowers($userID){
-        $followers = UserListMember::select('user_lists.user_id','users.email', 'users.settings', 'users.name')
+    public static function getUserFollowers($userID) {
+        $followers = UserListMember::select('user_lists.user_id', 'users.email', 'users.settings', 'users.name')
             ->join('user_lists', 'user_list_members.list_id', '=', 'user_lists.id')
             ->join('users', 'users.id', '=', 'user_lists.user_id')
             ->where('user_list_members.user_id', $userID)
@@ -306,5 +339,4 @@ class ListsHelperServiceProvider extends ServiceProvider
             ->toArray();
         return $followers;
     }
-
 }

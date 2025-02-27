@@ -38,7 +38,7 @@ class CreateTransactionRequest extends FormRequest
             'postcode' => 'min:1|max:255',
             'city' => 'min:1|max:255',
             'manual_payment_files' => '',
-            'manual_payment_description' => ''
+            'manual_payment_description' => '',
         ];
     }
 }

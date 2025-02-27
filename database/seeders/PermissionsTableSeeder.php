@@ -1267,6 +1267,126 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => '2023-06-21 16:26:04',
                 'updated_at' => '2023-06-21 16:26:04',
             ),
+            156 => 
+            array (
+                'id' => 162,
+                'key' => 'browse_global_announcements',
+                'table_name' => 'global_announcements',
+                'created_at' => '2024-08-07 17:27:57',
+                'updated_at' => '2024-08-07 17:27:57',
+            ),
+            157 => 
+            array (
+                'id' => 163,
+                'key' => 'read_global_announcements',
+                'table_name' => 'global_announcements',
+                'created_at' => '2024-08-07 17:27:57',
+                'updated_at' => '2024-08-07 17:27:57',
+            ),
+            158 => 
+            array (
+                'id' => 164,
+                'key' => 'edit_global_announcements',
+                'table_name' => 'global_announcements',
+                'created_at' => '2024-08-07 17:27:57',
+                'updated_at' => '2024-08-07 17:27:57',
+            ),
+            159 => 
+            array (
+                'id' => 165,
+                'key' => 'add_global_announcements',
+                'table_name' => 'global_announcements',
+                'created_at' => '2024-08-07 17:27:57',
+                'updated_at' => '2024-08-07 17:27:57',
+            ),
+            160 => 
+            array (
+                'id' => 166,
+                'key' => 'delete_global_announcements',
+                'table_name' => 'global_announcements',
+                'created_at' => '2024-08-07 17:27:57',
+                'updated_at' => '2024-08-07 17:27:57',
+            ),
+            161 => 
+            array (
+                'id' => 167,
+                'key' => 'browse_polls',
+                'table_name' => 'polls',
+                'created_at' => '2025-02-04 01:19:37',
+                'updated_at' => '2025-02-04 01:19:37',
+            ),
+            162 => 
+            array (
+                'id' => 168,
+                'key' => 'read_polls',
+                'table_name' => 'polls',
+                'created_at' => '2025-02-04 01:19:37',
+                'updated_at' => '2025-02-04 01:19:37',
+            ),
+            163 => 
+            array (
+                'id' => 169,
+                'key' => 'edit_polls',
+                'table_name' => 'polls',
+                'created_at' => '2025-02-04 01:19:37',
+                'updated_at' => '2025-02-04 01:19:37',
+            ),
+            164 => 
+            array (
+                'id' => 170,
+                'key' => 'add_polls',
+                'table_name' => 'polls',
+                'created_at' => '2025-02-04 01:19:37',
+                'updated_at' => '2025-02-04 01:19:37',
+            ),
+            165 => 
+            array (
+                'id' => 171,
+                'key' => 'delete_polls',
+                'table_name' => 'polls',
+                'created_at' => '2025-02-04 01:19:37',
+                'updated_at' => '2025-02-04 01:19:37',
+            ),
+            166 => 
+            array (
+                'id' => 172,
+                'key' => 'browse_poll_answers',
+                'table_name' => 'poll_answers',
+                'created_at' => '2025-02-04 01:20:37',
+                'updated_at' => '2025-02-04 01:20:37',
+            ),
+            167 => 
+            array (
+                'id' => 173,
+                'key' => 'read_poll_answers',
+                'table_name' => 'poll_answers',
+                'created_at' => '2025-02-04 01:20:37',
+                'updated_at' => '2025-02-04 01:20:37',
+            ),
+            168 => 
+            array (
+                'id' => 174,
+                'key' => 'edit_poll_answers',
+                'table_name' => 'poll_answers',
+                'created_at' => '2025-02-04 01:20:37',
+                'updated_at' => '2025-02-04 01:20:37',
+            ),
+            169 => 
+            array (
+                'id' => 175,
+                'key' => 'add_poll_answers',
+                'table_name' => 'poll_answers',
+                'created_at' => '2025-02-04 01:20:37',
+                'updated_at' => '2025-02-04 01:20:37',
+            ),
+            170 => 
+            array (
+                'id' => 176,
+                'key' => 'delete_poll_answers',
+                'table_name' => 'poll_answers',
+                'created_at' => '2025-02-04 01:20:37',
+                'updated_at' => '2025-02-04 01:20:37',
+            ),
         ));
         
         

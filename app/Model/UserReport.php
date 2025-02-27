@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserReport extends Model
 {
     public static $typesMap = [
-        "I don't like this post",
+        "I don't like this content",
         "Content is offensive or violates Terms of Service.",
         "Content contains stolen material (DMCA)",
         "Content is spam",
@@ -26,7 +26,7 @@ class UserReport extends Model
      *
      * @var array
      */
-    protected $fillable = ['from_user_id', 'user_id', 'post_id', 'type', 'details', 'status'];
+    protected $fillable = ['from_user_id', 'user_id', 'post_id', 'message_id', 'stream_id', 'type', 'details', 'status'];
 
     /**
      * The attributes that should be hidden for arrays.
@@ -60,6 +60,16 @@ class UserReport extends Model
 
     public function reportedPost()
     {
-        return $this->belongsTo('App\Post', 'post_id');
+        return $this->belongsTo('App\Model\Post', 'post_id');
+    }
+
+    public function reportedMessage()
+    {
+        return $this->belongsTo('App\Model\UserMessage', 'message_id');
+    }
+
+    public function reportedStream()
+    {
+        return $this->belongsTo('App\Model\Stream', 'stream_id');
     }
 }

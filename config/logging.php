@@ -103,31 +103,37 @@ return [
         'cronjobs' => [
             'path' => storage_path('logs/cronjobs.log'),
             'driver' => 'single',
-            'level' => 'info'
+            'level' => 'info',
         ],
 
         'ffmpeg' => [
             'path' => storage_path('logs/ffmpeg.log'),
             'driver' => 'single',
-            'level' => 'debug'
+            'level' => 'debug',
         ],
 
         'coconut' => [
             'path' => storage_path('logs/coconut.log'),
             'driver' => 'single',
-            'level' => 'debug'
+            'level' => 'debug',
         ],
 
         'payments' => [
             'path' => storage_path('logs/payments.log'),
             'driver' => 'single',
-            'level' => 'debug'
+            'level' => 'debug',
         ],
 
         'emails' => [
             'path' => storage_path('logs/emails.log'),
             'driver' => 'single',
-            'level' => 'debug'
+            'level' => 'debug',
+        ],
+
+        'withdrawals' => [
+            'path' => storage_path('logs/withdrawals.log'),
+            'driver' => 'single',
+            'level' => 'debug',
         ],
 
     ],

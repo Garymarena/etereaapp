@@ -24,6 +24,20 @@
         </span>
     </div>
 
+    @if(getSetting('feed.allow_post_polls'))
+        <div class="mt-1 ml-0 ml-md-2">
+            <span
+                class="h-pill h-pill-primary post-poll-button {{!GenericHelper::isUserVerified() && getSetting('site.enforce_user_identity_checks') ? 'disabled' : ''}}"
+                onclick="{{!GenericHelper::isUserVerified() && getSetting('site.enforce_user_identity_checks') ? '' : 'PostCreate.showPollEditDialog()'}}"
+                data-toggle="tooltip" data-placement="bottom" title="{{__('Manage poll')}}."
+            >
+                @include('elements.icon',['icon'=>'stats-chart-outline','variant'=>'medium','centered'=>true, 'classes' => 'mr-1'])
+                <span class="d-none d-md-block">{{__("Poll")}}</span>
+                <span class="d-block d-md-none">{{__("Poll")}}</span>
+            </span>
+        </div>
+    @endif
+
     @if(getSetting('profiles.enable_new_post_notification_setting'))
         <div class="d-none"><ion-icon name="notifications-outline"></ion-icon></div>
         <div class="mt-1 ml-0 ml-md-2">

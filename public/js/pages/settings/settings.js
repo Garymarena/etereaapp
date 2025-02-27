@@ -5,11 +5,6 @@
 /* global app, trans, launchToast, initStickyComponent */
 
 $(function () {
-    $('.setting-menu-mobile .nav').mCustomScrollbar({
-        theme: "minimal-dark",
-        axis:'x',
-        scrollInertia: 200,
-    });
 });
 
 $(window).scroll(function () {

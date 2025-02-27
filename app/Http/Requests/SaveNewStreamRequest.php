@@ -26,8 +26,8 @@ class SaveNewStreamRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => ['required','min:5',new Sluggable],
-            'price' => [new PPVMinMax('stream')]
+            'name' => ['required', 'min:5', new Sluggable],
+            'price' => [new PPVMinMax('stream')],
         ];
     }
 }

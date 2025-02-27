@@ -5,11 +5,6 @@
 /* global app */
 
 $(function () {
-    $('.notifications-nav-mobile').mCustomScrollbar({
-        theme: "minimal-dark",
-        axis:'x',
-        scrollInertia: 200,
-    });
 });
 
 /**

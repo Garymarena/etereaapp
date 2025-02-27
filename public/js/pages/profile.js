@@ -2,7 +2,7 @@
 * Feed page & component
 */
 "use strict";
-/* global app, paginatorConfig, initialPostIDs, PostsPaginator, Post, getCookie, QRCode, StreamsPaginator, postsFilter */
+/* global app, paginatorConfig, initialPostIDs, PostsPaginator, Post, getCookie, QRCode, StreamsPaginator, postsFilter, multiLineOverflows */
 
 $(function () {
     if(typeof paginatorConfig !== 'undefined'){
@@ -17,11 +17,17 @@ $(function () {
     }
 
     PostsPaginator.initPostsGalleries(initialPostIDs);
+    PostsPaginator.initPostsHyperLinks();
+    // Animate polls
+    Post.animatePollResults();
+
     Post.setActivePage('profile');
     if(getCookie('app_prev_post') !== null){
         PostsPaginator.scrollToLastPost(getCookie('app_prev_post'));
     }
     Post.initPostsMediaModule();
+    // Initing read more/less toggler based on clip property
+    PostsPaginator.initDescriptionTogglers();
     Post.initGalleryModule('.recent-media');
     if(app.feedDisableRightClickOnMedia !== null){
         Post.disablePostsRightClick();
@@ -40,6 +46,10 @@ $(function () {
         }
     }
 
+    if(multiLineOverflows('.description-content')){
+        $('.profile-description-holder .show-more-actions').removeClass('d-none');
+    }
+
 });
 
 $(window).scroll(function(){
@@ -54,7 +64,6 @@ $(window).scroll(function(){
 window.onunload = function(){
     // Reset scrolling to top
     $(".inline-border-tabs").get(0).scrollIntoView();
-
 };
 
 // eslint-disable-next-line no-unused-vars

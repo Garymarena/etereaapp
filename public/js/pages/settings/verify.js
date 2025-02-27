@@ -7,7 +7,9 @@
 Dropzone.autoDiscover = false;
 
 $(function () {
-    VerifySettings.initUploader();
+    if(mediaSettings.initUploader){
+        VerifySettings.initUploader();
+    }
 });
 
 var VerifySettings = {
@@ -37,6 +39,7 @@ var VerifySettings = {
             previewsContainer: ".dropzone-previews",
             autoProcessQueue: true,
             parallelUploads: 1,
+            dictInvalidFileType: trans("You can't upload files of this type."),
         });
         VerifySettings.myDropzone.on("addedfile", file => {
             FileUpload.updatePreviewElement(file, true);
@@ -81,6 +84,7 @@ var VerifySettings = {
             },
             url: app.baseUrl + '/my/settings/verify/upload/delete',
             success: function () {
+                VerifySettings.uploadedFiles = VerifySettings.uploadedFiles.filter(item => item !== file);
                 launchToast('success',trans('Success'),trans('Attachment removed.'));
             },
             error: function () {

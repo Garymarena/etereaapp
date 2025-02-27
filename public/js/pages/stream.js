@@ -14,6 +14,7 @@ $(function () {
     Stream.initPusher();
     Stream.presenceChannelConnect(streamVars.streamId);
     Stream.chatChannelConnect(streamVars.streamId);
+    Stream.resetTextAreaHeight();
 
     // Chat related
     Stream.initAutoScroll();
@@ -174,6 +175,7 @@ var Stream = {
             success: function (result) {
                 Stream.appendCommentToStreamChat(result.dataHtml);
                 Stream.updateChatNoCommentsLabel();
+                Stream.resetTextAreaHeight();
                 updateButtonState('loaded',$('.send-message'));
             },
             error: function (result) {
@@ -266,5 +268,14 @@ var Stream = {
             });
         }
     },
+
+
+    /**
+     * Resets the send new message text area height
+     */
+    resetTextAreaHeight: function(){
+        $(".messageBoxInput").css('height',45);
+    },
+
 
 };

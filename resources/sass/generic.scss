@@ -113,10 +113,10 @@ footer{
     .post-box .h-pill{
         border-radius: 50%;
     }
-    .post-media{
-        margin-left:-16px;
-        margin-right: -16px;
-    }
+    //.post-media{
+    //    margin-left:-16px;
+    //    margin-right: -16px;
+    //}
     .container-xl{
         padding-left:14px;
     }
@@ -177,10 +177,10 @@ footer{
     .post-box .h-pill{
         border-radius: 50%;
     }
-    .post-media{
-        margin-left:-16px;
-        margin-right: -16px;
-    }
+    //.post-media{
+    //    margin-left:-16px;
+    //    margin-right: -16px;
+    //}
     .container-xl{
         padding-left:14px;
     }
@@ -590,6 +590,24 @@ footer{
     border-radius: 50%;
 }
 
+/* The small green dot in the bottom-right corner */
+.online-indicator {
+    position: absolute;
+    margin-left:-20px;
+    bottom: 5px;
+    right: 20px;
+    width: 18px; /* Adjust as you like */
+    height: 18px;
+    background-color: #28a745; /* green */
+    @if $color-scheme-alt == dark {
+        border:2px solid $white;
+    } @else {
+        border:2px solid $dark;
+    }
+    border-radius: 50%;
+}
+
+
 .table-wrapper{
     //background-color: rgba($gray-100-alt,20%);
 }
@@ -647,8 +665,39 @@ a.text-dark:hover,  a.text-light:hover,  a.text-white:hover,  a.text-black:hover
     content:none!important;
 }
 
-.posts-wrapper .post-media{
+.posts-wrapper .locked-media{
+    object-fit: cover; /* Do not scale the image */
+    width: 100%;
+    max-height: 550px; // This gets feed.post_box_max_height value if present!
+    height: 550px;
 
+    background-size: cover; /* Use 'contain' if you prefer */
+    background-position: center;
+    background-repeat: no-repeat;
+
+}
+
+.ppv-info-bg {
+    color: $primary;
+    background-color: rgba(255, 255, 255, 0.3); /* Adjust color and opacity as needed */
+}
+
+.non-blur-locked-actions .ppv-info-bg{
+    @if $color-scheme-alt == dark {
+        color: $primary;
+        background-color: rgba(255, 255, 255, 0.3); /* Adjust color and opacity as needed */
+    } @else {
+        color: $white;
+        background: transparent;
+    }
+}
+
+.bg-contain{
+    background-size: contain!important;
+}
+
+.svg-locked-post{
+    height: 280px!important;
 }
 
 .posts-wrapper .post-media-image{
@@ -772,7 +821,7 @@ a.text-dark:hover,  a.text-light:hover,  a.text-white:hover,  a.text-black:hover
     }
 }
 
-.page-content-wrapper p{
+.public-page-content p{
     @if $color-scheme-alt == dark {
         color: $dark!important;
 
@@ -884,7 +933,7 @@ a.text-dark:hover,  a.text-light:hover,  a.text-white:hover,  a.text-black:hover
 
 .notification-box .avatar {
     @if $color-scheme-alt == dark {
-       outline: 3px solid $border-color!important;
+        outline: 3px solid $border-color!important;
     } @else {
         outline: 3px solid $border-color-alt!important;
     }
@@ -1030,5 +1079,23 @@ a.text-dark:hover,  a.text-light:hover,  a.text-white:hover,  a.text-black:hover
         } @else {
             color: $link-hover-color-alt;
         }
+    }
+}
+
+.global-announcement-banner a{
+    color:$white!important;
+    text-decoration: none!important;
+}
+
+.global-announcement-banner a:hover{
+    color:darken($white,10)!important;
+}
+
+.bg-secondary-neutral{
+    @if $color-scheme-alt == dark {
+        background-color: $list-group-action-active-bg!important;
+    }
+    @else{
+        background-color: $list-group-action-active-bg-alt!important;
     }
 }

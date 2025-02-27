@@ -7,8 +7,8 @@ $rules = [
     'array_syntax' => ['syntax' => 'short'],
     'blank_line_after_namespace' => true,
     'blank_line_after_opening_tag' => true,
-    'braces' => true,
-    'cast_spaces' => true,
+    //TODO: Maybe we'll want this in the future, but looks weird imo atm
+//    'cast_spaces' => true,
     'concat_space' => [
         'spacing' => 'none',
     ],
@@ -18,7 +18,7 @@ $rules = [
     'full_opening_tag' => true,
     'fully_qualified_strict_types' => true, // added by Shift
     'function_declaration' => true,
-    'function_typehint_space' => true,
+    'type_declaration_spaces' => true, // Replaces 'function_typehint_space'
     'heredoc_to_nowdoc' => true,
     'include' => true,
     'increment_style' => ['style' => 'post'],
@@ -38,7 +38,7 @@ $rules = [
             'extra',
             'throw',
             'use',
-            'use_trait',
+            // 'use_trait' removed, now handled by 'class_attributes_separation'
         ],
     ],
     'no_blank_lines_after_class_opening' => true,
@@ -57,10 +57,8 @@ $rules = [
     ],
     'no_short_bool_cast' => true,
     'no_singleline_whitespace_before_semicolons' => true,
-    'no_spaces_after_function_name' => true,
-    'no_spaces_inside_parenthesis' => true,
-    'no_trailing_comma_in_list_call' => true,
-    'no_trailing_comma_in_singleline_array' => true,
+    'spaces_inside_parentheses' => true, // Replaces 'no_spaces_inside_parenthesis'
+    'no_trailing_comma_in_singleline' => true, // Replaces both 'no_trailing_comma_in_list_call' and 'no_trailing_comma_in_singleline_array'
     'no_trailing_whitespace' => true,
     'no_trailing_whitespace_in_comment' => true,
     'no_unreachable_default_argument_value' => true,
@@ -68,7 +66,8 @@ $rules = [
     'no_whitespace_before_comma_in_array' => true,
     'no_whitespace_in_blank_line' => true,
     'normalize_index_brace' => true,
-    'not_operator_with_successor_space' => true,
+    //TODO: Maybe we'll want this in the future, but looks weird imo atm
+//    'not_operator_with_successor_space' => true,
     'object_operator_without_whitespace' => true,
     'phpdoc_indent' => true,
     'phpdoc_no_access' => true,
@@ -85,13 +84,14 @@ $rules = [
     'short_scalar_cast' => true,
     'simplified_null_return' => false, // disabled by Shift
     'single_blank_line_at_eof' => true,
-    'single_blank_line_before_namespace' => true,
+    'blank_lines_before_namespace' => true, // Replaces 'single_blank_line_before_namespace'
     'single_import_per_statement' => true,
     'single_line_after_imports' => true,
     'single_line_comment_style' => [
         'comment_types' => ['hash'],
     ],
-    'single_quote' => true,
+    //TODO: Maybe we'll want this in the future, but looks weird imo atm
+//    'single_quote' => true,
     'space_after_semicolon' => true,
     'standardize_not_equals' => true,
     'switch_case_semicolon_to_colon' => true,
@@ -114,14 +114,17 @@ $rules = [
         'default' => 'single_space',
         'operators' => ['=>' => null],
     ],
-    'blank_line_before_statement' => [
-        'statements' => ['return'],
-    ],
+    // TODO: Review this? So far we don't have such rule in JS code, so leaving it off though it might generate cleaner code
+    // TODO: Also seems not to be fully consistent. EG: ListsHelperServiceProvider post-fix (messes up readability for functions with early exists)
+//    'blank_line_before_statement' => [
+//        'statements' => ['return'],
+//    ],
     'class_attributes_separation' => [
         'elements' => [
-            'const' => 'one',
-            'method' => 'one',
-            'property' => 'one',
+            'const' => 'none',       // No blank line before/after const declarations. TODO: Run one time on none then remove it entirely?
+            'method' => 'one',       // One blank line before/after methods
+            'property' => 'one',     // One blank line before/after properties
+            'trait_import' => 'one', // One blank line before/after trait imports
         ],
     ],
     'class_definition' => [
@@ -129,9 +132,10 @@ $rules = [
         'single_item_single_line' => true,
         'single_line' => true,
     ],
-    'ordered_imports' => [
-        'sort_algorithm' => 'alpha',
-    ],
+    //TODO: Maybe we'll want this in the future, but looks weird imo atm
+//    'ordered_imports' => [
+//        'sort_algorithm' => 'alpha',
+//    ],
 
     // php-cs-fixer 3: Removed rootless options (*)
     'no_unneeded_control_parentheses' => [
@@ -143,7 +147,6 @@ $rules = [
     'visibility_required' => [
         'elements' => ['property', 'method', 'const'],
     ],
-
 ];
 
 $finder = Finder::create()

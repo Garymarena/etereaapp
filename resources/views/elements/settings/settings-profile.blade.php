@@ -134,14 +134,30 @@
 
     </div>
 
-    <div class="form-group">
-        <label for="location">{{__('Location')}}</label>
-        <input class="form-control {{ $errors->has('location') ? 'is-invalid' : '' }}" id="location" name="location" aria-describedby="emailHelp"  value="{{Auth::user()->location}}">
-        @if($errors->has('location'))
-            <span class="invalid-feedback" role="alert">
-                <strong>{{$errors->first('location')}}</strong>
-            </span>
-        @endif
+    <div class="d-flex flex-row">
+        <div class="form-group w-50 pr-2">
+            <label for="country">{{__('Country')}}</label>
+            <select class="form-control" id="country" name="country" >
+                <option value=""></option>
+                @foreach($countries as $country)
+                    <option value="{{$country->id}}" {{Auth::user()->country_id == $country->id ? 'selected' : ''}}>{{__($country->name)}}</option>
+                @endforeach
+            </select>
+            @if($errors->has('country'))
+                <span class="invalid-feedback" role="alert">
+                    <strong>{{$errors->first('country')}}</strong>
+                </span>
+            @endif
+        </div>
+        <div class="form-group w-50 pl-2">
+            <label for="location">{{__('Location')}}</label>
+            <input class="form-control {{ $errors->has('location') ? 'is-invalid' : '' }}" id="location" name="location" aria-describedby="emailHelp"  value="{{Auth::user()->location}}">
+            @if($errors->has('location'))
+                <span class="invalid-feedback" role="alert">
+                    <strong>{{$errors->first('location')}}</strong>
+                </span>
+            @endif
+        </div>
     </div>
 
     <div class="form-group">

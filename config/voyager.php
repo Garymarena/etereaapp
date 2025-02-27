@@ -194,7 +194,7 @@ return [
     'additional_js' => [
         'js/admin.js',
         'js/admin/metrics.js',
-        'libs/chart.js/dist/Chart.min.js'
+        'libs/chart.js/dist/Chart.min.js',
     ],
 
     'googlemaps' => [

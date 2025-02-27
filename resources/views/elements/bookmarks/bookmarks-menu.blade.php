@@ -16,7 +16,7 @@
     </div>
 @else
     <div class="mt-3 inline-border-tabs text-bold">
-        <nav class="nav nav-pills nav-justified">
+        <nav class="nav nav-pills nav-justified pr-3 pr-md-0">
             @foreach($bookmarkTypes as $route => $setting)
                 <a class="nav-item nav-link {{$activeTab == $route ? 'active' : ''}}" href="{{route('my.bookmarks',['type'=>$route])}}">
                     <div class="d-flex justify-content-center">

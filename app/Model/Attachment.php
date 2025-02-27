@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Attachment extends Model
 {
-    const PUBLIC_DRIVER = 0;
-    const S3_DRIVER = 1;
-    const WAS_DRIVER = 2;
-    const DO_DRIVER = 3;
-    const MINIO_DRIVER = 4;
-    const PUSHR_DRIVER = 5;
+    public const PUBLIC_DRIVER = 0;
+    public const S3_DRIVER = 1;
+    public const WAS_DRIVER = 2;
+    public const DO_DRIVER = 3;
+    public const MINIO_DRIVER = 4;
+    public const PUSHR_DRIVER = 5;
 
     // Disable auto incrementing as we set the id manually (uuid)
     public $incrementing = false;
@@ -23,7 +23,10 @@ class Attachment extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'post_id', 'filename', 'type', 'id', 'driver', 'payment_request_id', 'message_id', 'coconut_id', 'has_thumbnail'
+        'user_id', 'post_id', 'filename',
+        'type', 'id', 'driver',
+        'payment_request_id', 'message_id', 'coconut_id',
+        'has_thumbnail', 'has_blurred_preview',
     ];
 
     protected $appends = ['attachmentType', 'path', 'thumbnail'];
@@ -69,6 +72,20 @@ class Attachment extends Model
             $path = 'posts/videos'.'/thumbnails/'.$this->id.'.jpg';
         }
         return AttachmentServiceProvider::getThumbnailPathForAttachmentByResolution($this, 150, 150, $path);
+    }
+
+    // TODO: Add get blurredPreview
+    public function getBlurredPreviewAttribute()
+    {
+        if(!$this->has_blurred_preview) return null;
+        $path = '/posts/images/';
+        if ($this->message_id) {
+            $path = '/messenger/images/';
+        }
+        if($this->type == 'video'){
+            $path = 'posts/videos'.'/thumbnails/'.$this->id.'.jpg';
+        }
+        return AttachmentServiceProvider::getBlurredPreviewPathForAttachment($this, $path);
     }
 
     /*

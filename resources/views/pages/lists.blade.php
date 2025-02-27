@@ -18,8 +18,8 @@
 @stop
 
 @section('content')
-    <div class="row">
-        <div class="min-vh-100 border-right col-12 pr-md-0">
+    <div class="d-flex flex-wrap">
+        <div class="min-vh-100 border-right col-12 pr-md-0 px-0">
             <div class="pt-4 d-flex justify-content-between align-items-center px-3 pb-3 border-bottom">
                 <div>
                     <h5 class="text-truncate text-bold mb-0 {{(Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? '' : 'text-dark-r') : (Cookie::get('app_theme') == 'dark' ? '' : 'text-dark-r'))}}">{{__('Lists')}}</h5>

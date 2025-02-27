@@ -14,7 +14,7 @@
     @endif
     <style>
         body {
-            background-image:url('{{ Voyager::image( Voyager::setting("admin.bg_image"), Storage::disk('public')->url('../img/admin-bg.png') ) }}');
+            background-image:url('{{ str_replace('\\','/',urldecode(Voyager::image(Voyager::setting("admin.bg_image"), Storage::disk('public')->url('../img/admin-bg.png')))) }}');
             background-color: {{ Voyager::setting("admin.bg_color", "#FFFFFF" ) }};
         }
         body.login .login-sidebar {
@@ -54,7 +54,7 @@
 <body class="login">
 <div class="container-fluid">
     <div class="row">
-        <div class="hidden-xs col-sm-6 col-md-8 min-vh-100 p-0">
+        <div class="hidden-xs col-sm-6 col-md-8 min-vh-100 p-0 mb-0">
             <div class="faded-bg animated"></div>
             <?php $admin_bg = Voyager::setting('admin.bg_image', ''); ?>
             @if($admin_bg == '')

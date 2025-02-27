@@ -17,7 +17,6 @@ use Ramsey\Uuid\Uuid;
 
 class AttachmentServiceProvider extends ServiceProvider
 {
-
     // Mixed for ffmpeg and coconut
     public static $videoEncodingPresets = [
         'size' => ['videoBitrate'=> 500, 'audioBitrate' => 128, 'quality' => 1],
@@ -128,13 +127,13 @@ class AttachmentServiceProvider extends ServiceProvider
     {
         switch ($type) {
             case 'video':
-                return ['mp4', 'avi', 'wmv', 'mpeg', 'm4v', 'moov', 'mov','mkv','asf'];
+                return ['mp4', 'avi', 'wmv', 'mpeg', 'm4v', 'moov', 'mov', 'mkv', 'asf'];
                 break;
             case 'audio':
                 return ['mp3', 'wav', 'ogg'];
                 break;
             default:
-                return ['jpg', 'jpeg', 'png'];
+                return ['jpg', 'jpeg', 'png', 'webp'];
                 break;
         }
     }
@@ -172,7 +171,7 @@ class AttachmentServiceProvider extends ServiceProvider
      * @return mixed
      * @throws \Exception
      */
-    public static function createAttachment($file, $directory, $generateThumbnail)
+    public static function createAttachment($file, $directory, $generateThumbnail = false, $generateBlurredShot = false)
     {
 
         $storage = Storage::disk(config('filesystems.defaultFilesystemDriver'));
@@ -181,36 +180,38 @@ class AttachmentServiceProvider extends ServiceProvider
         } while (Attachment::query()->where('id', $fileId)->first() != null);
 
         $hasThumbnail = false;
+        $hasBlurredPreview = false;
         $fileExtension = $initialFileExtension = $file->guessExtension();
-        $fileContent = file_get_contents($file);
         $filePath = $directory.'/'.$fileId.'.'.$fileExtension;
 
         // Converting all images to jpegs
         if (self::getAttachmentType($fileExtension) == 'image') {
+            // Create the initial image instance and orientate it
             $jpgImage = Image::make($file);
             $jpgImage->fit($jpgImage->width(), $jpgImage->height())->orientate();
 
-            if (getSetting('media.apply_watermark')) {
-                // Add watermark to post images
+            // Save the original file content before any processing
+            $originalFileContent = (string) $jpgImage->encode('jpg', 100); // Save the high-quality original
 
-                if(getSetting('media.watermark_image')){
+            if (getSetting('media.apply_watermark')) {
+                // Add watermark to the main image
+                if (getSetting('media.watermark_image')) {
                     $watermark = Image::make(self::getWatermarkPath());
-                    $resizePercentage = 75; //70% less then an actual image (play with this value)
-                    $watermarkSize = round($jpgImage->width() * ((100 - $resizePercentage) / 100), 2); //watermark will be $resizePercentage less then the actual width of the image
-                    // resize watermark width keep height auto
+                    $resizePercentage = 75; // 70% less than the actual image
+                    $watermarkSize = round($jpgImage->width() * ((100 - $resizePercentage) / 100), 2);
                     $watermark->resize($watermarkSize, null, function ($constraint) {
                         $constraint->aspectRatio();
                     });
                     $jpgImage->insert($watermark, 'bottom-right', 30, 25);
                 }
 
-                if(getSetting('media.use_url_watermark')) {
+                if (getSetting('media.use_url_watermark')) {
                     $textWaterMark = str_replace(['https://', 'http://', 'www.'], '', route('profile', ['username' => Auth::user()->username]));
                     $textWaterMarkSize = 3 / 100 * $jpgImage->width();
                     $jpgImage->text($textWaterMark, $jpgImage->width() - 25, $jpgImage->height() - 10, function ($font) use ($textWaterMarkSize) {
                         $font->file(public_path('/fonts/OpenSans-Semibold.ttf'));
                         $font->size($textWaterMarkSize);
-                        $font->color(array(255, 255, 255, 0.7));
+                        $font->color([255, 255, 255, 0.7]);
                         $font->align('right');
                         $font->valign('bottom');
                         $font->angle(0);
@@ -218,46 +219,61 @@ class AttachmentServiceProvider extends ServiceProvider
                 }
             }
 
-            // No processing for gifs
-            // TODO: Add watermarking via other lib - intervention has no support for it
-            if($fileExtension == 'gif'){
-                $fileExtension = 'gif';
-                $fileContent = $file;
+            // Handle GIFs without processing
+            if ($fileExtension == 'gif') {
                 $filePath = $directory.'/'.$fileId.'.'.$fileExtension;
                 $storage->put($filePath, file_get_contents($file->getRealPath()), 'public');
-            }
-            else{
-                // Saving rest of image types
-                $jpgImage->encode('jpg', 100);
-                $file = $jpgImage;
+            } else {
+                // Save the processed image
                 $fileExtension = 'jpg';
-                $fileContent = $file;
                 $filePath = $directory.'/'.$fileId.'.'.$fileExtension;
-                // Uploading to storage
-                $storage->put($filePath, $fileContent, 'public');
+                $storage->put($filePath, (string) $jpgImage->encode('jpg', 100), 'public');
             }
 
-        }
+            // Generate thumbnail
+            if ($generateThumbnail) {
+                $width = 150;
+                $height = 150;
+                $thumbnailImg = Image::make($originalFileContent); // Use the saved original content
+                $thumbnailImg->fit($width, $height, function ($constraint) {
+                    $constraint->aspectRatio();
+                });
+                $thumbnailImg->encode('jpg', 100);
+                $thumbnailDir = $directory.'/'.$width.'X'.$height;
+                $thumbnailfilePath = $thumbnailDir.'/'.$fileId.'.jpg';
+                // Upload the thumbnail to storage
+                $storage->put($thumbnailfilePath, (string) $thumbnailImg, 'public');
+                $hasThumbnail = true;
+            }
 
-        // generate thumbnail
-        if ($generateThumbnail && self::getAttachmentType($fileExtension) === 'image') {
-            $width = 150;
-            $height = 150;
-            $img = Image::make($file);
-            $img->fit(150, 150, function ($constraint) {
-                $constraint->aspectRatio();
-            });
-            $img->encode('jpg', 100);
+            if (getSetting('media.use_blurred_previews_for_locked_posts') && $generateBlurredShot) {
+                $blurredImg = Image::make($originalFileContent)->orientate(); // Ensure proper orientation
+                // Downscale the image to speed up processing and reduce memory usage
+                $blurredImg->resize(600, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+                // Access the raw GD image resource
+                $gdImage = $blurredImg->getCore();
+                // Blur the imae
+                $blurredGdImage = multiStepBlur($gdImage);
+                // Wrap the GD resource back into an Intervention Image instance
+                $blurredImg = Image::make($blurredGdImage);
+                // Encode the image as a web-optimized JPEG
+                $blurredImg->encode('jpg', 80); // Adjust quality for faster load and reduced size
+                // Define directory and file path for the blurred preview
+                $blurredPreviewDir = $directory.'/blurred';
+                $blurredPreviewPath = $blurredPreviewDir.'/'.$fileId.'.jpg';
+                // Upload the blurred image to storage
+                $storage->put($blurredPreviewPath, (string) $blurredImg, 'public');
+                $hasBlurredPreview = true;
+            }
 
-            $thumbnailDir = $directory.'/'.$width.'X'.$height;
-            $thumbnailfilePath = $thumbnailDir.'/'.$fileId.'.jpg';
-            // Uploading to storage
-            $storage->put($thumbnailfilePath, $img, 'public');
-            $hasThumbnail = true;
         }
 
         // Convert videos to mp4s
         if (self::getAttachmentType($fileExtension) === 'video') {
+            $fileContent = file_get_contents($file);
             if (getSetting('media.transcoding_driver') === 'ffmpeg') {
                 // Move tmp file onto local files path, as ffmpeg can't handle absolute paths
                 $filePath = $fileId.'.'.$fileExtension;
@@ -275,10 +291,10 @@ class AttachmentServiceProvider extends ServiceProvider
                 if(getSetting('media.max_videos_length')){
                     $maxLength = (int)getSetting('media.max_videos_length');
                     $videoLength = $video->getFormat()->get('duration');
-                    $videoLength = explode('.',$videoLength);
+                    $videoLength = explode('.', $videoLength);
                     $videoLength = (int)$videoLength[0];
                     if($videoLength > $maxLength){
-                        throw new \Exception(__("Uploaded videos can not longer than :length seconds.",['length'=>$maxLength]));
+                        throw new \Exception(__("Uploaded videos can not longer than :length seconds.", ['length'=>$maxLength]));
                     }
                 }
 
@@ -290,7 +306,7 @@ class AttachmentServiceProvider extends ServiceProvider
                     if(getSetting('media.watermark_image')) {
                         // Add watermark to post images
                         $watermark = Image::make(self::getWatermarkPath());
-                        $tmpWatermarkFile = 'watermark-' . $fileId . '-.png';
+                        $tmpWatermarkFile = 'watermark-'.$fileId.'-.png';
                         $resizePercentage = 75; //70% less then an actual image (play with this value)
                         $watermarkSize = round($dimensions->getWidth() * ((100 - $resizePercentage) / 100), 2); //watermark will be $resizePercentage less then the actual width of the image
                         // resize watermark width keep height auto
@@ -310,7 +326,7 @@ class AttachmentServiceProvider extends ServiceProvider
                     }
 
                     if(getSetting('media.use_url_watermark')){
-                        $textWaterMark = str_replace(['https://','http://','www.'],'',route('profile',['username'=>Auth::user()->username]));
+                        $textWaterMark = str_replace(['https://', 'http://', 'www.'], '', route('profile', ['username'=>Auth::user()->username]));
                         $textWaterMarkSize = 3 / 100 * $dimensions->getWidth();
                         // Note: Some hosts might need to default font on public_path('/fonts/OpenSans-Semibold.ttf') instead of verdana
                         $filter = new CustomFilter("drawtext=text='".$textWaterMark."':x=10:y=H-th-10:fontfile='".(env('FFMPEG_FONT_PATH') ?? 'Verdana')."':fontsize={$textWaterMarkSize}:fontcolor=white: x=(w-text_w)-25: y=(h-text_h)-35");
@@ -326,8 +342,8 @@ class AttachmentServiceProvider extends ServiceProvider
                 }
                 else{
                     // Overriding default ffmpeg lib temporary_files_root behaviour
-                    $ffmpegOutputLogDir = storage_path() . '/logs/ffmpeg';
-                    $ffmpegPassFile = $ffmpegOutputLogDir . '/' . uniqid();
+                    $ffmpegOutputLogDir = storage_path().'/logs/ffmpeg';
+                    $ffmpegPassFile = $ffmpegOutputLogDir.'/'.uniqid();
                     if(!is_dir($ffmpegOutputLogDir)){
                         mkdir($ffmpegOutputLogDir);
                     }
@@ -345,18 +361,49 @@ class AttachmentServiceProvider extends ServiceProvider
                     }
 
                     $video->addFilter('-preset', 'ultrafast')
-                        #->addFilter(['-strict', 2])
+                        //->addFilter(['-strict', 2])
                         ->addFilter(['-passlogfile', $ffmpegPassFile])
                         ->save($newfilePath);
 
                     // Generating thumbnail from converted video
+                    $thumbnailPath = $directory.'/thumbnails/'.$fileId.'.jpg';
                     FFMpeg::fromDisk(config('filesystems.defaultFilesystemDriver'))
                         ->open($newfilePath)
                         ->getFrameFromSeconds(1)
                         ->export()
                         ->toDisk(config('filesystems.defaultFilesystemDriver'))
-                        ->save($directory.'/thumbnails/'.$fileId.'.jpg');
+                        ->save($thumbnailPath);
                     $hasThumbnail = true;
+
+                    // Generate blurred version of the thumbnail
+                    if (getSetting('media.use_blurred_previews_for_locked_posts') && $hasThumbnail && $generateBlurredShot) {
+                        $blurredThumbnailPath = $directory.'/blurred/'.$fileId.'.jpg';
+//                        $thumbnailPath = $directory . '/thumbnails/' . $fileId . '.jpg';
+
+                        try {
+                            // Open a stream from remote storage
+                            $thumbnailStream = Storage::disk(config('filesystems.defaultFilesystemDriver'))->readStream($thumbnailPath);
+
+                            // Load the stream into Intervention Image
+                            $thumbnailImage = Image::make($thumbnailStream)->orientate();
+
+                            // Access the GD resource and apply the blur
+                            $gdImage = $thumbnailImage->getCore();
+                            $blurredGdImage = multiStepBlur($gdImage, 4, 40, 25); // Adjust scaleFactor, blurIntensity, and finalBlur as needed
+
+                            // Wrap the GD resource back into an Intervention Image instance
+                            $blurredThumbnailImage = Image::make($blurredGdImage);
+
+                            // Encode and save the blurred thumbnail
+                            $blurredThumbnailImage->encode('jpg', 80);
+
+                            // Save the blurred thumbnail back to remote storage
+                            Storage::disk(config('filesystems.defaultFilesystemDriver'))->put($blurredThumbnailPath, (string) $blurredThumbnailImage, 'public');
+                            $hasBlurredPreview = true;
+                        } catch (Exception $e) {
+                            throw new Exception("Failed to process blurred thumbnail: ".$e->getMessage());
+                        }
+                    }
 
                     if(file_exists($ffmpegPassFile.'-0.log')) unlink($ffmpegPassFile.'-0.log');
                     if(file_exists($ffmpegPassFile.'-1.log')) unlink($ffmpegPassFile.'-1.log');
@@ -375,7 +422,12 @@ class AttachmentServiceProvider extends ServiceProvider
                     $storage->put($filePath, $fileContent, 'public');
                 }
                 else{
-                    $coconut = new \Coconut\Client(getSetting('media.coconut_api_key'));
+                    $region = getSetting('media.coconut_video_region');
+                    $configData = [];
+                    if($region && $region !== 'us-east-1'){
+                        $configData['region'] = $region;
+                    }
+                    $coconut = new \Coconut\Client(getSetting('media.coconut_api_key'), $configData);
                     // Uploading the original video onto s3
                     $filePath = $directory.'/tmp/'.$fileId.'.'.$fileExtension;
                     $storage->put($filePath, $fileContent, 'public');
@@ -384,9 +436,9 @@ class AttachmentServiceProvider extends ServiceProvider
                     // Setting up the coconut notification
                     $coconut->notification = [
                         'type' => 'http',
-                        'url' => env('COCONUT_WEBHOOK_URL') ? env('COCONUT_WEBHOOK_URL') : route('transcoding.coconut.update'), // TODO: Maybe test this on live
+                        'url' => env('COCONUT_WEBHOOK_URL') ? env('COCONUT_WEBHOOK_URL') : route('transcoding.coconut.update'),
                         "params" => [
-                            'attachmentId' => $fileId
+                            'attachmentId' => $fileId,
                         ],
                     ];
 
@@ -396,19 +448,22 @@ class AttachmentServiceProvider extends ServiceProvider
                     }
                     $coconut->storage = self::getCoconutStorageSettings(getSetting('storage.driver'));
 
-                    $videoQualityPreset = self::$videoEncodingPresets[str_replace("coconut_","",getSetting('media.coconut_video_conversion_quality_preset'))];
+                    $videoQualityPreset = self::$videoEncodingPresets[str_replace("coconut_", "", getSetting('media.coconut_video_conversion_quality_preset'))];
                     // Sending the transcoding request
                     $tempFileUrl = Storage::url($filePath);
                     if(getSetting('storage.driver') === 'pushr'){
-                        $tempFileUrl = "https://{$tempFileUrl}";
+                        $tempFileUrl = "{$tempFileUrl}";
                     }
                     $jobData = [
                         'input' => ['url' => $tempFileUrl],
                         "settings"=> [
-                            "ultrafast"=> true
+                            "ultrafast"=> true,
                         ],
+                        // Review if 480 isn't too small
+                        // For ffmpeg - we take a frame out of the full resolution video
+                        // Add another image output with blur filter (1-5)
                         'outputs' => [
-                            'jpg:480x' => [
+                            'jpg:540p' => [
                                 'key' => 'jpg:medium',
                                 'path' => '/posts/videos/thumbnails/'.$fileId.'.jpg',
                                 "offsets" => [1],
@@ -424,17 +479,27 @@ class AttachmentServiceProvider extends ServiceProvider
                                         'video_bitrate' => $videoQualityPreset['videoBitrate'].'k',
                                         'audio_bitrate' => $videoQualityPreset['audioBitrate'].'k',
                                     ],
-                                ]
+                                ],
                             ],
-                        ]
+                        ],
                     ];
+
+                    if (getSetting('media.use_blurred_previews_for_locked_posts')) {
+                        // Blurred thumbnail
+                        $jobData['outputs']['jpg:720p'] = [
+                            'key' => 'jpg',
+                            'path' => '/posts/videos/blurred/'.$fileId.'.jpg',
+                            "offsets" => [1],
+                            'blur' => 5,
+                        ];
+                    }
 
                     // Watermark
                     if (getSetting('media.apply_watermark')) {
                         if (getSetting('media.watermark_image')) {
-                            $jobData['outputs']['mp4'][0]['watermark']  =  [
+                            $jobData['outputs']['mp4'][0]['watermark'] = [
                                 'url' => self::getWatermarkPath(),
-                                'position' => 'bottomright'
+                                'position' => 'bottomright',
                             ];
                         }
                     }
@@ -451,6 +516,7 @@ class AttachmentServiceProvider extends ServiceProvider
 
         if (in_array(self::getAttachmentType($fileExtension), ['audio', 'document'])) {
             $filePath = $directory.'/'.$fileId.'.'.$fileExtension;
+            $fileContent = file_get_contents($file);
             $storage->put($filePath, $fileContent, 'public');
         }
 
@@ -461,9 +527,10 @@ class AttachmentServiceProvider extends ServiceProvider
             'filename' => $filePath,
             'user_id' => Auth::id(),
             'type' => $fileExtension,
-            'driver' => AttachmentServiceProvider::getStorageProviderID($storageDriver),
+            'driver' => self::getStorageProviderID($storageDriver),
             'coconut_id' => (isset($coconutJob) ? $coconutJob->id : null),
             'has_thumbnail' => $hasThumbnail ? 1 : null,
+            'has_blurred_preview' => $hasBlurredPreview ? 1 : null,
         ]);
 
         return $attachment;
@@ -493,7 +560,7 @@ class AttachmentServiceProvider extends ServiceProvider
 
     /**
      * Gets (full path, based on path virtual attribute) thumbnail path by resolution.
-     * [Used to get final thumbnail URL]
+     * [Used to get final thumbnail URL].
      * @param $attachment
      * @param $width
      * @param $height
@@ -504,16 +571,44 @@ class AttachmentServiceProvider extends ServiceProvider
     {
         if ($attachment->driver == Attachment::S3_DRIVER && getSetting('storage.aws_cdn_enabled') && getSetting('storage.aws_cdn_presigned_urls_enabled')) {
             return self::signAPrivateDistributionPolicy(
-                'https://' . getSetting('storage.cdn_domain_name') . '/' . self::getThumbnailFilenameByAttachmentAndResolution($attachment, $width, $height, $basePath)
+                'https://'.getSetting('storage.cdn_domain_name').'/'.self::getThumbnailFilenameByAttachmentAndResolution($attachment, $width, $height, $basePath)
             );
         } else {
             if(self::getAttachmentType($attachment->type) == 'video'){
                 // Videos
-                return  str_replace($attachment->id .'.'. $attachment->type, 'thumbnails/'.$attachment->id.'.jpg', $attachment->path) ;
+                return  str_replace($attachment->id.'.'.$attachment->type, 'thumbnails/'.$attachment->id.'.jpg', $attachment->path);
             }
             else{
                 // Regular posts + messages
                 return str_replace($basePath, $basePath.$width.'X'.$height.'/', $attachment->path);
+            }
+        }
+    }
+
+    /**
+     * Gets (full path, based on path virtual attribute) thumbnail path by resolution.
+     * [Used to get final thumbnail URL].
+     * @param $attachment
+     * @param $width
+     * @param $height
+     * @param string $basePath
+     * @return string|string[]
+     */
+    public static function getBlurredPreviewPathForAttachment($attachment, $basePath = '/posts/images/')
+    {
+        if(!$attachment->has_blurred_preview) return false;
+        if ($attachment->driver == Attachment::S3_DRIVER && getSetting('storage.aws_cdn_enabled') && getSetting('storage.aws_cdn_presigned_urls_enabled')) {
+            return self::signAPrivateDistributionPolicy(
+                'https://'.getSetting('storage.cdn_domain_name').'/'.self::getBlurredPreviewByAttachment($attachment, $basePath)
+            );
+        } else {
+            if(self::getAttachmentType($attachment->type) == 'video'){
+                // Videos
+                return  str_replace($attachment->id.'.'.$attachment->type, 'blurred/'.$attachment->id.'.jpg', $attachment->path);
+            }
+            else{
+                // Regular posts + messages
+                return str_replace($basePath, $basePath.'blurred/', $attachment->path);
             }
         }
     }
@@ -532,12 +627,16 @@ class AttachmentServiceProvider extends ServiceProvider
             if ($thumbnailPath != null) {
                 $storage->delete($thumbnailPath);
             }
+            if($attachment->has_blurred_preview){
+                $blurredPreview = self::getBlurredPreviewByAttachment($attachment);
+                $storage->delete($blurredPreview);
+            }
         }
     }
 
     /**
      * Returns file thumbnail relative path, by resolution.
-     * [Used to get storage paths]
+     * [Used to get storage paths].
      * @param $attachment
      * @param $width
      * @param $height
@@ -551,7 +650,24 @@ class AttachmentServiceProvider extends ServiceProvider
         else{
             return str_replace($basePath, $basePath.$width.'X'.$height.'/', $attachment->filename);
         }
+    }
 
+    /**
+     * Returns file thumbnail relative path, by resolution.
+     * [Used to get storage paths].
+     * @param $attachment
+     * @param $width
+     * @param $height
+     * @return string|string[]
+     */
+    public static function getBlurredPreviewByAttachment($attachment, $basePath = 'posts/images/')
+    {
+        if(self::getAttachmentType($attachment->type) == 'video'){
+            return 'posts/videos/blurred/'.$attachment->id.'.jpg';
+        }
+        else{
+            return str_replace($basePath, $basePath.'blurred/', $attachment->filename);
+        }
     }
 
     /**
@@ -588,7 +704,7 @@ class AttachmentServiceProvider extends ServiceProvider
             $fileUrl = rtrim(getSetting('storage.minio_endpoint'), '/').'/'.getSetting('storage.minio_bucket_name').'/'.$attachment->filename;
         }
         elseif($attachment->driver == Attachment::PUSHR_DRIVER){
-            $fileUrl = 'https://'.rtrim(getSetting('storage.pushr_cdn_hostname'), '/').'/'.$attachment->filename;
+            $fileUrl = rtrim(getSetting('storage.pushr_cdn_hostname'), '/').'/'.$attachment->filename;
         }
         elseif ($attachment->driver == Attachment::PUBLIC_DRIVER) {
             $fileUrl = Storage::disk('public')->url($attachment->filename);
@@ -639,6 +755,7 @@ class AttachmentServiceProvider extends ServiceProvider
      */
     public static function signAPrivateDistributionPolicy($resourceKey)
     {
+        $resourceKey = str_replace('\\', '/', $resourceKey); // Windows glitching otherwise
         $expires = time() + 24 * 60 * 60; // 24 hours (60 * 60 seconds) from now.
         $customPolicy = <<<POLICY
 {
@@ -659,7 +776,7 @@ POLICY;
         $cloudFrontClient = new CloudFrontClient([
             'profile' => 'default',
             'version' => '2014-11-06',
-            'region' => 'us-east-1',
+            'region' => getSetting('storage.aws_region'),
         ]);
 
         return self::signPrivateDistributionPolicy(
@@ -671,7 +788,7 @@ POLICY;
         );
     }
 
-    public static function getStorageProviderID($storageDriver){
+    public static function getStorageProviderID($storageDriver) {
         if($storageDriver)
             if($storageDriver == 'public'){
                 return Attachment::PUBLIC_DRIVER;
@@ -696,7 +813,7 @@ POLICY;
         }
     }
 
-    public static function getStorageProviderName($storageDriver){
+    public static function getStorageProviderName($storageDriver) {
         if($storageDriver)
             if($storageDriver == Attachment::PUBLIC_DRIVER){
                 return 'public';
@@ -723,28 +840,28 @@ POLICY;
 
     /**
      * Copies file from pushr to local, then copies the files on pushr again
-     * Pushrcdn can't do $storage->copy due to failing AWSS3Adapter::getRawVisibility
+     * Pushrcdn can't do $storage->copy due to failing AWSS3Adapter::getRawVisibility.
      * @param $attachment
      * @param $newFileName
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-    public static function pushrCDNCopy($attachment, $newFileName){
-        $storage = Storage::disk(AttachmentServiceProvider::getStorageProviderName($attachment->driver));
+    public static function pushrCDNCopy($attachment, $newFileName) {
+        $storage = Storage::disk(self::getStorageProviderName($attachment->driver));
         // Pushr logic - Copy alternative as S3Adapter fails to do ->copy operations
         $remoteFile = $storage->get($attachment->filename);
         $localStorage = Storage::disk('public');
-        $tmpFile = "tmp/".$attachment->id . '.' . $attachment->type;
+        $tmpFile = "tmp/".$attachment->id.'.'.$attachment->type;
         $localStorage->put($tmpFile, $remoteFile);
         $storage->put($newFileName, $localStorage->get($tmpFile), 'public');
         $localStorage->delete($tmpFile);
     }
 
     /**
-     * Generates coconut storage configuration
+     * Generates coconut storage configuration.
      * @param $storageDriver
      * @return array|bool
      */
-    public static function getCoconutStorageSettings($storageDriver){
+    public static function getCoconutStorageSettings($storageDriver) {
         switch ($storageDriver) {
             case 's3':
                 return [
@@ -753,8 +870,8 @@ POLICY;
                     'region' => getSetting('storage.aws_region'),
                     'credentials' => [
                         'access_key_id' => getSetting('storage.aws_access_key'),
-                        'secret_access_key' => getSetting('storage.aws_secret_key')
-                    ]
+                        'secret_access_key' => getSetting('storage.aws_secret_key'),
+                    ],
                 ];
             case 'do_spaces':
                 return [
@@ -763,8 +880,8 @@ POLICY;
                     'region' => getSetting('storage.do_region'),
                     'credentials' => [
                         'access_key_id' => getSetting('storage.do_access_key'),
-                        'secret_access_key' => getSetting('storage.do_secret_key')
-                    ]
+                        'secret_access_key' => getSetting('storage.do_secret_key'),
+                    ],
                 ];
             case 'wasabi':
                 return [
@@ -773,8 +890,8 @@ POLICY;
                     'region' => getSetting('storage.was_region'),
                     'credentials' => [
                         'access_key_id' => getSetting('storage.was_access_key'),
-                        'secret_access_key' => getSetting('storage.was_secret_key')
-                    ]
+                        'secret_access_key' => getSetting('storage.was_secret_key'),
+                    ],
                 ];
             case 'minio':
                 return [
@@ -784,9 +901,9 @@ POLICY;
                     'region' => getSetting('storage.minio_region'),
                     'credentials' => [
                         'access_key_id' => getSetting('storage.minio_access_key'),
-                        'secret_access_key' => getSetting('storage.minio_secret_key')
+                        'secret_access_key' => getSetting('storage.minio_secret_key'),
                     ],
-                    'endpoint' => getSetting('storage.minio_endpoint')
+                    'endpoint' => getSetting('storage.minio_endpoint'),
                 ];
             case 'pushr':
                 return [
@@ -796,13 +913,32 @@ POLICY;
                     'region' => 'us-east-1',
                     'credentials' => [
                         'access_key_id' => getSetting('storage.pushr_access_key'),
-                        'secret_access_key' => getSetting('storage.pushr_secret_key')
+                        'secret_access_key' => getSetting('storage.pushr_secret_key'),
                     ],
-                    'endpoint' => getSetting('storage.pushr_endpoint')
+                    'endpoint' => getSetting('storage.pushr_endpoint'),
                 ];
             default:
                 return false;
         }
     }
 
+    /**
+     * Attempts to fetch file name from a give url.
+     * @param $url
+     * @return bool|mixed
+     */
+    public static function getFileNameFromUrl($url) {
+        if(preg_match('/[^\/\\&\?]+\.\w{3,4}(?=([\?&].*$|$))/', $url, $matches)){
+            return $matches[0];
+        }
+        return false;
+    }
+
+    public static function hasBlurredPreview($attachment)
+    {
+        if(getSetting('media.use_blurred_previews_for_locked_posts') && $attachment->has_blurred_preview){
+            return true;
+        }
+        return false;
+    }
 }

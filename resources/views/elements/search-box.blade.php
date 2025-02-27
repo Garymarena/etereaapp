@@ -9,7 +9,7 @@
             </span>
         </div>
     </div>
-    <input type="hidden" name="filter" value="{{isset($activeFilter) && $activeFilter !== false ? $activeFilter : 'top'}}" />
+    <input type="hidden" name="filter" value="{{isset($activeFilter) && $activeFilter !== false ? $activeFilter : (getSetting('feed.default_search_widget_filter') ? getSetting('feed.default_search_widget_filter') : 'top')}}" />
 
     @if(isset($searchFilters['gender']) && $searchFilters['gender'])
         <input type="hidden" name="gender" value="{{$searchFilters['gender']}}" />
