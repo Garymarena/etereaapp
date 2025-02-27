@@ -5,6 +5,7 @@ body {
 /* Top Navbar Menu */
 .navbar{
     padding:1rem;
+    font-size: 1.05rem;
 }
 
 .navbar-brand img{
@@ -203,8 +204,8 @@ body {
 }
 
 .suggestion-box .avatar{
-    width: 96px;
-    height: 96px;
+    width: 90px;
+    height: 90px;
     border: 2px solid #fefefe;
 }
 
@@ -352,7 +353,8 @@ body {
     background-color: #50505047;
     background-position: center center!important;
     background-size: cover!important;
-    height:140px!important;
+    height:128px!important;
+    border-radius: .25rem!important;
 }
 
 .creator-body{
@@ -407,8 +409,8 @@ footer .brand-logo{
 
 /* Profile / Posts widget */
 .recent-media .card-body img{
-    width:80px!important;
-    height:80px!important;
+    width:75px!important;
+    height:75px!important;
 }
 
 .dropdown:not(.nav-item) .dropdown-menu:before {
@@ -443,17 +445,6 @@ footer .brand-logo{
     margin-bottom:1rem!important;
 }
 
-/* Emoji Picker overrides */
-
- .emoji-picker__emojis {
-     overflow-x: hidden!important;
-     padding-left: 0px!important;
- }
-
-.emoji-picker__preview-emoji {
-    font-size: 1rem!important;
-}
-
 .min-vh-65{
     min-height: 65vh;
 }
@@ -477,6 +468,11 @@ footer .brand-logo{
 .w-32{
     width:32px;
     height:32px;
+}
+
+.w-40{
+    width:40px;
+    height:40px;
 }
 
 .text-bold-600{
@@ -568,15 +564,6 @@ footer .brand-logo{
     filter: blur(10px);
 }
 
-/*Vanilla emojis*/
-.emoji-picker__content {
-    overflow: hidden;
-}
-
-.emoji-picker__wrapper{
-    margin-bottom: 10px!important;
-}
-
 /* Laravel-Bootstrap mobile navigation hack for larger pagination numbers */
 @media screen and ( max-width: 400px ){
     li.page-item {
@@ -616,6 +603,63 @@ footer .brand-logo{
     color: #8a96a3;
 }
 
+.swiper-pagination-wrapper{
+    height: 18px;
+}
+
 .feed-widgets .swiper-pagination{
     position: relative;
+}
+
+
+.sticky-info-bar {
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    top: 0;
+    z-index: 1030; /* Ensure it is above other content */
+}
+
+.global-announcement-banner .content p{
+    margin-bottom: 0px!important;
+}
+
+.global-announcement-banner .content{
+    color: #fff;
+}
+
+/*.no-long-press {*/
+/*    user-select: none;*/
+/*    -webkit-user-select: none; !* Safari *!*/
+/*}*/
+
+.no-long-press {
+    /* Disable text selection */
+    user-select: none;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none;     /* IE 10+ */
+
+    /* Disable image saving and callout menu on iOS */
+    -webkit-touch-callout: none; /* Disable callout menu */
+    -webkit-user-drag: none;     /* Disable image dragging */
+
+    /* Allow touch actions like swipe and scroll */
+    touch-action: manipulation; /* Prevent double-tap zoom, allow pan and pinch-zoom */
+}
+
+.fs-point-85{
+   font-size:.83rem;
+}
+
+.bottom-0{
+    bottom:0;
+}
+.poll-bar {
+    width: 0;
+    transition: width 0.8s ease-in-out;
+    left: 1%;
+    right: 0%;
+    top: 10%;
+    height: 80%;
+    width: 0%;
+    border-radius: .25rem
 }

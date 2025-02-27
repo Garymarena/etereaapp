@@ -63,7 +63,8 @@ var FileUpload = {
                 $(".draft-clear-button").on("click", function() {
                     _this.removeAllFiles(true);
                 });
-            }
+            },
+            dictInvalidFileType: trans("You can't upload files of this type."),
         });
 
         FileUpload.myDropzone.on("addedfile", file => {
@@ -230,7 +231,11 @@ var FileUpload = {
             $(element).attr('src', app.baseUrl+'/img/video-loading-spinner.mp4');
         }
         else{
-            $(element).attr('src', attachment.path);
+            let fileSrc = attachment.path;
+            if(attachment.type === 'image'){
+                fileSrc = typeof attachment.thumbnail !== 'undefined' ? attachment.thumbnail : attachment.path;
+            }
+            $(element).attr('src', fileSrc);
 
         }
     },

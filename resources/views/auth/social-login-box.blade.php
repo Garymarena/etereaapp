@@ -1,4 +1,4 @@
-@if(getSetting('social-login.facebook_client_id') || getSetting('social-login.twitter_client_id') || getSetting('social-login.google_client_id'))
+@if(getSetting('social.facebook_client_id') || getSetting('social.twitter_client_id') || getSetting('social.google_client_id'))
     <div class="social-login-links">
 
         <div class="strike mt-2">
@@ -6,7 +6,7 @@
         </div>
 
         <div class="mt-4">
-            @if(getSetting('social-login.facebook_client_id'))
+            @if(getSetting('social.facebook_client_id'))
                 <div class="d-flex justify-content-center">
                     <a href="{{url('',['socialAuth','facebook'])}}" rel="nofollow" class="btn btn-block btn-outline-primary btn-round">
                         <div class="d-flex align-items-center justify-content-center">
@@ -21,7 +21,7 @@
                 </div>
             @endif
 
-            @if(getSetting('social-login.twitter_client_id'))
+            @if(getSetting('social.twitter_client_id'))
                 <div class="d-flex justify-content-center">
                     <a href="{{url('',['socialAuth','twitter'])}}" rel="nofollow" class="btn btn-block btn-outline-primary btn-round">
                         <div class="d-flex align-items-center justify-content-center">
@@ -36,7 +36,7 @@
                 </div>
             @endif
 
-            @if(getSetting('social-login.google_client_id'))
+            @if(getSetting('social.google_client_id'))
                 <div class="d-flex justify-content-center">
                     <a href="{{url('',['socialAuth','google'])}}" rel="nofollow" class="btn btn-block btn-outline-primary btn-round">
                         <div class="d-flex align-items-center justify-content-center">

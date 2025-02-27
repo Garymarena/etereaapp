@@ -38,7 +38,7 @@ class UpdateUserProfileSettingsRequest extends FormRequest
                 $rules['bio'] = [new MaxLengthMarkdown];
             }
             else{
-                $rules['bio'] = 'max:' . getSetting('profiles.max_profile_bio_length');
+                $rules['bio'] = 'max:'.getSetting('profiles.max_profile_bio_length');
             }
         }
 

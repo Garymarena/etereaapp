@@ -2,24 +2,26 @@
 
 namespace App\Model;
 
+use App\Providers\AttachmentServiceProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
 class Stream extends Model
 {
     /**
-     * Streaming is currently playing
+     * Streaming is currently playing.
      */
-    const IN_PROGRESS_STATUS = 'in-progress';
-    /**
-     * Streaming ended
-     */
-    const ENDED_STATUS = 'ended';
+    public const IN_PROGRESS_STATUS = 'in-progress';
 
     /**
-     * Stream deleted
+     * Streaming ended.
      */
-    const DELETED_STATUS = 'deleted';
+    public const ENDED_STATUS = 'ended';
+
+    /**
+     * Stream deleted.
+     */
+    public const DELETED_STATUS = 'deleted';
 
     /**
      * The attributes that are mass assignable.
@@ -27,7 +29,7 @@ class Stream extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'status', 'name', 'slug', 'poster', 'pushr_id', 'hls_link', 'vod_link', 'rtmp_server', 'rtmp_key', 'price', 'requires_subscription', 'sent_expiring_reminder', 'is_public', 'settings'
+        'user_id', 'status', 'name', 'slug', 'poster', 'pushr_id', 'hls_link', 'vod_link', 'rtmp_server', 'rtmp_key', 'price', 'requires_subscription', 'sent_expiring_reminder', 'is_public', 'settings',
     ];
 
     /**
@@ -57,16 +59,23 @@ class Stream extends Model
             elseif(getSetting('storage.driver') == 'wasabi' || getSetting('storage.driver') == 'do_spaces'){
                 return Storage::url($value);
             }
+            elseif(getSetting('storage.driver') == 'minio'){
+                return rtrim(getSetting('storage.minio_endpoint'), '/').'/'.getSetting('storage.minio_bucket_name').'/'.$value;
+            }
+            elseif(getSetting('storage.driver') == 'pushr'){
+                return rtrim(getSetting('storage.pushr_cdn_hostname'), '/').'/'.$value;
+            }
             else{
                 return Storage::disk('public')->url($value);
             }
         }else{
             return asset('/img/live-stream-cover.svg');
         }
+
     }
 
     /**
-     * Relationships
+     * Relationships.
      */
     public function user()
     {
@@ -82,6 +91,4 @@ class Stream extends Model
     {
         return $this->hasMany('App\Model\Transaction', 'stream_id', 'id')->where('status', 'approved')->where('type', 'stream-access');
     }
-
-
 }

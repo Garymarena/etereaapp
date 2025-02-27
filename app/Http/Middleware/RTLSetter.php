@@ -12,7 +12,7 @@ class RTLSetter extends Middleware
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  Closure  $next
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -38,7 +38,7 @@ class RTLSetter extends Middleware
             // Flexs
             '/flex-row/' => 'flexr-',
             '/flex-row-reverse/' => 'flexrr-',
-            '/flex-row-no-rtl/' => 'flex-row-nortl'
+            '/flex-row-no-rtl/' => 'flex-row-nortl',
         ];
 
         $replace = [
@@ -54,7 +54,7 @@ class RTLSetter extends Middleware
             // Flexs
             '/flexr-/' => 'flex-row-reverse',
             '/flexrr-/' => 'flex-row',
-            '/flex-row-nortl/'=> 'flex-row'
+            '/flex-row-nortl/'=> 'flex-row',
         ];
 
         $buffer = preg_replace(array_keys($replacePreps), array_values($replacePreps), $buffer);

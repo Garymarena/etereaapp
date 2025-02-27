@@ -2,7 +2,7 @@
  * Money settings component
  */
 "use strict";
-/* global app, launchToast, trans, updateButtonState */
+/* global app, launchToast, trans, updateButtonState, user */
 
 $(function () {
     Wallet.setPaymentMethodTitle();
@@ -21,6 +21,7 @@ $(function () {
     });
     $('#payment-methods').on('change', function() {
         Wallet.setPaymentMethodTitle();
+        Wallet.handleStripeConnect();
     });
 });
 
@@ -112,22 +113,22 @@ var Wallet = {
     getPaymentIdentifierTitle: function() {
         let title;
         switch ($('#payment-methods').find(":selected").text()) {
-            case 'Bank transfer':
-                title = 'Bank account';
-                break;
-            case 'Paypal':
-            case 'PayPal':
-                title = 'PayPal email';
-                break;
-            case 'Crypto':
-                title = 'Wallet address';
-                break;
-            case 'Other':
-                title = 'Payment account';
-                break;
-            default:
-                title = 'Payment account';
-                break;
+        case 'Bank transfer':
+            title = 'Bank account';
+            break;
+        case 'Paypal':
+        case 'PayPal':
+            title = 'PayPal email';
+            break;
+        case 'Crypto':
+            title = 'Wallet address';
+            break;
+        case 'Other':
+            title = 'Payment account';
+            break;
+        default:
+            title = 'Payment account';
+            break;
         }
         return title;
     },
@@ -135,6 +136,32 @@ var Wallet = {
     setPaymentMethodTitle: function () {
         let paymentIdentifierTitle = trans(Wallet.getPaymentIdentifierTitle());
         $('#payment-identifier-label').text(paymentIdentifierTitle);
-    }
+    },
 
+    handleStripeConnect: function() {
+        const provider = $('#payment-methods').find(":selected").text();
+        if(provider === 'Stripe Connect') {
+            $('.input-label').addClass('d-none');
+            $('.input-message').addClass('d-none');
+            if(!user.stripe_connect_verified || !user.user_country_id) {
+                $('.stripe-connect-label').removeClass('d-none');
+                $('.stripe-connect-buttons').removeClass('d-none');
+                $('.withdrawal-continue-btn').addClass('d-none');
+                $('#withdrawal-amount').attr("disabled", true);
+            }
+            if(user.stripe_connect_verified) {
+                $('.update-stripe-connect-box').removeClass('d-none');
+            }
+            $('.stripe-connect-pending-onboarding').removeClass('d-none');
+        } else {
+            $('.input-label').removeClass('d-none');
+            $('.input-message').removeClass('d-none');
+            $('.withdrawal-continue-btn').removeClass('d-none');
+            $('#withdrawal-amount').attr("disabled", false);
+            $('.stripe-connect-label').addClass('d-none');
+            $('.stripe-connect-buttons').addClass('d-none');
+            $('.update-stripe-connect-box').addClass('d-none');
+            $('.stripe-connect-pending-onboarding').addClass('d-none');
+        }
+    }
 };

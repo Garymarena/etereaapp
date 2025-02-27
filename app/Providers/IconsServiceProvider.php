@@ -61,9 +61,8 @@ class IconsServiceProvider extends ServiceProvider
      */
     public static function readSvgContent($icon)
     {
-        $content = file_get_contents(public_path(). "/libs/ionicons/dist/svg/{$icon}.svg");
+        $content = file_get_contents(public_path()."/libs/ionicons/dist/svg/{$icon}.svg");
         $content = preg_replace('~<title>.*?</title>~', '', $content);
         return $content;
     }
-
 }

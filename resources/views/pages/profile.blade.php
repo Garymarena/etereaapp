@@ -1,11 +1,18 @@
 @extends('layouts.user-no-nav')
 
 @section('page_title',  __("user_profile_title_label",['user' => $user->name]))
-@section('share_url', route('home'))
+@section('share_url', route('profile',['username'=> $user->username]))
 @section('share_title',  __("user_profile_title_label",['user' => $user->name]) . ' - ' .  getSetting('site.name'))
 @section('share_description', $seo_description ?? getSetting('site.description'))
 @section('share_type', 'article')
 @section('share_img', $user->cover)
+
+@if(getSetting('security.captcha_driver') !== 'none' && !Auth::check())
+    @section('meta')
+        <x-captcha-js />
+    @stop
+@endif
+
 
 @section('scripts')
     {!!
@@ -20,9 +27,9 @@
             '/libs/swiper/swiper-bundle.min.js',
             '/js/plugins/media/photoswipe.js',
             '/libs/photoswipe/dist/photoswipe-ui-default.min.js',
-            '/libs/@joeattardi/emoji-button/dist/index.js',
             '/js/plugins/media/mediaswipe.js',
             '/js/plugins/media/mediaswipe-loader.js',
+            '/libs/autolinker/dist/autolinker.min.js',
             '/js/LoginModal.js',
             '/js/messenger/messenger.js',
          ],$additionalAssets))->withFullUrl()
@@ -58,8 +65,8 @@
 @stop
 
 @section('content')
-    <div class="row">
-        <div class="min-vh-100 col-12 col-md-8 border-right pr-md-0">
+    <div class="d-flex flex-wrap">
+        <div class="min-vh-100 col-12 col-md-8 border-right pr-md-0 px-0">
 
             <div class="">
                 <div class="profile-cover-bg">
@@ -68,8 +75,13 @@
             </div>
 
             <div class="container d-flex justify-content-between align-items-center">
-                <div class="z-index-3 avatar-holder">
-                    <img src="{{$user->avatar}}" class="rounded-circle">
+                <div class="z-index-3 avatar-holder position-relative d-inline-block">
+                    <img src="{{ $user->avatar }}" class="w-100 h-100" style="border-radius: 50%; object-fit: cover;">
+                    @if(getSetting('profiles.show_online_users_indicator'))
+                        @if(GenericHelper::isUserOnline($user->id))
+                            <span class="online-indicator"></span>
+                        @endif
+                    @endif
                 </div>
                 <div>
                     @if(!Auth::check() || Auth::user()->id !== $user->id)
@@ -78,13 +90,13 @@
                                 <div class="">
                                 <span class="p-pill ml-2 pointer-cursor to-tooltip"
                                       @if(!Auth::user()->email_verified_at && getSetting('site.enforce_email_validation'))
-                                      data-placement="top"
+                                          data-placement="top"
                                       title="{{__('Please verify your account')}}"
                                       @elseif(!\App\Providers\GenericHelperServiceProvider::creatorCanEarnMoney($user))
-                                      data-placement="top"
+                                          data-placement="top"
                                       title="{{__('This creator cannot earn money yet')}}"
                                       @else
-                                      data-placement="top"
+                                          data-placement="top"
                                       title="{{__('Send a tip')}}"
                                       data-toggle="modal"
                                       data-target="#checkout-center"
@@ -174,23 +186,36 @@
                             </span>
                         @endif
                     </h5>
-                    <h6 class="text-muted"><span class="text-bold"><span>@</span>{{$user->username}}</span> {{--- Last seen X time ago--}}</h6>
+                    <h6 class="text-muted"><span class="text-bold"><span>@</span>{{$user->username}}</span>
+                        @if(getSetting('profiles.show_online_users_indicator'))
+                            <span class="font-weight-bold">•</span>
+                            @if(GenericHelper::isUserOnline($user->id))
+                                <span>{{__("Available now")}}</span>
+                            @else
+                                @if(getSetting('profiles.record_users_last_activity_time') && $user->last_active_at)
+                                    <span>{{__("Last seen")}} {{$user->last_active_for_humans}}</span>
+                                @else
+                                    <span>{{__("Online recently")}}</span>
+                                @endif
+                            @endif
+                        @endif
+                    </h6>
                 </div>
 
                 <div class="pt-2 pb-2 pl-4 pr-4 profile-description-holder">
-                    <div class="description-content {{$user->bio && (strlen(trim(strip_tags(GenericHelper::parseProfileMarkdownBio($user->bio)))) >= 85 || substr_count($user->bio,"\r\n") > 1) &&  !getSetting('profiles.disable_profile_bio_excerpt') ? 'line-clamp-3' : ''}}">
+                    <div class="description-content {{$user->bio && !getSetting('profiles.disable_profile_bio_excerpt') ? 'line-clamp-3' : ''}}">
                         @if($user->bio)
                             @if(getSetting('profiles.allow_profile_bio_markdown'))
                                 {!!  GenericHelper::parseProfileMarkdownBio($user->bio) !!}
                             @else
-                                {{$user->bio}}
+                                {!!GenericHelper::parseSafeHTML($user->bio)!!}
                             @endif
                         @else
                             {{__('No description available.')}}
                         @endif
                     </div>
-                    @if($user->bio && (strlen(trim(strip_tags(GenericHelper::parseProfileMarkdownBio($user->bio)))) >= 85 || substr_count($user->bio,"\r\n") > 1) && !getSetting('profiles.disable_profile_bio_excerpt'))
-                        <span class="text-primary pointer-cursor" onclick="Profile.toggleFullDescription()">
+                    @if($user->bio && !getSetting('profiles.disable_profile_bio_excerpt'))
+                        <span class="text-primary pointer-cursor show-more-actions d-none" onclick="Profile.toggleFullDescription()">
                             <span class="label-more">{{__('More info')}}</span>
                             <span class="label-less d-none">{{__('Show less')}}</span>
                         </span>
@@ -245,8 +270,8 @@
                     @if( (!Auth::check() || Auth::user()->id !== $user->id) && !$hasSub)
                         <div class="p-4 subscription-holder">
                             <h6 class="font-weight-bold text-uppercase mb-3">{{__('Subscription')}}</h6>
-                            @if(count($offer))
-                                <h5 class="m-0 text-bold">{{__('Limited offer main label',['discount'=> round($offer['discountAmount']), 'days_remaining'=> $offer['daysRemaining'] ])}}</h5>
+                            @if(count($offer) && $offer['discountAmount']['30'] > 0)
+                                <h5 class="m-0 text-bold">{{__('Limited offer main label',['discount'=> round($offer['discountAmount']['30']), 'days_remaining'=> $offer['daysRemaining'] ])}}</h5>
                                 <small class="">{{__('Offer ends label',['date'=>$offer['expiresAt']->format('d M')])}}</small>
                             @endif
                             @if($hasSub)
@@ -274,7 +299,7 @@
                                             </div>
                                         </small>
                                     @endif
-                                    @if(count($offer))
+                                    @if(count($offer) && $offer['discountAmount']['30'] > 0)
                                         <small class="">{{__('Regular price label',['currency'=> getSetting('payments.currency_code') ?? 'USD','amount'=>$user->offer->old_profile_access_price])}}</small>
                                     @endif
                                 </div>

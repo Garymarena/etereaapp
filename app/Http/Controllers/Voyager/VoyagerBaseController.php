@@ -26,6 +26,18 @@ class VoyagerBaseController extends BaseVoyagerBaseController
     //
     //****************************************
 
+    /**
+     * Qdev override
+     * Out of the box, voyager's serverside search messes up search on relationshiop fields
+     * Our fix has two approaches
+     * For:
+     *  - hasOne > We hide the field from search entirely
+     *  - belongsTo > Works as expected with this fix applied @ https://github.com/thedevdojo/voyager/pull/5185.
+     *
+     * @param Request $request
+     * @return mixed
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function index(Request $request)
     {
         // GET THE SLUG, ex. 'posts', 'pages', etc.
@@ -44,7 +56,15 @@ class VoyagerBaseController extends BaseVoyagerBaseController
         $searchNames = [];
         if ($dataType->server_side) {
             $searchNames = $dataType->browseRows->filter(function ($formfield) {
-                return $formfield->type !== 'relationship';
+                if($formfield->type === 'relationship') {
+                    if($formfield->details->type === 'belongsTo'){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+                return true;
             })->mapWithKeys(function ($row) {
                 return [$row['field'] => $row->getTranslatedAttribute('display_name')];
             });
@@ -78,22 +98,39 @@ class VoyagerBaseController extends BaseVoyagerBaseController
             // If a column has a relationship associated with it, we do not want to show that field
             $this->removeRelationshipField($dataType, 'browse');
 
+            // Update
             if ($search->value != '' && $search->key && $search->filter) {
                 $search_filter = ($search->filter == 'equals') ? '=' : 'LIKE';
                 $search_value = ($search->filter == 'equals') ? $search->value : '%'.$search->value.'%';
 
+                $isRelation = false;
+                $relationshipIds = [];
+                $sortableColumns = $this->getSortableColumns($dataType->browseRows);
+
+                $oldchampson = '';
+
                 $searchField = $dataType->name.'.'.$search->key;
-                if ($row = $this->findSearchableRelationshipRow($dataType->rows->where('type', 'relationship'), $search->key)) {
-                    $query->whereIn(
-                        $searchField,
-                        $row->details->model::where($row->details->label, $search_filter, $search_value)->pluck('id')->toArray()
-                    );
-                } else {
-                    if ($dataType->browseRows->pluck('field')->contains($search->key)) {
-                        $query->where($searchField, $search_filter, $search_value);
+
+                foreach ($dataType->browseRows as $key => $row) {
+                    if ($row->type == 'relationship' && isset($row->details) && $row->details->type == 'belongsTo'){
+                        if($search->key == $row->field){
+                            $relationshipIds = DB::table($row->details->table)
+                                ->select($row->details->key, $row->details->label)
+                                ->where($row->details->label, $search_filter, $search_value)
+                                ->pluck($row->details->key)
+                                ->toArray();
+                            $oldchampson = $row->details->column;
+                            $isRelation = true;
+                        }
                     }
                 }
+                if($isRelation) {
+                    $query->whereIn($oldchampson, $relationshipIds);
+                } else {
+                    $query->where($searchField, $search_filter, $search_value);
+                }
             }
+            // Update
 
             $row = $dataType->rows->where('field', $orderBy)->firstWhere('type', 'relationship');
             if ($orderBy && (in_array($orderBy, $dataType->fields()) || !empty($row))) {

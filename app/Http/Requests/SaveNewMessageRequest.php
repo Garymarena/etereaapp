@@ -26,7 +26,7 @@ class SaveNewMessageRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'price' => [new PPVMinMax('message')]
+            'price' => [new PPVMinMax('message')],
         ];
 
         if(getSetting('websockets.driver') === 'pusher'){

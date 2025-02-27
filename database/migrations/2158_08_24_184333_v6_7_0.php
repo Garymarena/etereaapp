@@ -147,17 +147,6 @@ class V670 extends Migration
                 'display_name'=>'Max deposit amount',
             ]);
 
-        // Resetting breads per latest changes
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Artisan::call('db:seed',['--force'=>true,'--class'=>'Database\Seeders\DataTypesTableSeeder']);
-        Artisan::call('db:seed',['--force'=>true,'--class'=>'Database\Seeders\DataRowsTableSeeder']);
-        Artisan::call('db:seed',['--force'=>true,'--class'=>'Database\Seeders\MenusTableSeeder']);
-        Artisan::call('db:seed',['--force'=>true,'--class'=>'Database\Seeders\MenuItemsTableSeeder']);
-        Artisan::call('db:seed',['--force'=>true,'--class'=>'Database\Seeders\RolesTableSeeder']);
-        Artisan::call('db:seed',['--force'=>true,'--class'=>'Database\Seeders\PermissionsTableSeeder']);
-        Artisan::call('db:seed',['--force'=>true,'--class'=>'Database\Seeders\PermissionRoleTableSeeder']);
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-        Artisan::call('optimize:clear');
     }
 
     /**

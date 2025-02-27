@@ -28,5 +28,6 @@ class VerifyCsrfToken extends Middleware
         'payment/mercadoPaymentStatusUpdate',
         'beacon/feed',
         'transcoding/coconut/update',
+        'payment/stripeConnectStatusUpdate',
     ];
 }

@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserList extends Model
 {
-    const FOLLOWERS_TYPE = 'followers';
-    const FOLLOWING_TYPE = 'following';
-    const BLOCKED_TYPE = 'blocked';
-    const CUSTOM_TYPE = 'custom';
+    public const FOLLOWERS_TYPE = 'followers';
+    public const FOLLOWING_TYPE = 'following';
+    public const BLOCKED_TYPE = 'blocked';
+    public const CUSTOM_TYPE = 'custom';
 
     public $notificationTypes = [
         self::FOLLOWERS_TYPE,
@@ -67,5 +67,4 @@ class UserList extends Model
         }
         return collect($filteredUsers);
     }
-
 }

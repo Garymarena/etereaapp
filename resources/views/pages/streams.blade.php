@@ -16,14 +16,15 @@
             '/libs/dropzone/dist/dropzone.js',
             '/js/FileUpload.js',
             '/js/pages/streams.js',
+            '/js/suggestions.js',
          ])->withFullUrl()
     !!}
 @stop
 
 @section('content')
 
-    <div class="row">
-        <div class="col-12">
+    <div class="d-flex flex-wrap">
+        <div class="col-12 px-0">
             <div class="pt-4 d-flex justify-content-between align-items-center px-3 pb-3 border-bottom">
                 <div>
                     <h5 class="text-truncate text-bold mb-0 {{(Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? '' : 'text-dark-r') : (Cookie::get('app_theme') == 'dark' ? '' : 'text-dark-r'))}}">{{__('Streams')}}</h5>
@@ -49,7 +50,7 @@
             <div class="px-3 pt-3">
                 @if(!GenericHelper::isUserVerified() && getSetting('site.enforce_user_identity_checks'))
                     <div class="alert alert-warning text-white font-weight-bold mt-2 mb-4" role="alert">
-                        {{__("Before being able to start a new stream, you need to complete your")}} <a class="text-white" href="{{route('my.settings',['type'=>'verify'])}}">{{__("profile verification")}}</a>.
+                        {{__("Before being able to start a new stream, you need to complete your")}} <a class="text-white" href="{{route('my.settings',['type'=>'verify'])}}">{{__("profile verification")}}</a>
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -91,4 +92,7 @@
     @include('elements.streams.stream-delete-dialog')
     @include('elements.streams.stream-details-dialog')
     @include('elements.dropzone-dummy-element')
+    @if(getSetting('ai.open_ai_enabled'))
+        @include('elements.suggest-description')
+    @endif
 @stop

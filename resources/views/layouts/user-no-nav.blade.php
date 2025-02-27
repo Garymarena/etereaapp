@@ -9,15 +9,16 @@
 </head>
 <body class="d-flex flex-column">
 @include('elements.impersonation-header')
+@include('elements.global-announcement')
 <div class="flex-fill">
     @include('template.user-side-menu')
 
-    <div class="container-xl overflow-x-hidden-m">
-        <div class="row main-wrapper">
+    <div class="container-xl px-0">
+        <div class="d-flex flex-wrap main-wrapper">
             <div class="col-2 col-md-3 pt-4 p-0 d-none d-md-block">
                 @include('template.side-menu')
             </div>
-            <div class="col-12 col-md-9 min-vh-100 border-left px-0 overflow-x-hidden-m content-wrapper {{(in_array(Route::currentRouteName(),['feed','profile','my.messenger.get','search.get','my.notifications','my.bookmarks','my.lists.all','my.lists.show','my.settings','posts.get']) ? '' : 'border-right' )}}">
+            <div class="col-12 col-md-9 {{(!in_array(Route::currentRouteName(),['my.messenger.get']) ? 'min-vh-100' : '' )}}  border-left px-0 content-wrapper {{(in_array(Route::currentRouteName(),['feed','profile','my.messenger.get','search.get','my.notifications','my.bookmarks','my.lists.all','my.lists.show','my.settings','posts.get']) ? '' : 'border-right' )}}">
                 @yield('content')
             </div>
         </div>

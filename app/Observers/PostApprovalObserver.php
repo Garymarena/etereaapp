@@ -12,7 +12,7 @@ class PostApprovalObserver
     /**
      * Listen to the User updating event.
      *
-     * @param  \App\User  $user
+     * @param  User  $user
      * @return void
      */
     public function saving(Post $post)
@@ -25,21 +25,25 @@ class PostApprovalObserver
         if($post->getOriginal('status') !== $post->status){
             // Sending out the user notification
             $user = User::find($post->user_id);
-            App::setLocale($user->settings['locale']);
+            try{
+                App::setLocale($user->settings['locale']);
+            }
+            catch (\Exception $e){
+                App::setLocale('en');
+            }
             EmailsServiceProvider::sendGenericEmail(
                 [
                     'email' => $user->email,
                     'subject' => __("Post status updated"),
                     'title' => __('Hello, :name,', ['name'=>$user->name]),
-                    'content' => __('Your post has been :status.',['status'=>Post::getStatusName($post->status)]),
+                    'content' => __('Your post has been :status.', ['status'=>Post::getStatusName($post->status)]),
                     'button' => [
                         'text' => __('View post'),
-                        'url' => route('posts.get',['post_id'=>$post->id,'username'=>$user->username]),
-                    ]
+                        'url' => route('posts.get', ['post_id'=>$post->id, 'username'=>$user->username]),
+                    ],
                 ]
             );
         }
 
     }
-
 }

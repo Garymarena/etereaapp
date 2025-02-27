@@ -25,10 +25,11 @@
 
 @section('content')
 
-    <div class="row">
-        <div class="col-12">
+    <div class="d-flex flex-wrap">
+        <div class="col-12 px-0">
             @include('elements.uploaded-file-preview-template')
             @include('elements.post-price-setup',['postPrice'=>(isset($post) ? $post->price : 0)])
+            @include('elements.post-poll-setup',['postPrice'=>(isset($post) ? $post->price : 0)])
             @include('elements.attachments-uploading-dialog')
             @include('elements.post-schedule-setup', isset($post) ? ['release_date' => $post->release_date,'expire_date' => $post->expire_date] : [])
             <div class="d-flex justify-content-between pt-4 pb-3 px-3 border-bottom">

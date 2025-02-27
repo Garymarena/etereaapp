@@ -28,7 +28,7 @@
                                 </button>
                             </div>
                         @endif
-                        <form method="POST" action="{{route('installer.beginInstall')}}">
+                        <form method="POST" action="{{route('installer.beginInstall')}}" class="finalInstallStepForm">
                             @csrf
                             <div class="form-group ">
                                 <label for="site_title" class="col-form-label">{{ __('Site name') }}</label>
@@ -79,7 +79,7 @@
                                        </div>
                                    </div>
                                     @error('password')
-                                    <span class="invalid-feedback" role="alert">
+                                    <span class="invalid-feedback d-block" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
                                     @enderror

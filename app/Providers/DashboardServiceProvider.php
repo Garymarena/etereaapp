@@ -33,7 +33,7 @@ class DashboardServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get admin dashboard total posts count
+     * Get admin dashboard total posts count.
      * @return int
      */
     public static function getPostsCount()
@@ -42,7 +42,7 @@ class DashboardServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get admin dashboard total post attachments count
+     * Get admin dashboard total post attachments count.
      * @return int
      */
     public static function getPostAttachmentsCount()
@@ -51,7 +51,7 @@ class DashboardServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get admin dashboard total post comments count
+     * Get admin dashboard total post comments count.
      * @return int
      */
     public static function getPostCommentsCount()
@@ -60,7 +60,7 @@ class DashboardServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get admin dashboard total reactions count
+     * Get admin dashboard total reactions count.
      * @return int
      */
     public static function getReactionsCount()
@@ -69,7 +69,7 @@ class DashboardServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get admin dashboard active subscriptions count
+     * Get admin dashboard active subscriptions count.
      * @return int
      * @throws \Exception
      */
@@ -79,7 +79,7 @@ class DashboardServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get admin dashboard total transactions count
+     * Get admin dashboard total transactions count.
      * @return int
      */
     public static function getTotalTransactionsCount()
@@ -88,64 +88,64 @@ class DashboardServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get admin dashboard last 24 hours registered users count
+     * Get admin dashboard last 24 hours registered users count.
      * @return int
      * @throws \Exception
      */
-    public static function getLast24HoursRegisteredUsersCount(){
+    public static function getLast24HoursRegisteredUsersCount() {
         return User::query()->where('created_at', '>=', new \DateTime('-1 day', new \DateTimeZone('UTC')))->count();
     }
 
     /**
-     * Get admin dashboard last 24 hours total earned
+     * Get admin dashboard last 24 hours total earned.
      * @return mixed
      * @throws \Exception
      */
-    public static function getLast24HoursTotalEarned(){
+    public static function getLast24HoursTotalEarned() {
         return Transaction::query()
             ->where([
                 ['created_at', '>=', new \DateTime('-1 day', new \DateTimeZone('UTC'))],
-                ['status', '=', Transaction::APPROVED_STATUS]
+                ['status', '=', Transaction::APPROVED_STATUS],
             ])
             ->whereNotIn('type', [Transaction::DEPOSIT_TYPE, Transaction::WITHDRAWAL_TYPE])
             ->sum('amount');
     }
 
     /**
-     * Get admin dashboard last 24 hours subscriptions count
+     * Get admin dashboard last 24 hours subscriptions count.
      * @return int
      * @throws \Exception
      */
-    public static function getLast24HoursSubscriptionsCount(){
+    public static function getLast24HoursSubscriptionsCount() {
         return Subscription::query()->where('created_at', '>=', new \DateTime('-1 day', new \DateTimeZone('UTC')))->count();
     }
 
     /**
-     * Get admin dashboard last 24 hours posts count
+     * Get admin dashboard last 24 hours posts count.
      * @return int
      * @throws \Exception
      */
-    public static function getLast24HoursPostsCount(){
+    public static function getLast24HoursPostsCount() {
         return Post::query()->where('created_at', '>=', new \DateTime('-1 day', new \DateTimeZone('UTC')))->count();
     }
 
     /**
-     * Get admin dashboard total subscriptions revenue
+     * Get admin dashboard total subscriptions revenue.
      * @return mixed
      * @throws \Exception
      */
-    public static function getTotalSubscriptionsRevenue(){
+    public static function getTotalSubscriptionsRevenue() {
         return Transaction::query()->where('status', '=', Transaction::APPROVED_STATUS)->whereNotNull('subscription_id')->sum('amount');
     }
 
     /**
-     * Get admin dashboard total earned
+     * Get admin dashboard total earned.
      * @return mixed
      */
-    public static function getTotalEarned(){
+    public static function getTotalEarned() {
         return Transaction::query()
             ->where('status', '=', Transaction::APPROVED_STATUS)
-            ->whereNotIn('type',[Transaction::WITHDRAWAL_TYPE, Transaction::DEPOSIT_TYPE])
+            ->whereNotIn('type', [Transaction::WITHDRAWAL_TYPE, Transaction::DEPOSIT_TYPE])
             ->sum('amount');
     }
 }

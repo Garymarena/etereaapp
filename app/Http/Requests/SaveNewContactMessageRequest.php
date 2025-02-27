@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Rahul900day\Captcha\Facades\Captcha;
+use Rahul900day\Captcha\Rules\Captcha as CaptchaRule;
 
 class SaveNewContactMessageRequest extends FormRequest
 {
@@ -25,9 +27,12 @@ class SaveNewContactMessageRequest extends FormRequest
     {
 
         $additionalRules = [];
-        if(getSetting('security.recaptcha_enabled')){
+        if(getSetting('security.captcha_driver') !== 'none'){
             $additionalRules = [
-                'g-recaptcha-response' => 'required|captcha'
+                Captcha::getResponseName() => [
+                    'required',
+                    new CaptchaRule(),
+                ],
             ];
         }
 

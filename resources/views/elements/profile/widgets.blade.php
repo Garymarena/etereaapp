@@ -3,8 +3,8 @@
     <div class="card recent-media rounded-lg">
         <div class="card-body m-0 pb-0">
         </div>
-        <h5 class="card-title pl-3 mb-0">{{__('Recent')}}</h5>
-        <div class="card-body {{$recentMedia ? 'text-center' : ''}}">
+        <h5 class="card-title pl-3 mb-0 card-title text-uppercase fs-point-85 font-weight-bold">{{__('Recent')}}</h5>
+        <div class="card-body {{$recentMedia ? '' : ''}}">
             @if($recentMedia && count($recentMedia) && Auth::check())
                 @foreach($recentMedia as $media)
                     <a href="{{$media->path}}" rel="mswp" class="mr-1">
@@ -23,7 +23,7 @@
             @if( !(isset($hasSub) && $hasSub) && !(isset($post) && PostsHelper::hasActiveSub(Auth::user()->id, $post->user->id)) && Auth::user()->id !== $user->id)
                 <div class="card mt-3 rounded-lg">
                     <div class="card-body">
-                        <h5 class="card-title">{{__('Subscription')}}</h5>
+                        <h5 class="card-title text-uppercase fs-point-85 font-weight-bold">{{__('Subscription')}}</h5>
                         <button class="btn btn-round btn-outline-primary btn-block d-flex align-items-center justify-content-center justify-content-lg-between mt-3 mb-0 to-tooltip {{(Auth::check() && !GenericHelper::isEmailEnforcedAndValidated() || !GenericHelper::creatorCanEarnMoney($user)) ? 'disabled' : ''}}"
                                 @if(!Auth::user()->email_verified_at && getSetting('site.enforce_email_validation'))
                                 data-placement="top"

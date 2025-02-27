@@ -25,9 +25,9 @@
             '/libs/swiper/swiper-bundle.min.js',
             '/js/plugins/media/photoswipe.js',
             '/libs/photoswipe/dist/photoswipe-ui-default.min.js',
-            '/libs/@joeattardi/emoji-button/dist/index.js',
             '/js/plugins/media/mediaswipe.js',
             '/js/plugins/media/mediaswipe-loader.js',
+            '/libs/autolinker/dist/autolinker.min.js',
             '/js/pages/search.js',
          ])->withFullUrl()
     !!}
@@ -48,9 +48,8 @@
 @stop
 
 @section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col-12 col-sm-12 col-lg-8 col-md-7 second p-0">
+        <div class="d-flex flex-wrap">
+            <div class="col-12 col-sm-12 col-lg-8 col-md-7 second p-0 px-0">
                 <div class="d-flex neutral-bg fixed-top-m px-3 py-3 feed-mobile-search">
                     <span class="h-pill h-pill-primary rounded search-back-button d-flex justify-content-center align-items-center" onClick="Search.goBack()">
                         @include('elements.icon',['icon'=>'arrow-back-outline','variant'=>'medium','centered'=>true])
@@ -78,26 +77,26 @@
                                         <span class="d-md-none">
                                         @switch($filter)
                                                 @case('live')
-                                                @include('elements.icon',['icon'=>'play-outline','centered' => false,'variant'=>'medium'])
-                                                @break
+                                                    @include('elements.icon',['icon'=>'play-outline','centered' => false,'variant'=>'medium'])
+                                                    @break
                                                 @case('top')
-                                                @include('elements.icon',['icon'=>'flame-outline','centered' => false,'variant'=>'medium'])
-                                                @break
+                                                    @include('elements.icon',['icon'=>'flame-outline','centered' => false,'variant'=>'medium'])
+                                                    @break
                                                 @case('latest')
-                                                @include('elements.icon',['icon'=>'time-outline','centered' => false,'variant'=>'medium'])
-                                                @break
+                                                    @include('elements.icon',['icon'=>'time-outline','centered' => false,'variant'=>'medium'])
+                                                    @break
                                                 @case('people')
-                                                @include('elements.icon',['icon'=>'people-outline','centered' => false,'variant'=>'medium'])
-                                                @break
+                                                    @include('elements.icon',['icon'=>'people-outline','centered' => false,'variant'=>'medium'])
+                                                    @break
                                                 @case('photos')
-                                                @include('elements.icon',['icon'=>'image-outline','centered' => false,'variant'=>'medium'])
-                                                @break
+                                                    @include('elements.icon',['icon'=>'image-outline','centered' => false,'variant'=>'medium'])
+                                                    @break
                                                 @case('videos')
-                                                @include('elements.icon',['icon'=>'videocam-outline','centered' => false,'variant'=>'medium'])
-                                                @break
+                                                    @include('elements.icon',['icon'=>'videocam-outline','centered' => false,'variant'=>'medium'])
+                                                    @break
                                             @endswitch
                                             </span>
-                                             @if($filter == 'live') <div class="blob red d-none d-md-block"></div> @endif
+                                        @if($filter == 'live') <div class="blob red d-none d-md-block"></div> @endif
                                         <span class="d-none d-md-block ml-2">{{ucfirst(trim( (in_array($filter,['videos','people']) ? trans_choice($filter,2,['number'=>'']) : __(ucfirst($filter))) )) }}</span>
                                     </div>
                                 </a>
@@ -133,15 +132,38 @@
             </div>
             <div class="col-12 col-sm-12 col-md-5 col-lg-4 first border-left order-0 pt-4 pb-5 min-vh-100 suggestions-wrapper d-none d-md-block">
                 <div class="search-widgets">
-                    @include('elements.feed.suggestions-box',['profiles'=>$suggestions,'isMobile' => false])
+                    @if(!getSetting('feed.hide_suggestions_slider'))
+                        @include('elements.feed.suggestions-box',[
+                             'id' => 'suggestions-box',
+                             'profiles' => $suggestions,
+                             'isMobile' => false,
+                             'hideControls' => false,
+                             'title' => __('Suggestions'),
+                             'perPage' => (int)getSetting('feed.feed_suggestions_card_per_page'),
+                        ])
+                    @endif
+                    @if(!getSetting('feed.expired_subs_widget_hide') && Auth::check())
+                        @if($expiredSubscriptions->count())
+                            <div class="mt-3">
+                                @include('elements.feed.suggestions-box',[
+                                    'id' => 'suggestions-box-expired',
+                                    'profiles' => $expiredSubscriptions,
+                                    'isMobile' => false,
+                                    'hideControls' => true,
+                                    'title' => __('Expired subscriptions'),
+                                    'perPage' => (int)getSetting('feed.expired_subs_widget_card_per_page'),
+                                ])
+                            </div>
+                        @endif
+                    @endif
                     @if(getSetting('custom-code-ads.sidebar_ad_spot'))
                         <div class="mt-4">
                             {!! getSetting('custom-code-ads.sidebar_ad_spot') !!}
                         </div>
                     @endif
+                    @include('template.footer-feed')
                 </div>
             </div>
         </div>
         @include('elements.checkout.checkout-box')
-    </div>
 @stop

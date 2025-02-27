@@ -1,5 +1,5 @@
 @if( !(!$isGallery && AttachmentHelper::getAttachmentType($attachment->type) == 'video'))
-    <a href="{{$attachment->path}}" rel="mswp" title="">
+    <a href="{{$attachment->path}}" rel="mswp" title="" class="no-long-press">
         @endif
 
         @if($isGallery)

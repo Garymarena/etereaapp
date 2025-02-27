@@ -29,7 +29,7 @@ class InvoiceServiceProvider extends ServiceProvider
 
     public static function createInvoiceByTransaction($transaction)
     {
-        if (! self::ownerCompletedSenderInvoiceDetails()) {
+        if (!getSetting('payments.invoices_enabled')) {
             return null;
         }
 
@@ -89,27 +89,7 @@ class InvoiceServiceProvider extends ServiceProvider
     }
 
     /**
-     * Check if site owner has filled in his billing details.
-     * @return bool
-     */
-    private static function ownerCompletedSenderInvoiceDetails()
-    {
-        if (setting('payments.invoices_sender_country_name') != null
-            && setting('payments.invoices_sender_street_address') != null
-            && setting('payments.invoices_sender_state_name') != null
-            && setting('payments.invoices_sender_city_name') != null
-            && setting('payments.invoices_sender_postcode') != null
-            && setting('payments.invoices_sender_company_number') != null
-            && setting('payments.invoices_prefix') != null
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Handles invoice payment description by transaction type
+     * Handles invoice payment description by transaction type.
      *
      * @param $transaction
      * @return array|\Illuminate\Contracts\Translation\Translator|string|null
@@ -126,10 +106,11 @@ class InvoiceServiceProvider extends ServiceProvider
                 || $transactionType === Transaction::YEARLY_SUBSCRIPTION) {
                 $subscriptionMonthlyInterval = PaymentsServiceProvider::getSubscriptionMonthlyIntervalByTransactionType($transactionType);
                 $subscriptionInterval = trans_choice('months', $subscriptionMonthlyInterval, ['number' => $subscriptionMonthlyInterval]);
-                $description = __(':subscriptionInterval subscription to access :username profile',
+                $description = __(
+                    ':subscriptionInterval subscription to access :username profile',
                     [
                         'subscriptionInterval' => $subscriptionInterval,
-                        'username' => $transaction->receiver->name
+                        'username' => $transaction->receiver->name,
                     ]
                 );
             }

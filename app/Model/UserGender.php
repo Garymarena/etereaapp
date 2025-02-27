@@ -23,5 +23,4 @@ class UserGender extends Model
     protected $hidden = [
 
     ];
-
 }

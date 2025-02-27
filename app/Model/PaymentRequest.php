@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaymentRequest extends Model
 {
-    const DEPOSIT_TYPE = 'deposit';
+    public const PENDING_STATUS = 'pending';
+    public const APPROVED_STATUS = 'approved';
+    public const REJECTED_STATUS = 'rejected';
+    public const DEPOSIT_TYPE = 'deposit';
 
     /**
      * The attributes that are mass assignable.
@@ -14,7 +17,7 @@ class PaymentRequest extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'transaction_id', 'status', 'type', 'reason', 'message', 'amount'
+        'user_id', 'transaction_id', 'status', 'type', 'reason', 'message', 'amount',
     ];
 
     protected $appends = ['files'];
@@ -34,9 +37,9 @@ class PaymentRequest extends Model
     protected $casts = [];
 
     /**
-     * Get request files path as array
+     * Get request files path as array.
      */
-    public function getFilesAttribute(){
+    public function getFilesAttribute() {
         $files = [];
         $attachments = $this->attachments();
         if($attachments && count($attachments)){
@@ -56,5 +59,4 @@ class PaymentRequest extends Model
     {
         return $this->hasOne('App\User', 'id', 'user_id');
     }
-
 }

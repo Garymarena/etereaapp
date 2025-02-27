@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Withdrawal extends Model
 {
     public const REQUESTED_STATUS = 'requested';
-
     public const REJECTED_STATUS = 'rejected';
-
     public const APPROVED_STATUS = 'approved';
 
     /**
@@ -18,7 +16,7 @@ class Withdrawal extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'amount', 'status', 'message', 'processed', 'payment_identifier', 'payment_method', 'fee'
+        'user_id', 'amount', 'status', 'message', 'processed', 'payment_identifier', 'payment_method', 'fee', 'stripe_payout_id', 'stripe_transfer_id',
     ];
 
     /**

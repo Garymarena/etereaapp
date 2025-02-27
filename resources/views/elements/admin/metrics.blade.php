@@ -3,42 +3,45 @@
 
         <div class="row">
             <div class="mb-4 col-md-4">
-                <div class="card shadow rounded p-5">
+                <div class="card shadow rounded py-2 px-3">
                     <div class="card-body text-muted font-weight-medium">
-                        <p class="font-weight-bolder">Last 24 hours</p>
+                        <p class="font-weight-bolder fs-5 mb-3">Last 24 hours</p>
                         <p class="">{{__("Users registered")}}: {{\App\Providers\DashboardServiceProvider::getLast24HoursRegisteredUsersCount()}}</p>
                         <p class="">{{__("New posts")}}: {{\App\Providers\DashboardServiceProvider::getLast24HoursPostsCount()}}</p>
                         <p class="">{{__("New subscriptions")}}: {{\App\Providers\DashboardServiceProvider::getLast24HoursSubscriptionsCount()}}</p>
                         <p class="m-0">{{__("Total earned")}}: {{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount(\App\Providers\DashboardServiceProvider::getLast24HoursTotalEarned())}}</p>
                         <span class="pull-right"><a href="admin/users" class="primary-link">{{__("Go to users")}} ››</a></span>
+                        <div class="clearfix"></div>
                     </div>
                 </div>
             </div>
 
             <div class="mb-4 col-md-4">
 
-                <div class="card shadow rounded p-5">
+                <div class="card shadow rounded py-2 px-3">
                     <div class="card-body text-muted font-weight-medium">
-                        <p class="font-weight-bolder">Payments</p>
+                        <p class="font-weight-bolder fs-5 mb-3">Payments</p>
                         <p>{{__("Active subscriptions")}}: {{\App\Providers\DashboardServiceProvider::getActiveSubscriptionsCount()}}</p>
                         <p>{{__("Subscriptions revenue")}}: {{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount(\App\Providers\DashboardServiceProvider::getTotalSubscriptionsRevenue())}}</p>
                         <p>{{__("Total transactions")}}: {{\App\Providers\DashboardServiceProvider::getTotalTransactionsCount()}}</p>
                         <p class="m-0">{{__("Total amount earned")}}: {{\App\Providers\SettingsServiceProvider::getWebsiteFormattedAmount(\App\Providers\DashboardServiceProvider::getTotalEarned())}}</p>
                         <span class="pull-right"><a href="admin/transactions" class="primary-link">{{__("Go to payments")}} ››</a></span>
+                        <div class="clearfix"></div>
                     </div>
                 </div>
             </div>
 
             <div class="mb-4 col-md-4">
 
-                <div class="card shadow rounded p-5">
+                <div class="card shadow rounded py-2 px-3">
                     <div class="card-body text-muted font-weight-medium">
-                        <p class="font-weight-bolder">Content</p>
+                        <p class="font-weight-bolder fs-5 mb-3">Content</p>
                         <p>{{__("Total posts")}}: {{\App\Providers\DashboardServiceProvider::getPostsCount()}}</p>
                         <p>{{__("Post attachments")}}: {{\App\Providers\DashboardServiceProvider::getPostAttachmentsCount()}}</p>
                         <p>{{__("Post comments")}}: {{\App\Providers\DashboardServiceProvider::getPostCommentsCount()}}</p>
                         <p class="m-0">{{__("Total reactions")}}: {{\App\Providers\DashboardServiceProvider::getReactionsCount()}}</p>
                         <span class="pull-right"><a href="admin/user-posts" class="primary-link">{{__("Go to content")}} ››</a></span>
+                        <div class="clearfix"></div>
                     </div>
                 </div>
             </div>

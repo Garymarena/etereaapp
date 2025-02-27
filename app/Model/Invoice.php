@@ -35,9 +35,9 @@ class Invoice extends Model
      * Virtual attributes
      */
 
-    public function getDataAttribute($value)
+    public function getDecodedDataAttribute()
     {
-        return json_decode($value, true);
+        return json_decode($this->data, true);
     }
 
     /**

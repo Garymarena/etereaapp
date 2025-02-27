@@ -52,21 +52,20 @@
                         $categoriesOrder = [
                             'Site',
                             'Profiles',
-                            'Storage',
-                            'Media',
                             'Feed',
+                            'Media',
+                            'Storage',
                             'Payments',
                             'Websockets',
                             'Emails',
-                            'Social login',
-                            'Social links',
+                            'Social',
                             'Custom Code / Ads',
-                            'Admin',
                             'Streams',
                             'Compliance',
                             'Security',
                             'Referrals',
                             'AI',
+                            'Admin',
                             'Colors',
                         ];
                         $categories = [];
@@ -106,23 +105,11 @@
                                         <div class="emails-info">
                                             <div class="alert alert-info alert-dismissible mb-1">
                                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                                <div class="info-label mb-0"><div class="icon voyager-info-circled"></div> You can use any SMTP you have access to or mailgun API. Full info can be found over <a target="_blank" class="text-white" href="https://docs.qdev.tech/justfans/#emails">the documentation</a> .</div>
+                                                <div class="info-label mb-0"><div class="icon voyager-info-circled"></div> You can use any SMTP you have access to or mailgun API. Full info can be found over <a target="_blank" class="text-white" href="https://docs.qdev.tech/justfans/documentation.html#emails">the documentation</a> .</div>
                                             </div>
                                         </div>
                                     @endif
-                                    @if($group == 'Social login')
-                                        <div class="social-login-info">
-                                            <div class="alert alert-info alert-dismissible mb-1">
-                                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                                <div class="info-label"><div class="icon voyager-info-circled"></div>Each of the social login provider will require you a <i><strong>"Callback Url"</strong></i>. Here are the endpoints that you will need to set up for each provider:</div>
-                                                <ul>
-                                                    <li><code>Facebook: {{route('social.login.callback',['provider'=>'facebook'])}}</code></li>
-                                                    <li><code>Twitter: {{route('social.login.callback',['provider'=>'twitter'])}}</code></li>
-                                                    <li><code>Google: {{route('social.login.callback',['provider'=>'google'])}}</code></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    @endif
+
                                 </div>
 
                                 @if($group == 'Media')
@@ -184,7 +171,7 @@
                                                     </ul>
                                                     {{--                                                <div class="info-label mt-05">For cPanel based installations, you can remove the <i>{root}</i> username out of the command above.</div>--}}
                                                     <div class="mt-05">
-                                                        Before setting up the payment processors, please also give the <a class="text-white" target="_blank" href="https://docs.qdev.tech/justfans/#payments">docs section</a> a read.
+                                                        Before setting up the payment processors, please also give the <a class="text-white" target="_blank" href="https://docs.qdev.tech/justfans/documentation.html#crons">docs section</a> a read.
                                                     </div>
                                                 </div>
                                             @endif
@@ -196,7 +183,7 @@
                                                     <li><code>{{route('paypal.payment.update')}}</code></li>
                                                 </ul>
                                                 <div class="mt-05">
-                                                    Before setting up the payment processors, please also give the <a class="text-white" target="_blank" href="https://docs.qdev.tech/justfans/#payments">docs section</a> a read.
+                                                    Before setting up the payment processors, please also give the <a class="text-white" target="_blank" href="https://docs.qdev.tech/justfans/documentation.html#paypal">docs section</a> a read.
                                                 </div>
                                             </div>
 
@@ -208,7 +195,7 @@
                                                     <li><code>{{route('stripe.payment.update')}}</code></li>
                                                 </ul>
                                                 <div class="mt-05">
-                                                    Before setting up the payment processors, please also give the <a class="text-white" target="_blank" href="https://docs.qdev.tech/justfans/#payments">docs section</a> a read.
+                                                    Before setting up the payment processors, please also give the <a class="text-white" target="_blank" href="https://docs.qdev.tech/justfans/documentation.html#stripe">docs section</a> a read.
                                                 </div>
                                             </div>
 
@@ -256,6 +243,14 @@
                                                     <li>IPN Callback URL: <code>{{route('nowPayments.payment.update')}}</code></li>
                                                 </ul>
                                             </div>
+
+                                            <div class="alert alert-info alert-dismissible mb-1 payments-info-stripeConnect d-none">
+                                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                <div class="info-label"><div class="icon voyager-info-circled"></div> In order to use StripeConnect as payment option for withdrawals you'll need the following endpoint:</div>
+                                                <ul>
+                                                    <li>Webhook URL: <code>{{route('stripeConnect.payment.update')}}</code></li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -273,7 +268,7 @@
                                                             </li>
                                                             <li>
                                                                 <a href="#payments-processors" data-toggle="tab" onclick="Admin.paymentsSettingsSubTabSwitch('processors')">
-                                                                    Payment processors </a>
+                                                                    Processors </a>
                                                             </li>
                                                             <li>
                                                                 <a href="#payments-invoices" data-toggle="tab" onclick="Admin.paymentsSettingsSubTabSwitch('invoices')">
@@ -292,7 +287,7 @@
                                     </div>
 
                                     <div class="panel-heading setting-row setting-payments.driver" data-settingkey="payments.driver">
-                                        <h3 class="panel-title"> Payment processor  </h3>
+                                        <h3 class="panel-title"> Payment provider  </h3>
                                     </div>
                                     <div class="panel-body no-padding-left-right setting-row setting-payments.driver" data-settingkey="payments.driver">
                                         <div class="col-md-12 no-padding-left-right">
@@ -302,14 +297,120 @@
                                                 <option value="coinbase">Coinbase</option>
                                                 <option value="nowpayments">NowPayments</option>
                                                 <option value="ccbill">CCBill</option>
-                                                <option value="offline">Offline payments</option>
                                                 <option value="paystack">Paystack</option>
                                                 <option value="mercado">MercadoPago</option>
+                                                <option value="offline">Offline payments</option>
                                             </select>
 
                                         </div>
 
                                     </div>
+                                @endif
+
+                                @if($group == 'Security')
+                                    <div class="">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <h4 class="mb-4">Security settings</h4>
+
+                                                <div class="tabbable-panel">
+                                                    <div class="tabbable-line">
+                                                        <ul class="nav nav-tabs ">
+                                                            <li class="active">
+                                                                <a href="#security-general" data-toggle="tab" onclick="Admin.securitySettingsSubTabSwitch('general')">
+                                                                    General </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="#security-captcha" data-toggle="tab" onclick="Admin.securitySettingsSubTabSwitch('captcha')">
+                                                                    Captcha </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($group == 'Social')
+
+                                    <div class="social-login-info">
+                                        <div class="alert alert-info alert-dismissible mb-1">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                            <div class="info-label"><div class="icon voyager-info-circled"></div>Each of the social login provider will require you a <i><strong>"Callback Url"</strong></i>. Here are the endpoints that you will need to set up for each provider:</div>
+                                            <ul>
+                                                <li><code>Facebook: {{route('social.login.callback',['provider'=>'facebook'])}}</code></li>
+                                                <li><code>Twitter: {{route('social.login.callback',['provider'=>'twitter'])}}</code></li>
+                                                <li><code>Google: {{route('social.login.callback',['provider'=>'google'])}}</code></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <h4 class="mb-4">Social media settings</h4>
+
+                                                <div class="tabbable-panel">
+                                                    <div class="tabbable-line">
+                                                        <ul class="nav nav-tabs ">
+                                                            <li class="active">
+                                                                <a href="#social-login" data-toggle="tab" onclick="Admin.socialSettingsSubTabSwitch('login')">
+                                                                    Social login </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="#social-links" data-toggle="tab" onclick="Admin.socialSettingsSubTabSwitch('links')">
+                                                                    Social links </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($group == 'Feed')
+                                    <div class="">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <h4 class="mb-4">Feed settings</h4>
+
+                                                <div class="tabbable-panel">
+                                                    <div class="tabbable-line">
+                                                        <ul class="nav nav-tabs ">
+                                                            <li class="active">
+                                                                <a href="#feed-general" data-toggle="tab" onclick="Admin.feedSettingsSubTabSwitch('general')">
+                                                                    General </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="#feed-widgets" data-toggle="tab" onclick="Admin.feedSettingsSubTabSwitch('widgets')">
+                                                                    Widgets </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="panel-heading setting-row setting-feed.widget" data-settingkey="feed.widget">
+                                        <h3 class="panel-title"> Widget</h3>
+                                    </div>
+                                    <div class="panel-body no-padding-left-right setting-row setting-feed.widget" data-settingkey="feed.widget">
+                                        <div class="col-md-12 no-padding-left-right">
+                                            <select class="form-control" name="feed.widget" id="feed.widget">
+                                                <option value="suggestions">User suggestions</option>
+                                                <option value="expired-subs">Expired subscriptions</option>
+                                                <option value="search">Search box</option>
+                                            </select>
+                                        </div>
+
+                                    </div>
+
                                 @endif
 
                                 @foreach($group_settings as $setting)
@@ -328,14 +429,29 @@
                                             @elseif($setting->type == "rich_text_box")
                                                 <textarea class="form-control richTextBox" name="{{ $setting->key }}">{{ $setting->value ?? '' }}</textarea>
                                             @elseif($setting->type == "code_editor")
-                                                <?php $options = json_decode($setting->details); ?>
+                                                    <?php $options = json_decode($setting->details); ?>
                                                 <div id="{{ $setting->key }}" data-theme="{{ @$options->theme }}" data-language="{{ @$options->language }}" class="ace_editor min_height_400" name="{{ $setting->key }}">{{ $setting->value ?? '' }}</div>
                                                 <textarea name="{{ $setting->key }}" id="{{ $setting->key }}_textarea" class="hidden">{{ $setting->value ?? '' }}</textarea>
                                             @elseif($setting->type == "image" || $setting->type == "file")
-                                                @if(isset( $setting->value ) && !empty( $setting->value ) && Storage::disk(config('voyager.storage.disk'))->exists($setting->value))
+                                                @if(isset( $setting->value ) && !empty( $setting->value ) /*&& Storage::disk(config('voyager.storage.disk'))->exists($setting->value)*/)
                                                     <div class="img_settings_container">
                                                         <a href="{{ route('voyager.settings.delete_value', $setting->id) }}" class="voyager-x delete_value"></a>
-                                                        <img src="{{ Storage::disk(config('voyager.storage.disk'))->url($setting->value) }}" class="setting-value-image">
+                                                        @php
+                                                            $imageUrl = null;
+                                                            $decodedValue = json_decode($setting->value, true);
+                                                            if (is_array($decodedValue) && isset($decodedValue[0]['download_link'])) {
+                                                                $imageUrl = Storage::disk(config('voyager.storage.disk'))->url($decodedValue[0]['download_link']);
+                                                            } elseif (filter_var($setting->value, FILTER_VALIDATE_URL)) {
+                                                                $imageUrl = Storage::disk(config('voyager.storage.disk'))->url($setting->value);
+                                                            } else {
+                                                                $imageUrl = Storage::disk(config('voyager.storage.disk'))->url($setting->value);
+                                                            }
+                                                            $imageUrl = urldecode($imageUrl);
+                                                        @endphp
+
+                                                        @if($imageUrl)
+                                                            <img src="{{ $imageUrl }}" class="setting-value-image">
+                                                        @endif
                                                     </div>
                                                     <div class="clearfix"></div>
                                                 @elseif($setting->type == "file" && isset( $setting->value ))
@@ -352,10 +468,10 @@
                                                 @endif
                                                 <input type="file" name="{{ $setting->key }}">
                                             @elseif($setting->type == "select_dropdown")
-                                                <?php $options = json_decode($setting->details); ?>
-                                                <?php $selected_value = (isset($setting->value) && !empty($setting->value)) ? $setting->value : NULL; ?>
+                                                    <?php $options = json_decode($setting->details); ?>
+                                                    <?php $selected_value = (isset($setting->value) && !empty($setting->value)) ? $setting->value : NULL; ?>
                                                 <select class="form-control" name="{{ $setting->key }}">
-                                                    <?php $default = (isset($options->default)) ? $options->default : NULL; ?>
+                                                        <?php $default = (isset($options->default)) ? $options->default : NULL; ?>
                                                     @if(isset($options->options))
                                                         @foreach($options->options as $index => $option)
                                                             <option value="{{ $index }}" @if($default == $index && $selected_value === NULL) selected="selected" @endif @if($selected_value == $index) selected="selected" @endif>{{ $option }}</option>
@@ -364,9 +480,9 @@
                                                 </select>
 
                                             @elseif($setting->type == "radio_btn")
-                                                <?php $options = json_decode($setting->details); ?>
-                                                <?php $selected_value = (isset($setting->value) && !empty($setting->value)) ? $setting->value : NULL; ?>
-                                                <?php $default = (isset($options->default)) ? $options->default : NULL; ?>
+                                                    <?php $options = json_decode($setting->details); ?>
+                                                    <?php $selected_value = (isset($setting->value) && !empty($setting->value)) ? $setting->value : NULL; ?>
+                                                    <?php $default = (isset($options->default)) ? $options->default : NULL; ?>
                                                 <ul class="radio">
                                                     @if(isset($options->options))
                                                         @foreach($options->options as $index => $option)
@@ -380,8 +496,8 @@
                                                     @endif
                                                 </ul>
                                             @elseif($setting->type == "checkbox")
-                                                <?php $options = json_decode($setting->details); ?>
-                                                <?php $checked = (isset($setting->value) && $setting->value == 1) ? true : false; ?>
+                                                    <?php $options = json_decode($setting->details); ?>
+                                                    <?php $checked = (isset($setting->value) && $setting->value == 1) ? true : false; ?>
                                                 @if (isset($options->on) && isset($options->off))
                                                     <input type="checkbox" name="{{ $setting->key }}" class="toggleswitch" @if($checked) checked @endif data-on="{{ $options->on }}" data-off="{{ $options->off }}">
                                                 @else
@@ -398,13 +514,13 @@
                                         </div>
 
                                     </div>
-                                    <?php
-                                    $settingDetails = json_decode($setting->details);
-                                    $hasDescription = false;
-                                    if(isset($settingDetails->description)){
-                                        $hasDescription = true;
-                                    }
-                                    ?>
+                                        <?php
+                                        $settingDetails = json_decode($setting->details);
+                                        $hasDescription = false;
+                                        if(isset($settingDetails->description)){
+                                            $hasDescription = true;
+                                        }
+                                        ?>
                                     @if($hasDescription)
                                         <div class="admin-setting-description setting-row setting-{{$setting->key}}" data-settingkey={{$setting->key}}>
                                             <code>
@@ -502,6 +618,7 @@
             'storage.driver': "{{getSetting('storage.driver')}}",
             'websockets.driver': "{{getSetting('websockets.driver')}}",
             'transcoding.driver': "{{getSetting('media.transcoding_driver')}}",
+            'security.captcha_driver': "{{getSetting('security.captcha_driver')}}",
             'colors.theme_color_code': "{{getSetting('colors.theme_color_code')}}",
             'colors.theme_gradient_from': "{{getSetting('colors.theme_gradient_from')}}",
             'colors.theme_gradient_to': "{{getSetting('colors.theme_gradient_to')}}",

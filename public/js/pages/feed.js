@@ -16,13 +16,19 @@ $(function () {
         console.error('Pagination failed to initialize.');
     }
     PostsPaginator.initPostsGalleries(initialPostIDs);
+    PostsPaginator.initPostsHyperLinks();
+    // Animate polls
+    Post.animatePollResults();
+
     Post.setActivePage('feed');
     if(getCookie('app_prev_post') !== null){
         PostsPaginator.scrollToLastPost(getCookie('app_prev_post'));
     }
     Post.initPostsMediaModule();
-    SuggestionsSlider.init('.suggestions-box-mobile');
-    SuggestionsSlider.init('.suggestions-box');
+    // Initing read more/less toggler based on clip property
+    PostsPaginator.initDescriptionTogglers();
+    SuggestionsSlider.init('#suggestions-box');
+    SuggestionsSlider.init('#suggestions-box-expired');
     if(app.feedDisableRightClickOnMedia !== null){
         Post.disablePostsRightClick();
     }

@@ -2,7 +2,7 @@
  * Post create (helper) component
  */
 "use strict";
-/* global app, Post, user, FileUpload, updateButtonState, launchToast, trans, redirect, trans_choice, mediaSettings, passesMinMaxPPVContentCreationLimits, getWebsiteFormattedAmount */
+/* global app, Post, user, FileUpload, updateButtonState, launchToast, trans, redirect, trans_choice, mediaSettings, getWebsiteFormattedAmount, passesMinMaxPPPostLimits */
 
 $(function () {
     $("#post-price").keypress(function(e) {
@@ -19,6 +19,7 @@ var PostCreate = {
     postNotifications: false,
     postReleaseDate: null,
     postExpireDate: null,
+    pollAnswers: [],
 
     /**
      * Toggles post notification state
@@ -168,7 +169,7 @@ var PostCreate = {
             if(FileUpload.isTranscodingVideo === true){
                 dialogMessage = `${trans('A video is currently being converted.')} ${trans('Are you sure you want to continue without it?')}`;
             }
-            $('#confirm-post-save .modal-body p').html(dialogMessage)
+            $('#confirm-post-save .modal-body p').html(dialogMessage);
             $('.confirm-post-save').unbind('click');
             $('.confirm-post-save').on('click',function () {
                 PostCreate.save(type, postID, true);
@@ -186,7 +187,8 @@ var PostCreate = {
             'price': PostCreate.postPrice,
             'postNotifications' : PostCreate.postNotifications,
             'postReleaseDate': PostCreate.postReleaseDate,
-            'postExpireDate': PostCreate.postExpireDate
+            'postExpireDate': PostCreate.postExpireDate,
+            'pollAnswers' : PostCreate.pollAnswers
         };
         if(type === 'create'){
             data.type = 'create';
@@ -266,6 +268,7 @@ var PostCreate = {
         $('#post_expire_date').removeClass('is-invalid');
 
     },
+
     /**
      * Clears up post scheduling setting
      */
@@ -277,4 +280,84 @@ var PostCreate = {
         $('#post_expire_date').removeClass('is-invalid');
     },
 
+    /**
+     * Shows up the post price setter dialog
+     */
+    showPollEditDialog: function(){
+        $('#post-set-poll-dialog').modal('show');
+    },
+
+    /**
+     * Creates a new poll UI question in the UI
+     */
+    appendNewPollQuestion: function () {
+        $('.poll-questions-wrapper').append(pollQuestionInputElement());
+    },
+
+    /**
+     * Deletes the poll UI question from ui
+     * @param el
+     */
+    deletePollAnswer: function (el){
+        $(el).parent().parent().remove();
+    },
+
+    /**
+     * Saves the poll to the backend
+     */
+    savePoll: function (){
+        const questionsArray = [];
+        let allValid = true;
+
+        $('.poll-questions-wrapper input[name="questions"]').each(function() {
+            const input = $(this);
+            const value = input.val().trim();
+            // get the input's "id" attribute (could be undefined if not set)
+            const questionId = input.attr('id') || null;
+
+            if (!value) {
+                // Mark as invalid
+                input.addClass('is-invalid');
+                allValid = false;
+            } else {
+                // Clear invalid state
+                input.removeClass('is-invalid');
+
+                // Push an object with both ID and value
+                questionsArray.push({
+                    id: questionId,
+                    value: value
+                });
+            }
+        });
+
+        if (allValid) {
+            $('#post-set-poll-dialog').modal('hide');
+            // Store the array of question objects
+            PostCreate.pollAnswers = questionsArray;
+        }
+    },
+
+    /**
+     * Clears up poll UI on the create page
+     */
+    clearPoll: function (){
+        PostCreate.pollAnswers = [];
+        $('.poll-questions-wrapper input[name="questions"]').val('');
+        $('.poll-questions-wrapper .form-group:has(.h-pill)').remove();
+        $('#post-set-poll-dialog').modal('hide');
+    }
+
 };
+
+// eslint-disable-next-line no-unused-vars
+function pollQuestionInputElement() {
+    return `<div class="form-group">
+                <div class="d-flex align-items-center">
+                    <input class="form-control" name="questions" placeholder="${trans("Enter a poll question")}">
+                    <div class="ml-1 h-pill h-pill-primary rounded react-button w-32 d-flex align-items-center" data-toggle="tooltip" data-placement="top" title="${trans("Cancel")}" onclick="PostCreate.deletePollAnswer(this)">
+                        <ion-icon name="close-outline"></ion-icon>
+                   </div>
+               </div>
+            </div>`;
+}

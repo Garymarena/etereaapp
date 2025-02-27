@@ -14,13 +14,13 @@ use Session;
 class TwoFAController extends Controller
 {
     /**
-     * Returns the new device verification route
+     * Returns the new device verification route.
      * @return response()
      */
     public function index()
     {
         if(getSetting('security.enable_2fa')){
-            if(Auth::user()->enable_2fa && !in_array(AuthServiceProvider::generate2FaDeviceSignature(), AuthServiceProvider::getUserDevices(Auth::user()->id))  ) {
+            if(Auth::user()->enable_2fa && !in_array(AuthServiceProvider::generate2FaDeviceSignature(), AuthServiceProvider::getUserDevices(Auth::user()->id))) {
                 return view('pages.2fa-verify');
             }
         }
@@ -28,7 +28,7 @@ class TwoFAController extends Controller
     }
 
     /**
-     * Handles 2Fa code submit
+     * Handles 2Fa code submit.
      * @return response()alert
      */
     public function store(VerifyTwoFactorCodeRequest $request)
@@ -38,7 +38,7 @@ class TwoFAController extends Controller
             ->where('updated_at', '>=', now()->subMinutes(30))
             ->first();
         if (!is_null($code)) {
-            $device = UserDevice::where('signature',AuthServiceProvider::generate2FaDeviceSignature())->first();
+            $device = UserDevice::where('signature', AuthServiceProvider::generate2FaDeviceSignature())->first();
             $device->verified_at = Carbon::now();
             $device->save();
             Session::put('force2fa', false);
@@ -48,7 +48,7 @@ class TwoFAController extends Controller
     }
 
     /**
-     * Resends the 2FA verification code
+     * Resends the 2FA verification code.
      * @return \Illuminate\Http\RedirectResponse
      * @throws \Exception
      */
@@ -65,18 +65,17 @@ class TwoFAController extends Controller
     }
 
     /**
-     * Deletes the requested device, if found
+     * Deletes the requested device, if found.
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deleteDevice(Request $request){
+    public function deleteDevice(Request $request) {
         try {
             $signature = $request->get('signature');
-            UserDevice::where('user_id',Auth::user()->id)->where('signature',$signature)->delete();
+            UserDevice::where('user_id', Auth::user()->id)->where('signature', $signature)->delete();
             return response()->json(['success' => true, 'message' => __('Device deleted.')]);
         } catch (\Exception $exception) {
             return response()->json(['success' => false, 'errors' => [__('An internal error has occurred.')]]);
         }
     }
-
 }

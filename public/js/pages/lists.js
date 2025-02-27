@@ -2,7 +2,7 @@
 * Feed page & component
  */
 "use strict";
-/* global app, user, listVars, profileVars, launchToast, redirect, trans */
+/* global app, user, listVars, profileVars, launchToast, redirect, trans, trans_choice */
 
 $(function () {
 
@@ -75,10 +75,12 @@ var Lists = {
                     });
                 }
                 else{
-                    launchToast('danger',trans('Error'),result.errors[0]);
+                    $('#list-member-delete-dialog').modal('hide');
+                    launchToast('danger',trans('Error'),result.message);
                 }
             },
             error: function (result) {
+                $('#list-member-delete-dialog').modal('hide');
                 launchToast('danger',trans('Error'),result.responseJSON.message);
             }
         });
@@ -140,26 +142,24 @@ var Lists = {
             requestUrl = app.baseUrl + '/my/lists/members/delete';
         }
         data.returnData = showMessages;
+        let element = $('*[data-listid="'+list_id+'"]');
         $.ajax({
             type: requestMethod,
             data: data,
             url: requestUrl,
             success: function (result) {
-                let element = $('*[data-listid="'+list_id+'"]');
                 if(type === 'add'){
                     if(showMessages){
                         $('.lists-wrapper').append(result.data);
                         launchToast('success',trans('Success'),result.message);
                         element.parent().find('.list-subtitle').html(` ${trans_choice('members',result.data.members_count,{number:result.data.members_count.toString()})} - ` + ` ${trans_choice('posts', result.data.posts_count,{number:result.data.posts_count.toString()})}`);
                     }
-
                 }
                 else{
                     if(showMessages){
                         launchToast('success',trans('Success'),result.message);
                         element.parent().find('.list-subtitle').html(` ${trans_choice('members',result.data.members_count,{number:result.data.members_count.toString()})} - ` + ` ${trans_choice('posts', result.data.posts_count,{number:result.data.posts_count.toString()})}`);
                     }
-
                 }
 
                 if(!showMessages){
@@ -168,6 +168,11 @@ var Lists = {
 
             },
             error: function (result) {
+                let checkInputState = true;
+                if(type === 'add'){
+                    checkInputState = false;
+                }
+                element.prop('checked',checkInputState);
                 launchToast('danger',trans('Error'),result.responseJSON.message);
             }
         });
@@ -175,18 +180,23 @@ var Lists = {
     },
 
     /**
+     * TODO: User array param, add stream and message report support
      * Posts user report
      * @param user_id
      * @param post_id
+     * @param message_id
+     * @param stream_id
      * @param type
      * @param details
      */
-    postReport: function(user_id,post_id,type,details){
+    postReport: function(user_id, post_id, message_id, stream_id, type, details){
         $.ajax({
             type: 'POST',
             data: {
                 user_id,
                 post_id,
+                message_id,
+                stream_id,
                 type,
                 details,
             },
@@ -206,13 +216,22 @@ var Lists = {
      * Shows up user report box
      * @param user_id
      * @param post_id
+     * @param message_id
+     * @param stream_id
      */
-    showReportBox: function(user_id,post_id){
+    showReportBox: function(user_id, post_id = null, message_id = null, stream_id = null){
         let dialogElement = $('#report-user-post');
         dialogElement.modal('show');
         $('.submit-report-button').unbind();
         $('.submit-report-button').on('click',function () {
-            Lists.postReport(user_id,post_id,$('#reasonExamples').val(),$('#post_report_details').val());
+            Lists.postReport(
+                user_id,
+                post_id,
+                message_id,
+                stream_id,
+                $('#reasonExamples').val(),
+                $('#post_report_details').val()
+            );
         });
     },
 
@@ -230,14 +249,14 @@ var Lists = {
             dialogElement.find('.block-user-label').addClass('d-none');
             dialogElement.find('.unfollow-user-label').removeClass('d-none');
             $('.post-list-management-btn').on('click',function () {
-                Lists.manageList(user.lists['following'], user_id, 'unfollow');
+                Lists.manageList(user.lists['Following'], user_id, 'unfollow');
             });
         }
         else if(type === 'block'){
             dialogElement.find('.block-user-label').removeClass('d-none');
             dialogElement.find('.unfollow-user-label').addClass('d-none');
             $('.post-list-management-btn').on('click',function () {
-                Lists.manageList(user.lists['blocked'], user_id, 'block');
+                Lists.manageList(user.lists['Blocked'], user_id, 'block');
             });
         }
 
@@ -324,8 +343,18 @@ var Lists = {
             url: app.baseUrl + '/my/lists/save',
             success: function (result) {
                 if(type === 'create'){
-                    $('.lists-wrapper').append('<hr class="my-2">');
-                    $('.lists-wrapper').append(result.data);
+                    let listItems = $('.lists-wrapper .list-item');
+
+                    if(listItems.length >= 3) {
+                        // Insert after the *third* .list-item (0-based index => .eq(2))
+                        listItems.eq(2).after(result.data);
+                        listItems.eq(2).after('<hr class="my-2">');
+                    } else {
+                        // Fallback if there aren't at least 3 items:
+                        $('.lists-wrapper').append('<hr class="my-2">');
+                        $('.lists-wrapper').append(result.data);
+                    }
+
                     $('#list-update-dialog').modal('hide');
                     launchToast('success',trans('Success'),trans('List added')+'.');
                     $('#list-name').val('');

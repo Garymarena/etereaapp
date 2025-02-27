@@ -7,9 +7,10 @@ use Str;
 
 class PPVMinMax implements Rule
 {
-
     protected $type = 'post';
+
     protected $minLimit = 1;
+
     protected $maxLimit = 500;
 
     /**
@@ -75,6 +76,6 @@ class PPVMinMax implements Rule
      */
     public function message()
     {
-        return __('The price must be between :min and :max.',['min' => $this->minLimit ?? 1, 'max' => $this->maxLimit ?? 500]);
+        return __('The price must be between :min and :max.', ['min' => $this->minLimit ?? 1, 'max' => $this->maxLimit ?? 500]);
     }
 }

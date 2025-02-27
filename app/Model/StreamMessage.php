@@ -41,5 +41,4 @@ class StreamMessage extends Model
     {
         return $this->belongsTo('App\Model\Stream', 'stream_id')->orderBy('created_at', 'desc');
     }
-
 }

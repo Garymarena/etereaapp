@@ -28,7 +28,7 @@ class IsEmailDelivrable implements Rule
 
         try {
             $client = new \GuzzleHttp\Client();
-            $apiRequest = $client->get('https://emailvalidation.abstractapi.com/v1/?api_key='.getSetting('security.email_abstract_api_key').'&email='. $value);
+            $apiRequest = $client->get('https://emailvalidation.abstractapi.com/v1/?api_key='.getSetting('security.email_abstract_api_key').'&email='.$value);
             $apiData = json_decode($apiRequest->getBody()->getContents());
             if($apiData->deliverability == 'UNDELIVERABLE'){
                 return false;

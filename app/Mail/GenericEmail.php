@@ -48,7 +48,7 @@ class GenericEmail extends Mailable
             $this->mailQuote = $data['mailQuote'];
         }
         if(isset($data['replyTo'])){
-            $this->replyTo( $data['replyTo'],'');
+            $this->replyTo($data['replyTo'], '');
         }
     }
 

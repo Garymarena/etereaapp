@@ -2,15 +2,32 @@
  * Installer component JS side
  */
 "use strict";
-/* global trans */
+/* global trans, updateButtonState */
 
 $(function () {
     // Initialize tooltips
     $('[data-toggle="tooltip"]').tooltip();
+
+    // Preventing double click on final install step form
+    $('.finalInstallStepForm').on('submit', function (e) {
+        updateButtonState('loading', $('.finalInstallStepForm .btn-primary'), 'Installing', 'white');
+        if(Installer.state.isInstalling === true){
+            e.preventDefault();
+        }
+        setTimeout(function () {
+            Installer.state.isInstalling = true;
+        }, 100);
+    });
+
 });
 
 // eslint-disable-next-line no-unused-vars
 var Installer = {
+
+    state: {
+        isInstalling : false,
+    },
+
     /**
      * Toggles password field between password and text types
      */
@@ -27,5 +44,8 @@ var Installer = {
             $('.hide-pass').addClass('d-none');
             $('.h-pill').attr('data-original-title',trans('Show password')).tooltip('update').tooltip('show');
         }
-    }
+    },
+
+
+
 };

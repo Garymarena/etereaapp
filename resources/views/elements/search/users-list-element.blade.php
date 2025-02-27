@@ -1,5 +1,5 @@
 <div class="user-search-box-item mb-4">
-    <div class="row px-4">
+    <div class="d-flex flex-wrap">
         <div class="col-auto pr-0">
             <img src="{{$user->avatar}}" class="avatar rounded-circle shadow"/>
         </div>
@@ -31,5 +31,5 @@
 
         </div>
     </div>
-
 </div>
+

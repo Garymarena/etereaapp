@@ -74,33 +74,33 @@ var DepositSettings = {
         const val = $('input[name="payment-radio-option"]:checked').val();
         if (val) {
             switch (val) {
-                case 'payment-stripe':
-                    DepositSettings.provider = 'stripe';
-                    break;
-                case 'payment-paypal':
-                    DepositSettings.provider = 'paypal';
-                    break;
-                case 'payment-coinbase':
-                    DepositSettings.provider = 'coinbase';
-                    break;
-                case 'payment-manual':
-                    DepositSettings.provider = 'manual';
-                    break;
-                case 'payment-nowpayments':
-                    DepositSettings.provider = 'nowpayments';
-                    break;
-                case 'payment-ccbill':
-                    DepositSettings.provider = 'ccbill';
-                    break;
-                case 'payment-paystack':
-                    DepositSettings.provider = 'paystack';
-                    break;
-                case 'payment-oxxo':
-                    DepositSettings.provider = 'oxxo';
-                    break;
-                case 'payment-mercado':
-                    DepositSettings.provider = 'mercado';
-                    break;
+            case 'payment-stripe':
+                DepositSettings.provider = 'stripe';
+                break;
+            case 'payment-paypal':
+                DepositSettings.provider = 'paypal';
+                break;
+            case 'payment-coinbase':
+                DepositSettings.provider = 'coinbase';
+                break;
+            case 'payment-manual':
+                DepositSettings.provider = 'manual';
+                break;
+            case 'payment-nowpayments':
+                DepositSettings.provider = 'nowpayments';
+                break;
+            case 'payment-ccbill':
+                DepositSettings.provider = 'ccbill';
+                break;
+            case 'payment-paystack':
+                DepositSettings.provider = 'paystack';
+                break;
+            case 'payment-oxxo':
+                DepositSettings.provider = 'oxxo';
+                break;
+            case 'payment-mercado':
+                DepositSettings.provider = 'mercado';
+                break;
             }
             return DepositSettings.provider;
         }
@@ -174,6 +174,7 @@ var DepositSettings = {
                 previewsContainer: ".dropzone-previews",
                 autoProcessQueue: true,
                 parallelUploads: 1,
+                dictInvalidFileType: trans("You can't upload files of this type."),
             });
             DepositSettings.myDropzone.on("addedfile", file => {
                 FileUpload.updatePreviewElement(file, true);

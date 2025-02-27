@@ -2,7 +2,7 @@
  * Paginator component - used for posts (feed+profile) pagination
  */
 "use strict";
-/* global Post */
+/* global Post, PostsPaginator */
 
 var Paginator = {
 
@@ -69,6 +69,8 @@ var Paginator = {
         Post.initPostsMediaModule();
         // Init gallery module for each post
         Paginator.initPostsGalleries(postIDs);
+        // Initing read more/less toggler based on clip property
+        PostsPaginator.initDescriptionTogglers();
     },
 
 };

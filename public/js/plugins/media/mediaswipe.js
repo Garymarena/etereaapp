@@ -57,6 +57,7 @@ function MediaSwipe(element, options, items, params) {
     // New createImage
     var createImage = function(item, classes, onload, onerror) {
         // create element
+        classes += ' no-long-press';
         var img = createElement(item, 'img', 'image', classes);
 
         // get image size after loading
@@ -188,9 +189,9 @@ function MediaSwipe(element, options, items, params) {
     var createVideo = function(item, classes, onload, onerror) {
         // HTML5 API Reference:
         // https://www.w3schools.com/tags/ref_av_dom.asp
-        classes += ' pswp_video';
+        classes += ' pswp_video no-long-press';
         // create element
-        var img = createElement(item, 'video', 'video', classes, {preload: 'auto', controls: 1});
+        var img = createElement(item, 'video', 'video', classes, {preload: 'auto', controls: 1, controlsList: "nodownload"});
 
         // clear player and set local callbacks
         img.oncanplay = function() {
@@ -232,10 +233,10 @@ function MediaSwipe(element, options, items, params) {
     var createAudio = function(item, classes, onload, onerror) {
         // HTML5 API Reference:
         // https://www.w3schools.com/tags/ref_av_dom.asp
-        classes += ' pswp_audio';
+        classes += ' pswp_audio no-long-press';
 
         // create element
-        var img = createElement(item, 'audio', 'audio', classes, {preload: 'auto', controls: 1});
+        var img = createElement(item, 'audio', 'audio', classes, {preload: 'auto', controls: 1, controlsList: "nodownload"});
 
         // clear player and set local callbacks
         img.oncanplay = function() {

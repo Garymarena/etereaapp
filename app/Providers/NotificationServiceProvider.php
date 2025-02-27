@@ -126,7 +126,12 @@ class NotificationServiceProvider extends ServiceProvider
                 $notificationData['from_user_id'] = $subscription->sender_user_id;
                 // Setting the locale of the message receiver
                 $user = User::where('id', $subscription->recipient_user_id)->select(['email', 'name', 'settings'])->first();
-                App::setLocale($user->settings['locale']);
+                try{
+                    App::setLocale($user->settings['locale']);
+                }
+                catch (\Exception $e){
+                    App::setLocale('en');
+                }
                 // Building up the notification message to be broadcasted & db saved
                 $subscriber = User::query()->where('id', $subscription->sender_user_id)->first();
                 if ($subscriber != null) {
@@ -156,13 +161,18 @@ class NotificationServiceProvider extends ServiceProvider
             if (
                 ($transaction != null && isset($transaction->id) && isset($transaction->sender_user_id)
                     && isset($transaction->amount) && isset($transaction->currency) && isset($transaction->recipient_user_id))
-                && !in_array($type,[Notification::PPV_UNLOCK])
+                && !in_array($type, [Notification::PPV_UNLOCK])
             ) {
                 $notificationData['transaction_id'] = $transaction->id;
                 $notificationData['to_user_id'] = $transaction->recipient_user_id;
                 // Setting the locale of the message receiver
                 $user = User::where('id', $transaction->recipient_user_id)->select(['email', 'username', 'name', 'settings'])->first();
-                App::setLocale($user->settings['locale']);
+                try{
+                    App::setLocale($user->settings['locale']);
+                }
+                catch (\Exception $e){
+                    App::setLocale('en');
+                }
                 // Building up the notification message to be broadcasted & db saved
                 $sender = User::query()->where('id', $transaction->sender_user_id)->first();
                 if ($sender != null) {
@@ -201,7 +211,7 @@ class NotificationServiceProvider extends ServiceProvider
                     $notificationData['user_message_id'] = $transaction->user_message_id;
                 }
 
-                $message = __('Someone unlocked your'). ' ' . $message . '.';
+                $message = __('Someone unlocked your').' '.$message.'.';
                 $notificationData['transaction_id'] = $transaction->id;
                 $notificationData['to_user_id'] = $toUser = $transaction->recipient_user_id;
                 $notificationData['from_user_id'] = $transaction->sender_user_id;
@@ -209,7 +219,12 @@ class NotificationServiceProvider extends ServiceProvider
 
                 // Setting the locale of the message receiver
                 $user = User::where('id', $transaction->recipient_user_id)->select(['email', 'username', 'name', 'settings'])->first();
-                App::setLocale($user->settings['locale']);
+                try{
+                    App::setLocale($user->settings['locale']);
+                }
+                catch (\Exception $e){
+                    App::setLocale('en');
+                }
                 if (isset($user->settings['notification_email_new_ppv_unlock']) && $user->settings['notification_email_new_ppv_unlock'] == 'true') {
                     EmailsServiceProvider::sendGenericEmail(
                         [
@@ -237,7 +252,12 @@ class NotificationServiceProvider extends ServiceProvider
                         if ($post != null) {
                             // Setting the locale of the message receiver
                             $toUser = User::where('id', $post->user_id)->select(['email', 'username', 'name', 'settings'])->first();
-                            App::setLocale($user->settings['locale']);
+                            try{
+                                App::setLocale($user->settings['locale']);
+                            }
+                            catch (\Exception $e){
+                                App::setLocale('en');
+                            }
                             // Building up the notification message to be broadcasted & db saved
                             $notificationData['message'] = __(':name liked your post', ['name'=>$user->name]);
                             $notificationData['post_id'] = $post->id;
@@ -250,7 +270,12 @@ class NotificationServiceProvider extends ServiceProvider
                         if ($postComment != null) {
                             // Setting the locale of the message receiver
                             $toUser = User::where('id', $postComment->user_id)->select(['email', 'username', 'name', 'settings'])->first();
-                            App::setLocale($user->settings['locale']);
+                            try{
+                                App::setLocale($user->settings['locale']);
+                            }
+                            catch (\Exception $e){
+                                App::setLocale('en');
+                            }
                             // Building up the notification message to be broadcasted & db saved
                             $notificationData['message'] = __(':name liked your comment', ['name'=>$user->name]);
                             $notificationData['post_comment_id'] = $postComment->id;
@@ -320,13 +345,12 @@ class NotificationServiceProvider extends ServiceProvider
                 $notificationData['to_user_id'] = $toUser->id;
             }
 
-
             $toUser = User::query()->where('id', $notificationData['to_user_id'])->first();
             if ($toUser != null) {
                 $modelData = $notificationData;
                 unset($modelData['message']);
                 $notification = Notification::create($modelData);
-                $notification->setAttribute('message',$notificationData['message']);
+                $notification->setAttribute('message', $notificationData['message']);
                 self::publishNotification($notification, $toUser);
             }
         } catch (\Exception $exception) {
@@ -336,7 +360,7 @@ class NotificationServiceProvider extends ServiceProvider
 
     /**
      * Dispatches the notification to puser.
-     *
+     * TODO: Maybe dispatch these to private channels as well?
      * @param $notification
      * @param $toUser
      */
@@ -387,7 +411,7 @@ class NotificationServiceProvider extends ServiceProvider
             }
         }
 
-        if (! $skip) {
+        if (!$skip) {
             return self::createAndPublishNotification(
                 Notification::NEW_REACTION,
                 null,
@@ -550,10 +574,10 @@ class NotificationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Generate new tip notification
+     * Generate new tip notification.
      * @param $transaction
      */
-    public static function createTipNotificationByTransaction($transaction){
+    public static function createTipNotificationByTransaction($transaction) {
         if ($transaction != null && $transaction->status === Transaction::APPROVED_STATUS
             && ($transaction->type === Transaction::TIP_TYPE || $transaction->type === Transaction::CHAT_TIP_TYPE)) {
             self::createNewTipNotification($transaction);
@@ -561,26 +585,26 @@ class NotificationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Generate new PPV unlock notification
+     * Generate new PPV unlock notification.
      * @param $transaction
      */
-    public static function createPPVNotificationByTransaction($transaction){
+    public static function createPPVNotificationByTransaction($transaction) {
         if ($transaction != null && $transaction->status === Transaction::APPROVED_STATUS
-            && in_array($transaction->type,[
+            && in_array($transaction->type, [
                 Transaction::STREAM_ACCESS,
                 Transaction::POST_UNLOCK,
-                Transaction::MESSAGE_UNLOCK
+                Transaction::MESSAGE_UNLOCK,
             ])) {
             self::createNewPPVUnlockNotification($transaction);
         }
     }
 
     /**
-     * Get notification filter type
+     * Get notification filter type.
      * @param $notification
      * @return string|null
      */
-    public static function getNotificationFilterType($notification){
+    public static function getNotificationFilterType($notification) {
         $type = null;
         if ($notification != null) {
             switch ($notification->type) {
@@ -603,6 +627,9 @@ class NotificationServiceProvider extends ServiceProvider
                 case Notification::WITHDRAWAL_ACTION:
                     $type = Notification::WITHDRAWAL_ACTION;
                     break;
+                case Notification::PPV_UNLOCK:
+                    $type = Notification::PPV_UNLOCK_FILTER;
+                    break;
                 default:
                     $type = false;
                     break;
@@ -613,10 +640,10 @@ class NotificationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Gets the user un-read notifications
+     * Gets the user un-read notifications.
      * @return object
      */
-    public static function getUnreadNotifications(){
+    public static function getUnreadNotifications() {
         $unreadNotifications = [
             'total' => 0,
             Notification::MESSAGES_FILTER => 0,
@@ -624,7 +651,8 @@ class NotificationServiceProvider extends ServiceProvider
             Notification::SUBSCRIPTIONS_FILTER => 0,
             Notification::PROMOS_FILTER => 0,
             Notification::LIKES_FILTER => 0,
-            Notification::WITHDRAWAL_ACTION => 0
+            Notification::WITHDRAWAL_ACTION => 0,
+            Notification::PPV_UNLOCK_FILTER => 0,
         ];
         if(Auth::user()){
             $userId = Auth::user()->id;
@@ -632,8 +660,8 @@ class NotificationServiceProvider extends ServiceProvider
                 ->groupBy('type')->select('type', DB::raw('count(*) as total'))->get();
             if(count($userUnreadNotifications)){
                 foreach ($userUnreadNotifications as $notification){
-                    if(NotificationServiceProvider::getNotificationFilterType($notification)) {
-                        $unreadNotifications[NotificationServiceProvider::getNotificationFilterType($notification)] += $notification->total;
+                    if(self::getNotificationFilterType($notification)) {
+                        $unreadNotifications[self::getNotificationFilterType($notification)] += $notification->total;
                         $unreadNotifications['total'] += $notification->total;
                     }
                 }
@@ -644,21 +672,24 @@ class NotificationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Gets the unread user messages
+     * Gets the unread user messages.
      * @return mixed
      */
-    public static function getUnreadMessages(){
+    public static function getUnreadMessages() {
+        // Here we double check the existence of default lists
+        // Sometimes people delete default ones out of admin
+        ListsHelperServiceProvider::createUserDefaultLists(Auth::user()->id);
         $userID = Auth::user()->id;
-        $blockedMembers  = UserListMember::select(['user_id'])->where('list_id', DB::raw(Auth::user()->lists->firstWhere('type', 'blocked')->id))->get()->pluck('user_id')->toArray();
-        $count =  UserMessage::where('receiver_id',$userID)
-            ->whereNotIn('sender_id',$blockedMembers)
-            ->where('isSeen',0)
+        $blockedMembers = UserListMember::select(['user_id'])->where('list_id', DB::raw(Auth::user()->lists->firstWhere('type', 'blocked')->id))->get()->pluck('user_id')->toArray();
+        $count = UserMessage::where('receiver_id', $userID)
+            ->whereNotIn('sender_id', $blockedMembers)
+            ->where('isSeen', 0)
             ->count();
         return $count;
     }
 
     /**
-     * Send deposit approved email notification for user
+     * Send deposit approved email notification for user.
      * @param $transaction
      */
     public static function sendApprovedDepositTransactionEmailNotification($transaction) {
@@ -679,7 +710,7 @@ class NotificationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Send partially paid NowPayments transaction email notification for website admin
+     * Send partially paid NowPayments transaction email notification for website admin.
      * @param $transaction
      */
     public static function sendNowPaymentsPartiallyPaidTransactionEmailNotification($transaction) {

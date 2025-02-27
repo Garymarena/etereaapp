@@ -1,8 +1,6 @@
 var staticCacheName = "pwa-v" + new Date().getTime();
 var filesToCache = [
-    '/offline',
-    '/img/rounded-logo-gradient.svg',
-    '/img/pwa-splashscreen.png'
+
 ];
 
 // Cache on install

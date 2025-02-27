@@ -43,7 +43,7 @@
         (function() {
             // Initialize the service worker
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/serviceworker.js', {
+                navigator.serviceWorker.register('{{rtrim(getSetting('site.app_url'),'/')}}'+'/serviceworker.js', {
                     scope: '.'
                 }).then(function (registration) {
                     // Registration was successful

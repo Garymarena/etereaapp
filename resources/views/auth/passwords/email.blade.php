@@ -2,6 +2,7 @@
 @section('meta')
     <meta name="robots" content="noindex">
 @stop
+@section('page_title', __('Reset Password'))
 
 @section('content')
 <div class="container-fluid">

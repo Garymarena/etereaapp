@@ -86,7 +86,7 @@ function messageBubble(isSender, message) {
         <div class="d-flex flex-row">
                 <div class="col-12 d-flex  ${isSender ? 'sender d-flex flex-row-reverse pr-1' : 'pl-0'}">
                     <div class="m-0 message-bubble text-break alert ${isSender ? 'alert-primary text-white' : 'alert-default'}">${messenger.parseMessage(message.message)}</div>
-                    ${isSender ? messageActions(true, message) : ''}
+                    ${messageActions(isSender, message)}
                 </div>
         </div>
     `;
@@ -98,24 +98,34 @@ function messageAttachments(isSender, attachmentsHtml, message){
                 <div class="attachments-holder row no-gutters flex-row-reverse">
                     ${attachmentsHtml}
                 </div>
-                ${attachmentsHtml.length && isSender ? messageActions(true, message) : ''}
+                ${attachmentsHtml.length ? messageActions(isSender, message) : ''}
             </div>
      `;
 }
 
-function messageActions(showDeleteButton, message){
+function messageActions(isSender, message){
     return `
-        <div class="d-flex message-actions-wrapper">
-            ${showDeleteButton ? `
-                <div class="d-flex justify-content-center align-items-center pointer-cursor mr-2">
+        <div class="d-flex message-actions-wrapper ${isSender ? 'mr-2' : 'ml-2'}">
+
+            ${isSender ? `
+                <div class="d-flex justify-content-center align-items-center pointer-cursor">
                     <div class="to-tooltip message-action-button d-flex justify-content-center align-items-center"  data-placement="top" title="${trans('Delete')}" onClick="messenger.showMessageDeleteDialog(${message.id})">
                         <ion-icon name="trash-outline"></ion-icon>
                     </div>
                 </div>
             ` : ``}
 
-           ${message.price > 0 ? `
-            <div class="d-flex justify-content-center align-items-center mr-2">
+
+             ${isSender === false ? `
+                <div class="d-flex justify-content-center align-items-center pointer-cursor">
+                    <div class="to-tooltip message-action-button d-flex justify-content-center align-items-center"  data-placement="top" title="${trans('Report')}" onClick="Lists.showReportBox(${message.sender_id}, null, ${message.id}, null);">
+                        <ion-icon name="flag-outline"></ion-icon>
+                    </div>
+                </div>
+            ` : ``}
+
+           ${isSender && message.price > 0 ? `
+            <div class="d-flex justify-content-center align-items-center">
                 <div class="to-tooltip message-action-button d-flex justify-content-center align-items-center"  data-placement="top" title="${trans('Paid message')}">
                     <ion-icon name="cash-outline"></ion-icon>
                  </div>

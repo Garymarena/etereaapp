@@ -11,7 +11,7 @@ use Cookie;
 
 class LocalesServiceProvider extends ServiceProvider
 {
-    public static $languageCodes = array(
+    public static $languageCodes = [
         "aa" => "Afar",
         "ab" => "Abkhazian",
         "ae" => "Avestan",
@@ -205,8 +205,8 @@ class LocalesServiceProvider extends ServiceProvider
         "zh-HK" => "Chinese (Traditional)",
         "zh-MO" => "Chinese (Traditional)",
         "zh-TW" => "Chinese (Traditional)",
-        "zu" => "Zulu"
-    );
+        "zu" => "Zulu",
+    ];
 
     /**
      * Register services.
@@ -228,23 +228,23 @@ class LocalesServiceProvider extends ServiceProvider
         //
     }
 
-    public static function getAvailableLanguages(){
-        $languageFiles = array_filter(scandir(app()->langPath()),function ($v){
-            if(is_int(strpos($v,'.json'))){
-                return str_replace('.json','',$v);
+    public static function getAvailableLanguages() {
+        $languageFiles = array_filter(scandir(app()->langPath()), function ($v) {
+            if(is_int(strpos($v, '.json'))){
+                return str_replace('.json', '', $v);
             }
         });
-        $languageFiles = array_map(function ($v){
-            if(is_int(strpos($v,'.json'))){
-                return str_replace('.json','',$v);
+        $languageFiles = array_map(function ($v) {
+            if(is_int(strpos($v, '.json'))){
+                return str_replace('.json', '', $v);
             }
-        },$languageFiles);
+        }, $languageFiles);
         return $languageFiles;
     }
 
-    public static function getLanguageName($localeCode){
+    public static function getLanguageName($localeCode) {
         if(extension_loaded('intl')){
-            return \Locale::getDisplayLanguage($localeCode, Session::get('locale') ? Session::get('locale') : 'en');
+            return \Locale::getDisplayLanguage($localeCode, $localeCode);
         }
         else{
             if(isset(self::$languageCodes[$localeCode])){
@@ -263,7 +263,7 @@ class LocalesServiceProvider extends ServiceProvider
             return Config::get('app.locale');
         }
 
-        if (! Session::has('locale')) {
+        if (!Session::has('locale')) {
             if (Cookie::get('app_locale')) {
                 return Cookie::get('app_locale');
             }
@@ -296,12 +296,11 @@ class LocalesServiceProvider extends ServiceProvider
     }
 
     /**
-     * Locale setter helper
+     * Locale setter helper.
      * @param $code
      */
-    public static function setLocale($code){
+    public static function setLocale($code) {
         App::setLocale($code);
         Session::put('locale', $code);
     }
-
 }

@@ -2,7 +2,7 @@
 * Feed page & component
  */
 "use strict";
-/* global app, launchToast, redirect, trans, copyToClipboard, openCreateDialog, openDetailsDialog, openEditDialog, hasActiveStream, inProgressStreamCover, mediaSettings, updateButtonState */
+/* global app, launchToast, redirect, trans, copyToClipboard, openCreateDialog, openDetailsDialog, openEditDialog, hasActiveStream, inProgressStreamCover, mediaSettings, updateButtonState, AiSuggestions */
 
 $(function () {
     // If on user (my) streams page
@@ -21,6 +21,11 @@ $(function () {
     }
 
     Streams.initCoverChangeEvents();
+
+    if(app.open_ai_enabled) {
+        AiSuggestions.initAISuggestions('#stream-name', 'stream');
+    }
+
 });
 
 var Streams = {
@@ -70,7 +75,8 @@ var Streams = {
                     launchToast('danger','Error ',errorMessage.errors.file,'now');
                 }
                 file.previewElement.innerHTML = "";
-            }
+            },
+            dictInvalidFileType: trans("You can't upload files of this type."),
         });
     },
 

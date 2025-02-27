@@ -2,7 +2,7 @@
  * Paginator component - used for posts (feed+profile) pagination
  */
 "use strict";
-/* global app, Post, paginatorConfig, setCookie, eraseCookie, initTooltips */
+/* global app, Post, paginatorConfig, setCookie, eraseCookie, initTooltips, multiLineOverflows, Autolinker */
 
 var PostsPaginator = {
 
@@ -156,6 +156,16 @@ var PostsPaginator = {
 
         // Init gallery module for each post
         PostsPaginator.initPostsGalleries(postIDs);
+
+        // Init hyperlinks (if allowed)
+        PostsPaginator.initPostsHyperLinks();
+
+        // Animate polls
+        Post.animatePollResults();
+
+        // Initing read more/less toggler based on clip property
+        PostsPaginator.initDescriptionTogglers();
+
     },
 
     /**
@@ -166,6 +176,32 @@ var PostsPaginator = {
         $.map(postIDs,function (postID) {
             Post.initGalleryModule($('*[data-postID="'+postID+'"]'));
         });
+    },
+
+    /**
+     * Globally instantiates all href links within a conversation
+     */
+    initPostsHyperLinks: function() {
+        if(app.allow_hyperlinks) {
+            $('.post-content-data p').each(function () {
+                var linkedText = Autolinker.link($(this).html(), {
+                    urls: {schemeMatches: true},
+                    email: false,
+                    phone: false,
+                    mention: false,
+                    hashtag: false,
+                    sanitizeHtml: false,
+                    className: "",
+                    truncate: {length: 64, location: 'middle'},
+                    replaceFn: function (match) {
+                        var tag = match.buildTag();
+                        tag.setAttr('rel', 'nofollow noopener noreferrer');
+                        return tag;
+                    }
+                });
+                $(this).html(linkedText);
+            });
+        }
     },
 
     /**
@@ -186,5 +222,17 @@ var PostsPaginator = {
         PostsPaginator.nextPageUrl = '';
         window.onscroll = function() {};
     },
+
+    /**
+     * Instantiates the JS based read more/less
+     */
+    initDescriptionTogglers: function () {
+        $('.post-box').each(function(key, element){
+            let postID = $(element).attr('data-postID');
+            if(multiLineOverflows('*[data-postID="'+postID+'"] .post-content-data')){
+                $('*[data-postID="'+postID+'"]').find('.show-more-actions').removeClass('d-none');
+            }
+        });
+    }
 
 };

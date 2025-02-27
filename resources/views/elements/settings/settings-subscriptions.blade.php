@@ -24,8 +24,8 @@
         @include('elements/message-alert', ['classes' =>'p-2'])
         <div class="">
             <div class="col d-flex align-items-center py-3 border-bottom text-bold">
-                <div class="col-3 col-md-3 text-truncate">{{$activeSubsTab == 'subscriptions' ? __('To') : __('From')}}</div>
-                <div class="col-4 col-md-2 text-truncate">{{__('Status')}}</div>
+                <div class="col-4 col-md-3 text-truncate">{{$activeSubsTab == 'subscriptions' ? __('To') : __('From')}}</div>
+                <div class="col-3 col-md-2 text-truncate">{{__('Status')}}</div>
                 <div class="col-2 text-truncate d-none d-md-block">{{__('Paid with')}}</div>
                 <div class="col-4 col-md-2 text-truncate">{{__('Renews')}}</div>
                 <div class="col-2 text-truncate d-none d-md-block">{{__('Expires at')}}</div>
@@ -33,15 +33,17 @@
             </div>
             @foreach($subscriptions as $subscription)
                 <div class="col d-flex align-items-center py-3 border-bottom">
-                    <div class="col-3 col-md-3 text-truncate">
+                    <div class="col-4 col-md-3 text-truncate">
                         <span class="mr-2">
+                        <a href="{{route('profile',['username'=> $activeSubsTab == 'subscriptions' ? $subscription->creator->username : $subscription->subscriber->username])}}" class="">
                             <img src="{{$activeSubsTab == 'subscriptions' ? $subscription->creator->avatar : $subscription->subscriber->avatar}}" class="rounded-circle user-avatar" width="35">
+                        </a>
                         </span>
                         <a href="{{route('profile',['username'=> $activeSubsTab == 'subscriptions' ? $subscription->creator->username : $subscription->subscriber->username])}}" class="text-dark-r">
                             {{$activeSubsTab == 'subscriptions' ? $subscription->creator->name : $subscription->subscriber->name}}
                         </a>
                     </div>
-                    <div class="col-4 col-md-2">
+                    <div class="col-3 col-md-2">
                         @switch($subscription->status)
                             @case('pending')
                             @case('update-needed')

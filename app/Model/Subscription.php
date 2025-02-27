@@ -21,7 +21,7 @@ class Subscription extends Model
      */
     protected $fillable = [
         'sender_user_id', 'recipient_user_id', 'stripe_subscription_id', 'paypal_agreement_id', 'paypal_plan_id',
-        'amount', 'expires_at', 'canceled_at', 'ccbill_subscription_id'
+        'amount', 'expires_at', 'canceled_at', 'ccbill_subscription_id',
     ];
 
     /**
@@ -39,13 +39,17 @@ class Subscription extends Model
      * @var array
      */
     protected $casts = [
+        'expires_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
 
     ];
 
     /**
      * Casts the dates to carbon objects.
      */
-    protected $dates = ['expires_at', 'updated_at', 'deleted_at'];
+//    Deprecated in L10
+//    protected $dates = ['expires_at', 'updated_at', 'deleted_at'];
 
     /*
      * Relationships
@@ -65,16 +69,4 @@ class Subscription extends Model
     {
         return $this->hasMany('App\Model\Transaction');
     }
-
-    public function subscriptions()
-    {
-        return $this->hasMany('App\Model\Subscription', 'sender_user_id');
-    }
-
-    public function getCompletedSubscriptionsCountAttribute()
-    {
-        return $this->subscriptions()->where('status', 'completed')->count();
-    }
 }
-
-

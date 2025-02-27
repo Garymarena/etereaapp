@@ -141,7 +141,7 @@
         </li>
 
         @if(GenericHelper::isEmailEnforcedAndValidated())
-            @if(getSetting('streams.allow_streams'))
+            @if(getSetting('streams.allow_streams') && !getSetting('site.hide_stream_create_menu'))
                 <li class="nav-item-live mt-2 mb-0">
                     <a role="button" class="btn btn-round btn-outline-danger btn-block px-3" href="{{route('my.streams.get')}}{{StreamsHelper::getUserInProgressStream() ? '' : ( !GenericHelper::isUserVerified() && getSetting('site.enforce_user_identity_checks') ? '' : '?action=create')}}">
                         <div class="d-none d-md-flex d-xl-flex d-lg-flex justify-content-center align-items-center ml-1 text-truncate new-post-label">

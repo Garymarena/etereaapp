@@ -2,25 +2,23 @@
 * Post view page
  */
 "use strict";
-/* global app, postVars, Post, CommentsPaginator */
+/* global app, postVars, Post, CommentsPaginator, PostsPaginator */
 
 $(function () {
-    // Initing button save
-    $('.post-create-button').on('click',function () {
-        Post.create();
-    });
-    /* replace the default browser scrollbar in the sidebar, in case the sidebar menu has a height that is bigger than the viewport */
-    $('.emoji-picker__emojis').mCustomScrollbar({
-        theme: "minimal-dark"
-    });
-
     Post.setActivePage('post');
     Post.initPostsMediaModule();
+    // Initing read more/less toggler based on clip property
+    PostsPaginator.initDescriptionTogglers();
+    PostsPaginator.initPostsHyperLinks();
+    // Animate polls
+    Post.animatePollResults();
     Post.initGalleryModule('.post-box');
     Post.initGalleryModule('.recent-media');
 
     CommentsPaginator.init(app.baseUrl+'/posts/comments','.post-comments-wrapper');
     Post.showPostComments(postVars.post_id,9);
+    Post.scrollToPostWhenTogglingDescription = false;
+    Post.toggleFullDescription(postVars.post_id);
 
     $('.post-comments').removeClass('d-none');
 

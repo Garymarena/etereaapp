@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
 {
-    const MESSAGES_FILTER = 'messages';
-    const LIKES_FILTER = 'likes';
-    const SUBSCRIPTIONS_FILTER = 'subscriptions';
-    const TIPS_FILTER = 'tips';
-    const PROMOS_FILTER = 'promos';
+    public const MESSAGES_FILTER = 'messages';
+    public const LIKES_FILTER = 'likes';
+    public const SUBSCRIPTIONS_FILTER = 'subscriptions';
+    public const TIPS_FILTER = 'tips';
+    public const PROMOS_FILTER = 'promos';
+    public const PPV_UNLOCK_FILTER = 'PPV';
 
     public $notificationTypes = [
         self::MESSAGES_FILTER,
@@ -18,16 +19,17 @@ class Notification extends Model
         self::SUBSCRIPTIONS_FILTER,
         self::TIPS_FILTER,
         self::PROMOS_FILTER,
+        self::PPV_UNLOCK_FILTER,
     ];
 
-    const NEW_TIP = 'tip';
-    const NEW_REACTION = 'reaction';
-    const NEW_COMMENT = 'new-comment';
-    const NEW_SUBSCRIPTION = 'new-subscription';
-    const WITHDRAWAL_ACTION = 'withdrawal-action';
-    const NEW_MESSAGE = 'new-message';
-    const EXPIRING_STREAM = 'expiring-stream';
-    const PPV_UNLOCK = 'ppv-unlock';
+    public const NEW_TIP = 'tip';
+    public const NEW_REACTION = 'reaction';
+    public const NEW_COMMENT = 'new-comment';
+    public const NEW_SUBSCRIPTION = 'new-subscription';
+    public const WITHDRAWAL_ACTION = 'withdrawal-action';
+    public const NEW_MESSAGE = 'new-message';
+    public const EXPIRING_STREAM = 'expiring-stream';
+    public const PPV_UNLOCK = 'ppv-unlock';
 
     // Disable auto incrementing as we set the id manually (uuid)
     public $incrementing = false;
@@ -39,7 +41,7 @@ class Notification extends Model
      */
     protected $fillable = [
         'from_user_id', 'post_id', 'to_user_id', 'type', 'id', 'subscription_id', 'transaction_id', 'stream_id',
-        'reaction_id', 'post_comment_id', 'withdrawal_id', 'user_message_id', 'message', 'read', 'sent_expiring_reminder'
+        'reaction_id', 'post_comment_id', 'withdrawal_id', 'user_message_id', 'message', 'read', 'sent_expiring_reminder',
     ];
 
     /**
@@ -59,8 +61,7 @@ class Notification extends Model
         'id' => 'string',
     ];
 
-
-    public function getPPVUnlockTypeAttribute(){
+    public function getPPVUnlockTypeAttribute() {
         if($this->post_id){
             return __("post");
         }
@@ -120,5 +121,4 @@ class Notification extends Model
     {
         return $this->belongsTo('App\Model\UserMessage', 'user_message_id');
     }
-
 }

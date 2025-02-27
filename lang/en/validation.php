@@ -179,6 +179,25 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        "email" => "email",
+        "password" => "password",
+        "name" => "name",
+        "first_name" => "first name",
+        "last_name" => "last name",
+        "billing_address" => "billing address",
+        "city" => "city",
+        "state" => "state",
+        "postcode" => "postcode",
+        "country" => "country",
+        "message" => "message",
+        "username" => "username",
+        "bio" => "bio",
+        "profile_access_price" => "monthly subscription price",
+        "profile_access_price_3_months" => "price for 3 months",
+        "profile_access_price_6_months" => "price for 6 months",
+        "profile_access_price_12_months" => "price for 12 months",
+        "code" => "code",
+    ],
 
 ];

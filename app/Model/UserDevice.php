@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserDevice extends Model
 {
-
     public $table = "user_devices";
 
     protected $fillable = [
@@ -14,6 +13,6 @@ class UserDevice extends Model
         'address',
         'agent',
         'signature',
-        'verified_at'
+        'verified_at',
     ];
 }

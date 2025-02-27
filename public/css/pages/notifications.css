@@ -4,14 +4,6 @@
     flex-wrap:nowrap;
 }
 
-.notifications-menu-mobile .mCSB_container{
-    display: flex;
-}
-
-.notifications-menu-mobile .mCustomScrollBox {
-    width: 100%;
-}
-
 .notification-box .rounded-circle{
     height:70px;
     width:70px

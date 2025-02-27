@@ -1,5 +1,5 @@
 <div class="px-2 list-item">
-     <span class="list-link d-flex flex-column pt-2 pb-2 pl-3 rounded {{--pointer-cursor--}}">
+     <span class="list-link d-flex flex-column pt-2 pb-2 rounded {{--pointer-cursor--}}">
          <div class="d-flex flex-row-no-rtl justify-content-between">
              <div class="text-truncate overflow-hidden">
                  <div class="d-flex align-items-center" >

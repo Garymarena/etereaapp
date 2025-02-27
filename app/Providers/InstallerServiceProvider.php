@@ -2,16 +2,17 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 
 class InstallerServiceProvider extends ServiceProvider
 {
-
     /**
      * @var string
      */
     public static $lockCode = 'g9mZ)j5(GGGHsf';
+
     public static $activationService = 'https://license.qdev.tech/';
 
     /*
@@ -40,10 +41,10 @@ class InstallerServiceProvider extends ServiceProvider
     }
 
     /**
-     * Return lock code
+     * Return lock code.
      * @return mixed
      */
-    public static function getLockCode(){
+    public static function getLockCode() {
         return getLockCode();
     }
 
@@ -66,14 +67,14 @@ class InstallerServiceProvider extends ServiceProvider
             'XML',
             'cURL',
             'exif',
-            'GD'
+            'GD',
         ];
     }
 
     /**
-     * GLK fn()
+     * GLK fn().
      */
-    public static function glck(){
+    public static function glck() {
         return true;
     }
 
@@ -87,11 +88,11 @@ class InstallerServiceProvider extends ServiceProvider
         $extensions = self::getRequiredExtensions();
         $passes = true;
         foreach ($extensions as $extension) {
-            if (! extension_loaded($extension)) {
+            if (!extension_loaded($extension)) {
                 $passes = false;
             }
         }
-        if (! (version_compare(phpversion(), '7.2.5') >= 0)) {
+        if (!(version_compare(phpversion(), '7.2.5') >= 0)) {
             $passes = false;
         }
 
@@ -120,12 +121,11 @@ class InstallerServiceProvider extends ServiceProvider
         file_put_contents(base_path().'/'.'.env', file_get_contents(base_path().'/'.'.env').$line."\r\n");
     }
 
-
     /**
-     * Setting up the lock code
+     * Setting up the lock code.
      * @return bool
      */
-    public static function setLockCode(){
+    public static function setLockCode() {
         return setLockCode(self::$lockCode);
     }
 
@@ -147,27 +147,37 @@ class InstallerServiceProvider extends ServiceProvider
             $response = json_decode($response);
             return $response;
         } catch (\Exception $exception) {
-            return (object)['success' => false, 'error' => self::$acError . ' Error: "'.$exception->getMessage().'"'];
+            return (object)['success' => false, 'error' => self::$acError.' Error: "'.$exception->getMessage().'"'];
         }
     }
 
     /**
-     * Curl based license fetching method fallback
+     * Curl based license fetching method fallback.
      * @param $URL
      * @return bool|string
      */
-    public static function curlGetContent($url){
+    public static function curlGetContent($url) {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE );
-        curl_setopt($ch, CURLOPT_HEADER, 0 );
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1 );
-        curl_setopt($ch, CURLOPT_URL, $url );
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE );
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        $data = curl_exec( $ch );
-        curl_close( $ch );
+        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $data = curl_exec($ch);
+        curl_close($ch);
         return $data;
     }
 
+    public static function hasAvailableMigrations()
+    {
+        Artisan::call('migrate --pretend --force');
+        $migrationsCheck = trim(Artisan::output());
+        $canMigrate = false;
+        if(!strpos($migrationsCheck, 'Nothing to migrate')){
+            $canMigrate = true;
+        }
+        return $canMigrate;
+    }
 }

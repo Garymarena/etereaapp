@@ -17,7 +17,7 @@ class PublicPage extends Model
         'short_title',
         'content',
         'page_order',
-        'shown_in_footer'
+        'shown_in_footer',
     ];
 
     /**

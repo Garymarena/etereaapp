@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Tax extends Model
 {
     public const INCLUSIVE_TYPE = 'inclusive';
-
     public const EXCLUSIVE_TYPE = 'exclusive';
-
     public const FIXED_TYPE = 'fixed';
 
     /**
@@ -18,7 +16,7 @@ class Tax extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'percentage', 'type', 'hidden'
+        'name', 'percentage', 'type', 'hidden',
     ];
 
     /**

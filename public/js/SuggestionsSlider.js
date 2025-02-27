@@ -15,14 +15,21 @@ var SuggestionsSlider = {
      * @returns {*}
      */
     init: function (container) {
+        let localSwiperConfig = {};
+        if(container === '#suggestions-box'){
+            localSwiperConfig = sliderConfig.suggestions;
+        }
+        if(container === '#suggestions-box-expired'){
+            localSwiperConfig = sliderConfig.expiredSubs;
+        }
         let swiperConfig ={
             pagination: {
-                el: container+" .swiper-pagination",
+                el: container + " .swiper-pagination",
                 // type: "fraction",
                 dynamicBullets: true,
             },
         };
-        if(sliderConfig.autoslide === true){
+        if(localSwiperConfig.autoslide === true){
             swiperConfig.autoplay = {delay: 10000};
         }
         return new Swiper(container+" .mySwiper", swiperConfig);
@@ -59,8 +66,8 @@ var SuggestionsSlider = {
      * @param posts
      */
     appendSuggestionsResults: function(posts){
-        $('.suggestions-content').html('');
-        $('.suggestions-content').append(posts.html).fadeIn('slow');
+        $('#suggestions-box .suggestions-content').html('');
+        $('#suggestions-box .suggestions-content').append(posts.html).fadeIn('slow');
         SuggestionsSlider.init();
     },
 

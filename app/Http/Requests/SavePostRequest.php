@@ -33,7 +33,7 @@ class SavePostRequest extends FormRequest
             $rules['attachments'] = 'required';
         }
 
-        $rules['price'] = [New PPVMinMax('post')];
+        $rules['price'] = [new PPVMinMax('post')];
 
         return $rules;
     }

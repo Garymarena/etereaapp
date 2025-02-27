@@ -1,7 +1,7 @@
 <form method="POST" action="{{ route('register') }}" id="register-form">
     @csrf
 
-    @if(getSetting('social-login.facebook_client_id') || getSetting('social-login.twitter_client_id') || getSetting('social-login.google_client_id'))
+    @if(getSetting('social.facebook_client_id') || getSetting('social.twitter_client_id') || getSetting('social.google_client_id'))
         <div class="my-1">
             <p class="mb-0">
                 {{__('Already got an account?')}}
@@ -75,15 +75,8 @@
         </div>
     </div>
 
-    @if(getSetting('security.recaptcha_enabled') && !Auth::check())
-        <div class="form-group row d-flex justify-content-center captcha-field">
-            {!! NoCaptcha::display(['data-theme' => (Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme')) : Cookie::get('app_theme') )]) !!}
-            @error('g-recaptcha-response')
-            <span class="text-danger" role="alert">
-                <strong>{{__("Please check the captcha field.")}}</strong>
-            </span>
-            @enderror
-        </div>
+    @if(getSetting('security.captcha_driver') !== 'none' && !Auth::check())
+        @include('elements.captcha-field')
     @endif
 
     <div class="form-group row mb-0">
@@ -95,7 +88,7 @@
     </div>
 
 </form>
-@if(!getSetting('social-login.facebook_client_id') && !getSetting('social-login.twitter_client_id') && !getSetting('social-login.google_client_id'))
+@if(!getSetting('social.facebook_client_id') && !getSetting('social.twitter_client_id') && !getSetting('social.google_client_id'))
     <hr>
     <div class=" text-center">
         <p class="mb-4">

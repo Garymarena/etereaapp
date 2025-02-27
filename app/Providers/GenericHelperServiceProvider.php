@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Model\Attachment;
+use App\Model\GlobalAnnouncement;
 use App\Model\PublicPage;
 use App\Model\Wallet;
 use App\User;
@@ -11,11 +12,13 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Jenssegers\Agent\Agent;
 use Mews\Purifier\Facades\Purifier;
+use Pusher\Pusher;
 use Ramsey\Uuid\Uuid;
 use Cookie;
 
@@ -64,12 +67,12 @@ class GenericHelperServiceProvider extends ServiceProvider
      * @param $userID - User sending the message
      * @return bool
      */
-    public static function hasUserBlocked($contactUserID, $userID){
-        $contactUser = User::where('id',$contactUserID)->first();
+    public static function hasUserBlocked($contactUserID, $userID) {
+        $contactUser = User::where('id', $contactUserID)->first();
         $blockedUsers = ListsHelperServiceProvider::getListMembers($contactUser->lists->firstWhere('type', 'blocked')->id);
         if(in_array($userID, $blockedUsers)){
             return true;
-        };
+        }
         return false;
     }
 
@@ -103,12 +106,12 @@ class GenericHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Static function that handles remote storage drivers
+     * Static function that handles remote storage drivers.
      *
      * @param $value
      * @return string
      */
-    public static function getStorageAvatarPath($value){
+    public static function getStorageAvatarPath($value) {
         if($value && $value !== config('voyager.user.default_avatar', '/img/default-avatar.png')){
             if (getSetting('storage.driver') == 's3') {
                 if (getSetting('storage.aws_cdn_enabled') && getSetting('storage.aws_cdn_presigned_urls_enabled')) {
@@ -129,23 +132,23 @@ class GenericHelperServiceProvider extends ServiceProvider
                 return rtrim(getSetting('storage.minio_endpoint'), '/').'/'.getSetting('storage.minio_bucket_name').'/'.$value;
             }
             elseif(getSetting('storage.driver') == 'pushr'){
-                return 'https://'.rtrim(getSetting('storage.pushr_cdn_hostname'), '/').'/'.$value;
+                return rtrim(getSetting('storage.pushr_cdn_hostname'), '/').'/'.$value;
             }
             else{
                 return Storage::disk('public')->url($value);
             }
         }else{
-            return str_replace('storage/','',asset(config('voyager.user.default_avatar', '/img/default-avatar.png')));
+            return str_replace('storage/', '', asset(config('voyager.user.default_avatar', '/img/default-avatar.png')));
         }
     }
 
     /**
-     * Static function that handles remote storage drivers
+     * Static function that handles remote storage drivers.
      *
      * @param $value
      * @return string
      */
-    public static function getStorageCoverPath($value){
+    public static function getStorageCoverPath($value) {
         if($value){
             if (getSetting('storage.driver') == 's3') {
                 if (getSetting('storage.aws_cdn_enabled') && getSetting('storage.aws_cdn_presigned_urls_enabled')) {
@@ -177,23 +180,23 @@ class GenericHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Helper to detect mobile usage
+     * Helper to detect mobile usage.
      * @return bool
      */
-    public static function isMobileDevice(){
+    public static function isMobileDevice() {
         $agent = new Agent();
         return $agent->isMobile();
     }
 
     /**
-     * Returns true if email enforce is not enabled or if is set to true and user is verified
+     * Returns true if email enforce is not enabled or if is set to true and user is verified.
      * @return bool
      */
-    public static function isEmailEnforcedAndValidated(){
-        return ((Auth::check() && Auth::user()->email_verified_at) || (Auth::check() && !getSetting('site.enforce_email_validation')));
+    public static function isEmailEnforcedAndValidated() {
+        return (Auth::check() && Auth::user()->email_verified_at) || (Auth::check() && !getSetting('site.enforce_email_validation'));
     }
 
-    public static function parseProfileMarkdownBio($bio){
+    public static function parseProfileMarkdownBio($bio) {
         if(getSetting('profiles.allow_profile_bio_markdown')){
             $parsedOutput = Purifier::clean(Markdown::convert($bio)->getContent());
             return $parsedOutput;
@@ -201,15 +204,15 @@ class GenericHelperServiceProvider extends ServiceProvider
         return $bio;
     }
 
-    public static function parseSafeHTML($text){
-        return  Purifier::clean((str_replace("\n", "<br>",strip_tags($text))));
+    public static function parseSafeHTML($text) {
+        return  Purifier::clean((str_replace("\n", "<br>", strip_tags($text))));
     }
 
     /**
-     * Fetches list of all public pages to be show in footer
+     * Fetches list of all public pages to be show in footer.
      * @return mixed
      */
-    public static function getFooterPublicPages(){
+    public static function getFooterPublicPages() {
         $pages = [];
         if (InstallerServiceProvider::checkIfInstalled()) {
             $pages = PublicPage::where('shown_in_footer', 1)->orderBy('page_order')->get();
@@ -218,10 +221,10 @@ class GenericHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get Privacy page
+     * Get Privacy page.
      * @return mixed
      */
-    public static function getPrivacyPage(){
+    public static function getPrivacyPage() {
         try{
             return PublicPage::where('is_privacy', 1)->first();
         }
@@ -232,10 +235,10 @@ class GenericHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get TOS page
+     * Get TOS page.
      * @return mixed
      */
-    public static function getTOSPage(){
+    public static function getTOSPage() {
         try{
             return PublicPage::where('is_tos', 1)->first();
         }
@@ -245,7 +248,7 @@ class GenericHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Verifies if admin added a minimum posts limit for creators to earn money
+     * Verifies if admin added a minimum posts limit for creators to earn money.
      * @param $user
      * @return bool
      */
@@ -261,12 +264,12 @@ class GenericHelperServiceProvider extends ServiceProvider
 
     /**
      * Returns the preferred user local
-     * TODO: This is only used in the payments module | Maybe delete it and use LocaleProvider based alternative
+     * TODO: This is only used in the payments module | Maybe delete it and use LocaleProvider based alternative.
      * @return \Illuminate\Config\Repository|mixed|null
      */
-    public static function getPreferredLanguage(){
+    public static function getPreferredLanguage() {
         // Defaults
-        if (! Session::has('locale')) {
+        if (!Session::has('locale')) {
             if (InstallerServiceProvider::checkIfInstalled()) {
                 return getSetting('site.default_site_language');
             } else {
@@ -281,10 +284,10 @@ class GenericHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Fetches the default OGMeta image to be used (except for profile)
+     * Fetches the default OGMeta image to be used (except for profile).
      * @return \Illuminate\Config\Repository|mixed|string|null
      */
-    public static function getOGMetaImage(){
+    public static function getOGMetaImage() {
         if(getSetting('site.default_og_image')){
             return getSetting('site.default_og_image');
         }
@@ -292,14 +295,82 @@ class GenericHelperServiceProvider extends ServiceProvider
     }
 
     /**
-     * Gets site direction. If rtl cookie not set, defaults to site setting
+     * Gets site direction. If rtl cookie not set, defaults to site setting.
      * @return \Illuminate\Config\Repository|mixed|null
      */
-    public static function getSiteDirection(){
+    public static function getSiteDirection() {
         if(is_null(Cookie::get('app_rtl'))){
             return getSetting('site.default_site_direction');
         }
         return Cookie::get('app_rtl');
     }
 
+    public static function getSiteTheme() {
+        $mode = Cookie::get('app_theme');
+        if(!$mode){
+            $mode = getSetting('site.default_user_theme');
+        }
+        return $mode;
+    }
+
+    public static function getLatestGlobalMessage() {
+        if (!Schema::hasTable('global_announcements')) {
+            // Return an empty collection or array if the table doesn't exist
+            return null;
+        }
+
+        $messages = GlobalAnnouncement::all();
+        $skippedIDs = [];
+
+        foreach($messages as $message){
+            if(request()->cookie('dismissed_banner_'.$message->id)){
+                $skippedIDs[] = $message->id;
+            }
+        }
+
+        $message = GlobalAnnouncement::orderBy('created_at', 'desc')
+            ->where('is_published', 1)
+            ->whereNotIn('id', $skippedIDs)
+            ->first();
+
+        return $message;
+    }
+
+    public static function isUserOnline($userId)
+    {
+        $envVars = [
+            'PUSHER_APP_KEY' => config('broadcasting.connections.pusher.key'),
+            'PUSHER_APP_SECRET' => config('broadcasting.connections.pusher.secret'),
+            'PUSHER_APP_ID' => config('broadcasting.connections.pusher.app_id'),
+            'PUSHER_APP_CLUSTER' => config('broadcasting.connections.pusher.options.cluster'),
+        ];
+
+        $pusher = new Pusher(
+            $envVars['PUSHER_APP_KEY'],
+            $envVars['PUSHER_APP_SECRET'],
+            $envVars['PUSHER_APP_ID'],
+            [
+                'cluster' => $envVars['PUSHER_APP_CLUSTER'],
+                'encrypted' => true,
+            ]
+        );
+
+        try {
+            $channelName = 'presence-global'; // Fixed shared channel
+            $response = $pusher->get('/channels/'.$channelName.'/users'); // Query Pusher HTTP API
+
+            // Access users property as an object
+            if (!empty($response->users)) {
+                foreach ($response->users as $member) {
+                    if ($member->id == $userId) {
+                        return true; // User is online
+                    }
+                }
+            }
+
+            return false; // User is not online
+        } catch (\Exception $exception) {
+            return false; // Handle errors gracefully
+        }
+    }
 }

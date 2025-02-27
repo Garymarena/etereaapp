@@ -28,10 +28,9 @@
             '/libs/photoswipe/dist/photoswipe-ui-default.min.js',
             '/js/plugins/media/mediaswipe.js',
             '/js/plugins/media/mediaswipe-loader.js',
-            '/libs/@joeattardi/emoji-button/dist/index.js',
             '/js/pages/lists.js',
             '/js/pages/checkout.js',
-            '/libs/pusher-js-auth/lib/pusher-auth.js'
+            '/libs/autolinker/dist/autolinker.min.js'
          ])->withFullUrl()
     !!}
 @stop
@@ -46,11 +45,11 @@
     @include('elements.checkout.checkout-box')
     @include('elements.attachments-uploading-dialog')
     @include('elements.messenger.locked-message-no-attachments-dialog')
-    <div class="row">
-        <div class="min-vh-100 col-12">
-            <div class="container messenger min-vh-100">
-                <div class="row min-vh-100">
-                    <div class="col-3 col-xl-3 col-lg-3 col-md-3 col-sm-3 col-xs-2 border border-right-0 border-left-0 rounded-left conversations-wrapper min-vh-100 overflow-hidden border-top ">
+    <div class="d-flex flex-wrap">
+        <div class=" col-12 px-0">
+            <div class="container messenger ">
+                <div class="row ">
+                    <div class="col-3 col-xl-3 col-lg-3 col-md-3 col-sm-3 col-xs-2 border border-right-0 border-left-0 rounded-left conversations-wrapper  overflow-hidden border-top ">
                         <div class="d-flex justify-content-center justify-content-md-between pt-3 pr-1 pb-2">
                             <h5 class="d-none d-md-block text-truncate pl-3 pl-md-0 text-bold {{(Cookie::get('app_theme') == null ? (getSetting('site.default_user_theme') == 'dark' ? '' : 'text-dark-r') : (Cookie::get('app_theme') == 'dark' ? '' : 'text-dark-r'))}}">{{__('Contacts')}}</h5>
                             <span data-toggle="tooltip" title="" class="pointer-cursor"
@@ -71,7 +70,7 @@
                             @endif
                         </div>
                     </div>
-                    <div class="col-9 col-xl-9 col-lg-9 col-md-9 col-sm-9 col-xs-10 border conversation-wrapper rounded-right p-0 d-flex flex-column min-vh-100">
+                    <div class="col-9 col-xl-9 col-lg-9 col-md-9 col-sm-9 col-xs-10 border conversation-wrapper rounded-right p-0 d-flex flex-column ">
                         @include('elements.message-alert')
                         @include('elements.messenger.messenger-conversation-header')
                         @include('elements.messenger.messenger-new-conversation-header')
@@ -93,9 +92,9 @@
                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="receiverID" id="receiverID" value="">
                                     <textarea name="message" class="form-control messageBoxInput dropzone" placeholder="{{__('Write a message..')}}" onkeyup="messenger.textAreaAdjust(this)"></textarea>
-                                    <div class="input-group-append z-index-3 d-flex align-items-center justify-content-center">
-                                        <span class="h-pill h-pill-primary rounded mr-3 trigger" data-toggle="tooltip" data-placement="top" title="Like" >😊</span>
-                                    </div>
+{{--                                    <div class="input-group-append z-index-3 d-flex align-items-center justify-content-center">--}}
+{{--                                        <span class="h-pill h-pill-primary rounded mr-3 trigger" data-toggle="tooltip" data-placement="top" title="Like" >😊</span>--}}
+{{--                                    </div>--}}
                                 </div>
                             </form>
                             <div class="messenger-buttons-wrapper d-flex">

@@ -29,7 +29,7 @@ class UserMessage extends Model
      */
     protected $casts = [
         'sender_id' => 'integer',
-        'receiver_id' => 'integer'
+        'receiver_id' => 'integer',
     ];
 
     /*
@@ -72,5 +72,4 @@ class UserMessage extends Model
     {
         return $this->hasMany('App\Model\Transaction', 'user_message_id', 'id')->where('status', 'approved')->where('type', 'message-unlock');
     }
-
 }

@@ -68,4 +68,7 @@ footer .footer-social-links a:nth-last-child(1){
     margin-right:0px!important;
 }
 
+// TODO: Fix contrast issues on some themes
+//$yiq-contrasted-threshold:  150 !default;
+
 @import "./generic";
